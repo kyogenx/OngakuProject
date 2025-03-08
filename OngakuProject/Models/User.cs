@@ -1,0 +1,16 @@
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+
+namespace OngakuProject.Models
+{
+    public class User : IdentityUser<int>
+    {
+        [MaxLength(75)]
+        public string? Nickname { get; set; }
+        [MaxLength(15)]
+        public string? Searchname { get; set; }
+        [MaxLength(2500)]
+        public string? Description { get; set; }
+        public string? ImgUrl { get; set; }
+    }
+}

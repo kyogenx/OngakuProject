@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - OngakuProject</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/OngakuProject.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="bottom-navbar shadow-sm">
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-house"></i> <br />Home</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-magnifying-glass"></i> <br />Search</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-comments"></i> <br />Chats</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-circle-user"></i> <br />Account</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <div class="ongaku-alert shadow-sm" id="Ongaku_Alert">
+        <div class="ongaku-alert-inner">
+            <div class="hstack gap-1">
+                <div class="ongaku-alert-icon-box">
+                    <span class="h5 ongaku-alert-icon" id="OngakuAlert_Icon_Lbl"> <i class="fa-solid fa-circle-info"></i> </span>
+                </div>
+                <div class="ms-2">
+                    <span class="card-text ongaku-alert-text" id="OngakuAlert_Text_Lbl">Alert Text.</span>
+                </div>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-ongaku-alert btn-sm" id="OngakuAlert_Btn">Close</button>
+                </div>
+            </div>
+        </div>
+        <div class="ongaku-alert-timer"></div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://kit.fontawesome.com/e46748ce25.js" crossorigin="anonymous"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

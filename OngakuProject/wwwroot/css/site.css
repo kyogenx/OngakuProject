@@ -1,0 +1,120 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.box-sm-part {
+    z-index: 9000;
+    width: 37%;
+    height: 100%;
+    border: 0;
+    border-right: 1px solid #f0f0f0;
+    background-color: white;
+    position: fixed;
+    bottom: 0;
+    transition: all ease 0.3s;
+}
+.box-lg-part {
+    z-index: 9000;
+    width: 63%;
+    border-radius: 10px 10px 1px 1px;
+    background-color: #fdfdfd;
+    position: fixed;
+    transition: all ease 0.3s;
+}
+
+.bottom-navbar {
+    z-index: 10000;
+    padding: 8px;
+    border-radius: 1px 1px 0 0;
+    background-color: #f8f9fa;
+    position: fixed;
+    bottom: 0;
+    transition: all ease 0.3s;
+}
+.btn-bottom-navbar {
+    cursor: pointer;
+    background-color: transparent;
+    color: black;
+    border-radius: 10px;
+    transition: all ease 0.3s;
+}
+.btn-bottom-navbar:hover,
+.btn-bottom-navbar:active {
+    background-color: #f0f0f0;
+}
+
+.hidden {
+    display: none;
+    bottom: -1200px;
+}
+
+.ongaku-alert {
+    z-index: 9000;
+    background-color: #2B2B2B;
+    border-radius: 10px;
+    bottom: -1200px;
+    position: fixed;
+    display: none;
+    transition: all ease 0.3s;
+}
+.ongaku-alert-inner {
+    padding: 8px;
+}
+.btn-ongaku-alert {
+    cursor: pointer;
+    background-color: #fdfdfd;
+    color: black;
+    border-radius: 10px;
+    transition: all ease 0.3s;
+}
+.btn-ongaku-alert:hover,
+.btn-ongaku-alert:active {
+    background-color: #fdfdfd;
+}
+.ongaku-alert-icon {
+    color: #fdfdfd;
+    transition: all ease 0.3s;
+}
+.ongaku-alert-text {
+    color: #fdfdfd;
+    transition: all ease 0.3s;
+}
+.ongaku-alert-timer {
+    background-color: #fdfdfd;
+    height: 4px;
+    border-radius: 10px;
+    width: 0;
+    transition: all ease 0.001s;
+}
+
+.white-space-on {
+    white-space: pre-wrap;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
