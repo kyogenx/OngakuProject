@@ -1,0 +1,185 @@
+﻿@model User
+@{
+    ViewData["Title"] = "P";
+
+    User? UserInfo = ViewBag.UserInfo;   
+}
+
+<div class="box-sm-part shadow-sm">
+    <div class="d-none">
+        <form method="post" asp-controller="Profile" asp-action="EditImage" id="EditProfileImage_Form">
+            <input type="file" accept="images/*" class="d-none" name="File" id="EditImage_File_Val" value="@UserInfo.ImgUrl" multiple />
+        </form>
+    </div>
+    <div class="profile-info-box text-center">
+        <div class="float-start">
+            <div class="dropdown">
+                <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                <ul class="dropdown-menu shadow-sm p-1">
+                    <li><button type="button" class="dropdown-item btn-edit-profile-image" onmousedown="$('#EditImage_File_Val').mousedown();"> <i class="fa-solid fa-image"></i> Edit Image</button></li>
+                    <li>
+                        <form method="post" asp-controller="Account" asp-action="LogOut" id="LogOut_Form">
+                            <button type="submit" class="dropdown-item text-danger"> <i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="float-end ms-1">
+            <button type="button" class="btn btn-standard btn-open-container btn-tooltip" id="EditProfile_Container-Open_Btn" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Edit nickname, searchname and/or account's description"> <i class="fa-solid fa-pencil"></i> </button>
+        </div>
+        @if(UserInfo.ImgUrl == null) {
+            <div class="profile-avatar mx-auto">@UserInfo.Nickname![0]</div>
+            <img src="#" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" style="display: none;" />
+        }
+        else {
+            <div class="profile-avatar mx-auto" style="display: none;">@UserInfo.Nickname![0]</div>
+            <img src="/ProfileImages/@UserInfo.ImgUrl" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" style="display: none;" />
+        }
+        <div class="mt-2">
+            <h2 class="h2" id="ProfileMainName_Lbl">@UserInfo.Nickname</h2>
+            <p class="card-text text-muted">@@<span id="ProfileMainSearchname_Lbl">@UserInfo.Searchname</span></p>
+        </div>
+    </div>
+</div>
+
+<div class="box-lg-part shadow-sm" id="EditProfile_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="EditProfile_Container-Header_Lbl">Edit Profile</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="EditProfile_Box">
+        <div>
+            <form method="post" asp-controller="Profile" asp-action="UpdateMainInfo" id="ProfileUpdateMainInfo_Form">
+                <div>
+                    <label class="form-label fw-500">Nickname</label>
+                    <input type="text" asp-for="Nickname" id="UMI_Nickname_Val" class="form-control form-control-guard" data-min-length="1" data-update="ProfileMainName_Lbl" data-base-value="@UserInfo.Nickname" data-target="UpdateMainInfo_SbmtBtn" placeholder="Your nickname" maxlength="75" value="@UserInfo.Nickname" />
+                </div>
+                <div class="ms-1 mt-1">
+                    <small class="card-text text-muted">This name (whether your artistic or real name) represents you and your page to others</small>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500">Description</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-open-text-formatting btn-sm me-1" id="UMI_Description_Val-FormatOpen_Btn"> <i class="fa-solid fa-text-width"></i> Format</button>
+                        <button type="button" class="btn btn-standard-bordered btn-text-deformatting btn-sm me-1" id="UMI_Description_Val-Deformatting_Btn"> <i class="fa-solid fa-spell-check"></i> Preview</button>
+                        <button type="button" class="btn btn-standard-bordered btn-sm" id="UMI_Description_Val-Indicator_Span">0/2500</button>
+                    </div>
+                    <textarea class="form-control form-textarea mt-1" name="Description" id="UMI_Description_Val" placeholder="Description (max 2500 chars)" maxlength="2500" rows="1">@UserInfo.Description</textarea>
+                    <div class="form-textarea form-textarea-box mt-1" id="UMI_Description_Val-Preview_Box" style="display: none;">
+                        <p class="card-text" id="UMI_Description_Val-PreviewText_Lbl"></p>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Share all essential details your followers might find valuable, including your <span class="fw-500">real name</span>, <span class="fw-500">age</span>, <span class="fw-500">country</span>, and <span class="fw-500">main genre</span> (even if there are separate fields for country, city, and genre)</small>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled w-100" id="UpdateMainInfo_SbmtBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+        <div class="mt-2">
+            <div>
+                <form method="post" asp-controller="Profile" asp-action="UpdateSearchname" id="ProfileUpdateSearchname_Form">
+                    <div>
+                        <label class="form-label fw-500">Searchname</label>
+                        <small class="form-status-span" id="UpdateSearchname_Status_Span" style="display: none;"></small>
+                        <input type="text" asp-for="Searchname" id="UpdateSearchname_Searchname_Val" class="form-control form-control-guard form-control-restricted" data-min-length="1" data-update="ProfileMainSearchname_Lbl,Searchname_Span" data-base-value="@UserInfo.Searchname" data-target="UpdateMainInfo_SbmtBtn" placeholder="Your searchname" maxlength="15" value="@UserInfo.Searchname" />
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted">This serves as your account's main link, making it easier for others to find you across the web and app<br />Can contain these characters only: <span class="fw-500">[a-z]</span>, <span class="fw-500">[A-Z]</span>, <span class="fw-500">[0-9]</span> and <span class="fw-500">underscore (_)</span><br /><br/>Your account is accessible directly through the following link: https://www.onogaku.com/artist/a/<span class="fw-500" id="Searchname_Span">@UserInfo.Searchname</span></small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <div class="box-lg-part-inner shadow-sm" id="ImagePreview_Container" style="display: block; bottom: 120px;">
+    <div class="box-lg-inner-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="ImagePreview_Container-Header_Lbl">Preview Images</span>
+            </div>
+        </div>
+    </div>
+    <div class="mt-1 p-2" id="ImagePreview_Box">
+        <div class="box-standard" id="ImagesListed_Box">
+
+        </div>
+    </div>
+</div> *@
+@* <div class="box-lg-part-inner shadow-sm" id="EditText_Container" style="display: block; bottom: 120px;">
+    <div class="box-lg-inner-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="EditText_Container-Header_Lbl">Format Text</span>
+            </div>
+        </div>
+    </div>
+    <div class="mt-1 p-2" id="EditText_Box">
+        <div class="d-none">
+            <input type="hidden" id="TextFormat_Target_Val" value="UMI_Description_Val" />
+        </div>
+        <div class="box-standard ps-2 pb-1">
+            <h6 class="h6">Text Types</h6>
+        </div>
+        <div class="hstack gap-2">
+            <div class="x-row-sliding-only-box">
+                <button type="button" class="btn btn-text-format btn-text-format-script fw-500 ms-1" data-type="0">Heading</button>
+                <button type="button" class="btn btn-text-format btn-text-format-script fw-500" data-type="1">Subheading</button>
+                <button type="button" class="btn btn-text-format btn-text-format-script fw-500" data-type="2">Label</button>
+                <button type="button" class="btn btn-text-format btn-text-format-script" data-type="3">Text</button>
+                <button type="button" class="btn btn-text-format btn-text-format-script code-similar-font" data-type="4">Monospaced</button>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-text-format btn-text-format-script" data-type="5" data-addition="#2b2b2b"> <i class="fa-solid fa-paintbrush"></i> Color <span class="text-format-color-indicator"></span></button>
+                <button type="button" class="btn btn-text-format btn-text-format-script" data-type="6"> <i class="fa-solid fa-up-right-from-square"></i> Link</button>
+            </div>
+        </div>
+        <div class="hr-styled mt-2 pt-2">
+            <div class="box-standard ps-2 pb-1">
+                <h6 class="h6">Text Styles</h6>
+            </div>
+            <div class="hstack gap-1">
+                <div class="x-row-sliding-only-box">
+                    <button type="button" class="btn btn-text-format btn-text-format-script fw-500" data-type="7">Bold</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script fst-italic" data-type="8">Italic</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script text-decoration-underline" data-type="9">Underlined</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script text-decoration-line-through" data-type="10">Strikethrough</button>
+                </div>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="11"> <i class="fa-solid fa-list-ul"></i> Unordered List</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="12"> <i class="fa-solid fa-list-ol"></i> Ordered List</button>
+                </div>
+            </div>
+        </div>
+        <div class="hr-styled mt-2 pt-2">
+            <div class="box-standard ps-2 pb-1">
+                <h6 class="h6">Other</h6>
+            </div>
+            <div class="hstack gap-1">
+                <div class="x-row-sliding-only-box">
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="13"><i class="fa-solid fa-quote-right"></i> Quote</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="14"> <i class="fa-solid fa-play"></i> Play a Track</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="15"> <i class="fa-solid fa-guitar"></i> Artist Page Link</button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="16"> <i class="fa-solid fa-square"></i> Container</button>
+                </div>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="18" data-addition="#f8f9fa"> <i class="fa-solid fa-fill-drip"></i> Background <span class="text-format-color-indicator" style="background-color: #f8f9fa"></span></button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="19"> <i class="fa-solid fa-border-top-left"></i> Corner Radius <span class="text-format-indicator">10px</span></button>
+                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="20"> <i class="fa-solid fa-text-width"></i> Element Width <span class="text-format-indicator">100%</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@

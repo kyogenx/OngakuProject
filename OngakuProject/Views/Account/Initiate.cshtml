@@ -4,6 +4,218 @@
 }
 
 <div class="box-sm-part shadow-sm">
+    <div class="box-sm-part-inner shadow-sm" id="RPS1_Container">
+        <div class="box-sm-part-header p-1">
+            <div class="div-swiper mx-auto"></div>
+            <div class="hstack mt-1 gap-1">
+                <button type="button" class="btn btn-standard btn-back-sm btn-sm me-1"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+                <div>
+                    <span class="h6">Recover Password ∙ 1/3</span>
+                </div>
+            </div>
+        </div>
+        <div class="p-2" id="RPS1_Box">
+            <div class="box-standard">
+                <div>
+                    <label class="form-label fw-500">Email</label>
+                    <input type="email" id="RPS1_Email_Val" class="form-control form-control-guard" data-min-length="1" data-chars="@@,." data-target="RPS1_SbmtBtn" placeholder="name@@example.com" />
+                </div>
+                <div class="mt-2">
+                    <button type="button" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="RPS1_SbmtBtn">Continue</button>
+                </div>
+            </div>
+            <div class="box-bordered text-center p-2 mt-1">
+                <small class="card-text text-muted">A one-time verification code will be sent to your email within <span class="fw-500">6</span> minutes after completing the verification process. Please check your inbox for further instructions</small>
+            </div>
+        </div>
+    </div>
 
+    <div class="box-sm-part-inner shadow-sm" id="RPS2_Container">
+        <div class="box-sm-part-header p-1">
+            <div class="div-swiper mx-auto"></div>
+            <div class="hstack mt-1 gap-1">
+                <button type="button" class="btn btn-standard btn-back-sm btn-sm me-1"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+                <div>
+                    <span class="h6">Recover Password ∙ 2/3</span>
+                </div>
+            </div>
+        </div>
+        <div class="p-2" id="RPS2_Box">
+            <form method="post" asp-controller="Account" asp-action="CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form">
+                <div>
+                    <input type="hidden" name="UserId" id="CPREC_Id_Val" />
+                    <div>
+                        <button type="button" class="btn btn-text-covered btn-back-sm btn-sm" data-target-id="RPS1_Container" id="RPS2_BackToEmail_Btn"></button>
+                        <input type="number" name="Code" id="CPREC_Code_Val" class="form-control form-control-for-numbers-only form-control-guard mt-2" data-min-length="6" data-on-fulfill="CheckPasswordResetEmailCode_Form" placeholder="One-time code..." maxlength="6" />
+                    </div>
+                </div>
+            </form>
+            <div class="box-bordered text-center mt-1 p-2" id="CodeResendTime_Box" style="display: none;">
+                <small class="card-text text-muted" id="CodeResendTimer_Lbl">You will be able to receive a new code shortly</small>
+                <div class="mt-1">
+                    <form method="post" asp-controller="Account" asp-action="SendPasswordResetCode" id="SendPasswordResetCode_Form">
+                        <input type="hidden" name="Email" id="SPRC_Email_Val" />
+                        <button type="submit" class="btn btn-standard-bolded super-disabled w-100" id="SPRC_SbmtBtn"> <i class="fa-solid fa-arrow-rotate-right"></i> Resend Code</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="box-sm-part-inner shadow-sm" id="RPS3_Container">
+        <div class="box-sm-part-header p-1">
+            <div class="div-swiper mx-auto"></div>
+            <div class="hstack mt-1 gap-1">
+                <button type="button" class="btn btn-standard btn-back-sm btn-sm me-1"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+                <div>
+                    <span class="h6">Recover Password ∙ 3/3</span>
+                </div>
+            </div>
+        </div>
+        <div class="p-2" id="RPS3_Box">
+            <form method="post" asp-controller="Account" asp-action="ResetPassword" id="ResetPassword_Form">
+                <div>
+                    <input type="hidden" asp-for="Email" id="ResetPassword_Email_Val" />
+                    <span class="form-label fw-500">Password</span>
+                    <div>
+                        <button type="button" class="btn btn-text-covered btn-back-sm btn-sm" data-target-id="RPS2_Container" id="RPS3_BackToEmail_Btn"></button>
+                        <input type="password" name="Password" id="ResetPassword_Password_Val" class="form-control form-control-guard mt-2" data-min-length="8" data-target="ResetPassword_SbmtBtn" placeholder="Your password" />
+                    </div>
+                </div>
+                <div class="ms-1 mt-1">
+                    <small class="card-text text-muted">Password must contain at least <span class="fw-500">8</span> characters</small>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-500">Confirm Password</label>
+                    <input type="password" name="ConfirmPassword" id="ResetPassword_ConfirmPassword_Val" class="form-control form-control-guard mt-2" data-min-length="8" data-target="ResetPassword_SbmtBtn" placeholder="Confirm your password" />
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="ResetPassword_SbmtBtn">Update Password</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="box-lg-part shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="Primary_Container-Header_Lbl">Sign Up</span>
+            </div>
+            <button type="button" class="btn btn-standard btn-classic-styled btn-open-container btn-sm ms-auto" id="SignIn_Container-Open">Sign In</button>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5">
+        <div class="box-standard mx-auto w-50-lg mt-2">
+            <div class="box-standard" data-step="0" id="0-SigningInStep_Box">
+                <form method="get" asp-controller="Account" asp-action="CheckAccountByEmail" id="CheckAccountByEmail_Form">
+                    <div>
+                        <label class="form-label fw-500">Email</label>
+                        <input type="hidden" name="Type" id="CABE_Type_Val" value="0" />
+                        <input type="email" asp-for="Email" id="CABE_Email_Val" class="form-control form-control-guard" data-min-length="1" data-chars="@@,." data-target="CheckAccountByEmail_SbmtBtn" placeholder="name@@example.com" />
+                    </div>
+                    <div class="mt-2">
+                        <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="CheckAccountByEmail_SbmtBtn">Continue</button>
+                    </div>
+                </form>
+            </div>
+            <div class="box-standard" data-step="1" id="1-SigningInStep_Box" style="display: none;">
+                <form method="post" asp-controller="Account" asp-action="Create" id="CreateAccount_Form">
+                    <div>
+                        <span class="form-label fw-500">Password</span>
+                        <div></div>
+                        <button type="button" class="btn btn-text-covered btn-box-backslide btn-sm" data-step="1" data-target-id="SigningInStep_Box" id="CreateAccount_Email_Span"></button>
+                        <input type="password" name="Password" id="CreateAccount_Password_Val" class="form-control form-control-guard mt-2" data-min-length="8" data-target="CreateAccount_SbmtBtn" placeholder="Your password" />
+                    </div>
+                    <div class="mt-1">
+                        <small class="card-text text-muted">Password must contain at least <span class="fw-500">8</span> characters</small>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label fw-500">Confirm Password</label>
+                        <input type="password" name="ConfirmPassword" id="CreateAccount_ConfirmPassword_Val" class="form-control form-control-guard" data-min-length="8" data-target="CreateAccount_SbmtBtn" placeholder="Re-enter your password" />
+                    </div>
+                    <div class="mt-1">
+                        <small class="card-text text-muted">Re-enter your password to confirm it</small>
+                    </div>
+                    <div class="mt-2">
+                        <input type="hidden" name="Email" id="CreateAccount_Email_Val" />
+                        <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="CreateAccount_SbmtBtn">Create</button>
+                    </div>
+                </form>
+            </div>
+            <div class="box-bordered text-center mt-2">
+                <small class="card-text text-muted">Trouble Signing In?</small>
+                <button type="button" class="btn btn-standard-bolded btn-open-sm-container w-100 mt-2" id="RPS1_Container-OpenX_Btn">Recover Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="box-lg-part shadow-sm" id="SignIn_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="SignIn_Container-Header_Lbl">Sign In</span>
+            </div>
+            <button type="button" class="btn btn-standard btn-classic-styled btn-open-container btn-sm ms-auto" id="Primary_Container-OpenBtn">Create Account</button>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5">
+        <div class="box-standard mx-auto w-50-lg mt-2">
+            <form method="post" asp-controller="Account" asp-action="SignIn" id="SignIn_Form">
+                <div>
+                    <label class="form-label fw-500">Email</label>
+                    <input type="email" asp-for="Email" name="Username" class="form-control form-control-guard" data-min-length="1" data-chars="@@,." data-target="SignIn_SbmtBtn" id="SignIn_Email_Val" placeholder="name@@example.com" />
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-500">Password</label>
+                    <input type="password" class="form-control form-control-guard" data-min-length="8" id="SignIn_Password_Val" name="Password" placeholder="Your password..." />
+                </div>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="SignIn_SbmtBtn">Sign In</button>
+                </div>
+            </form>
+            <div class="box-bordered text-center mt-2">
+                <small class="card-text text-muted">Trouble Signing In?</small>
+                <button type="button" class="btn btn-standard-bolded btn-open-sm-container w-100 mt-2" id="RPS1_Container-Open_Btn">Recover Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="box-lg-part shadow-sm" id="SignedUp_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="SignedUp_Container-Header_Lbl">Sign Up Complete</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5">
+        <div class="box-standard text-center">
+            <h2 class="h2"> <i class="fa-solid fa-cake-candles"></i> </h2>
+            <h4 class="h4">Well Done!</h4>
+            <small class="card-text text-muted">You've just created your account! Here are some quick tips and useful links to help you get started and integrate with us more smoothly</small>
+            <div class="row mt-3">
+                <div class="col">
+                    <a asp-controller="Home" asp-action="About" class="btn btn-standard btn-classic-styled btn-sm w-100">About Onogaku</a>
+                </div>
+                <div class="col">
+                    <a asp-controller="Profile" asp-action="P" class="btn btn-standard btn-classic-styled btn-sm w-100">Your Profile</a>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-sm w-100">Features</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 

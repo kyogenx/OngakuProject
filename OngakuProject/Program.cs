@@ -22,6 +22,9 @@ builder.Services.AddDbContext<Context>(Opt => Opt.UseSqlServer(builder.Configura
 
 builder.Services.AddTransient(typeof(IBase<>), typeof(BaseRep<>));
 builder.Services.AddTransient<IAccount, AccountRep>();
+builder.Services.AddTransient<IProfile, ProfileRep>();
+builder.Services.AddTransient<IMail, MailRep>();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
