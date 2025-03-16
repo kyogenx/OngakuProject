@@ -9,5 +9,6 @@ namespace OngakuProject.Data
     {
         public Context(DbContextOptions<Context> Options) : base(Options) { }
         public DbSet<User> Users { get; set; }
+        public DbSet<UserImage> UserImages { get; set; }
     }
 }

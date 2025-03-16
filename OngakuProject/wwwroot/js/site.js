@@ -1,4 +1,5 @@
 ﻿let currentWindowSize = window.innerWidth;
+let currentPageUrl;
 let bottomNavbarH = 0;
 let intervalValue;
 let timeoutValue;
@@ -13,6 +14,7 @@ window.onload = function () {
         bottomNavbarH = $(".bottom-navbar").innerHeight();
         callAContainer(false, "Primary_Container");
     }, 350);
+    currentPageUrl = window.location.href;
 }
 
 window.onresize = function () {
@@ -243,11 +245,176 @@ $("#ProfileUpdateMainInfo_Form").on("submit", function (event) {
             callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "Your account info has been updated", 4, "Close", 0, null);
         }
         else {
-            callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Information updating is temporarily unavailable. Please try again later.", 4, "Close", 0, null);
+            callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Information updating is temporarily unavailable. Please try again later", 4, "Close", 0, null);
         }
         buttonUndisabler(false, "UpdateMainInfo_SbmtBtn", defaultHtml);
     });
 });
+
+$("#EditProfileImages_Form").on("submit", function (event) {
+    event.preventDefault();
+
+    let url = $(this).attr("action");
+    let formData = new FormData();
+    let files = $("#EditImage_Files_Val").get(0).files;
+    let filesLength = files.length > 6 ? 6 : files.length;
+    for (let i = 0; i < filesLength; i++) {
+        formData.append("files", files[i]);
+    }
+    buttonDisabler(true, "btn-save-images", "Loading...");
+    elementDisabler(true, "btn-save-images", "profile-avatar", '<i class="fa-solid fa-spinner fa-spin-pulse"></i>');
+
+    $.ajax({
+        data: formData,
+        url: url,
+        type: "POST",
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            uncallAContainer(false, "ImagePreview_Container");
+            if (response.success) {
+                $(".profile-avatar-img").attr("src", "/ProfileImages/" + response.result);
+                $(".profile-avatar").fadeOut(0);
+                $(".profile-avatar-img").fadeIn(0);
+            }
+            else {
+                setTimeout(function () {
+                    callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Avatar editing is temporarily unavailable. Please, try again later", 4, "Close", 0, null);
+                }, 350);
+            }
+            buttonUndisabler(true, "btn-save-images", "Save");
+            elementUndisabler(true, null, "profile-avatar");
+        }
+    });
+});
+
+$(document).on("mousedown", ".profile-avatar-img", function () {
+    if (currentPageUrl.toLowerCase().includes("/profile/p")) {
+        if ($(this).hasClass("loaded")) {
+            slideBoxes(true, "standard-profile-bar", "standard-image-bar");
+            setTimeout(function () {
+                $(".profile-avatar-img").addClass("profile-avatar-img-enlarged");
+                $(".profile-avatar-img-enlarged").removeClass("profile-avatar-img");
+                $(".standard-profile-initials-box").fadeOut(300);
+            }, 300);
+        } 
+        else $("#GetImagesQty_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-exit-photo-mode", function () {
+    slideBoxes(true, "standard-image-bar", "standard-profile-bar");
+    setTimeout(function () {
+        $(".standard-profile-initials-box").fadeIn(300);
+        $(".profile-avatar-img-enlarged").addClass("profile-avatar-img");
+        $(".profile-avatar-img").removeClass("profile-avatar-img-enlarged");
+    }, 300);
+});
+
+function loadAnotherFile(loadForward = true, skipValue = 1, maxLength, skippingInputId, formId) {
+    if (formId != null && skippingInputId != null) {
+        let skipTrueValue = parseInt($("#" + skippingInputId).val());
+        if (loadForward) {
+            skipTrueValue += skipValue;
+            skipTrueValue = skipTrueValue > parseInt(maxLength) ? 0 : skipTrueValue;
+        }
+        else {
+            skipTrueValue -= skipValue;
+            skipTrueValue = skipTrueValue < 0 ? 0 : skipTrueValue;
+        }
+        let isNextImgLoaded = $("#" + skipTrueValue + "-ImgHdn_Val").val();
+        if (isNextImgLoaded == undefined) $("#" + formId).submit();
+        else {
+            $(".profile-counter-slider").removeClass("bg-chosen");
+            $("#" + skipTrueValue + "-ImgSlider_Box").addClass("bg-chosen");
+            $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + isNextImgLoaded);
+        }
+        $("#" + skippingInputId).val(skipTrueValue);
+        $("#SPAM_SbmtBtn").removeClass("super-disabled");
+        $("#ProfileDeleteImage_SbmtBtn").removeClass("super-disabled");
+    }
+}
+
+$(document).on("mousedown", ".profile-avatar-img-enlarged", function () {
+    let filesMaxLength = $("#ImagesQty_Val").val();
+    loadAnotherFile(true, 1, filesMaxLength, "PGI_Skip_Val", "ProfileGetImage_Form");
+});
+
+$("#ProfileGetImage_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            let imgHdnUrl = $("<input type='hidden' />");
+            imgHdnUrl.attr("id", response.skip + "-ImgHdn_Val");
+            imgHdnUrl.val(response.result);
+            $("#ImgHdnValues_Box").append(imgHdnUrl);
+            $(".profile-counter-slider").removeClass("bg-chosen");
+            $("#" + response.skip + "-ImgSlider_Box").addClass("bg-chosen");
+            $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + response.result);
+        }
+        else {
+            let firstImgUrl = $("#0-ImgHdn_Val").val();
+            if (firstImgUrl != null) $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + firstImgUrl);
+            else {
+                $('.btn-exit-photo-mode').mousedown();
+                $(".profile-avatar-img-enlarged").fadeOut(0);
+                $(".profile-avatar").fadeIn(0);
+            }
+        }
+    });
+});
+
+$("#GetImagesQty_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (parseInt(response.result) > 0) {
+            if (currentPageUrl.toLowerCase().includes("/profile/p")) {
+                $("#AvatarsCounter_Box").empty();
+                $("#ImagesQty_Val").val(response.result);
+                $(".profile-avatar-img").addClass("loaded");
+                slideBoxes(true, "standard-profile-bar", "standard-image-bar");
+                for (let i = 0; i < response.result; i++) {
+                    let column = $("<div class='col'></div>");
+                    let slider = $("<div class='profile-counter-slider'></div>");
+                    if (i == 0) slider.addClass("bg-chosen");
+                    slider.attr("id", i + "-ImgSlider_Box");
+                    column.attr("id", i + "-ImgColumn_Box");
+                    column.append(slider);
+                    $("#AvatarsCounter_Box").append(column);
+                }
+                setTimeout(function () {
+                    $(".profile-avatar-img").addClass("profile-avatar-img-enlarged");
+                    $(".profile-avatar-img-enlarged").removeClass("profile-avatar-img");
+                    $(".standard-profile-initials-box").fadeOut(300);
+                }, 300);
+            }
+        }
+        else {
+            callAlert('<i class="fa-solid fa-image"></i>', null, null, "Images are temporarily unavailable to preview. Please try again later", 3.75, "Hide", 0, null);
+        }
+    });
+});
+
+function slideBoxes(byClassname, closingBox, openingBox) {
+    if (byClassname) {
+        $("." + closingBox).fadeOut(300);
+        setTimeout(function () {
+            $("." + openingBox).fadeIn(300);
+        }, 300);
+    }
+    else {
+        $("#" + closingBox).fadeOut(300);
+        setTimeout(function () {
+            $("#" + openingBox).fadeIn(300);
+        }, 300);
+    }
+}
 
 $("#UpdateSearchname_Searchname_Val").on("change", function () {
     sentRequest = null;
@@ -266,6 +433,98 @@ $("#UpdateSearchname_Status_Span").on("mousedown", function () {
     }
 });
 
+$(document).on("mousedown", ".btn-reorder", function () {
+    let postIdValue = getTrueId($(this).attr("id"), true);
+    let reorderTarget = $(this).attr("data-reorder-target");
+    let currentOrder = parseInt(getTrueId($(this).attr("id")));
+    let maxOrder = parseInt($(this).attr("data-max-order"));
+
+    if (postIdValue != undefined && reorderTarget != undefined) {
+        let files = $("#" + reorderTarget).get(0).files;
+        if (currentOrder < maxOrder) {
+            let tempOrder = currentOrder + 1;
+            maxOrder = currentOrder + 2;
+            $(this).html(maxOrder);
+            $("#" + tempOrder + postIdValue).attr("id", currentOrder + postIdValue);
+            $(this).attr("id", tempOrder + postIdValue);
+            $("#" + currentOrder + postIdValue).html(tempOrder);
+
+            let dataTransfer = new DataTransfer();
+            for (let i = 0; i < files.length; i++) {
+                if (i == currentOrder) {
+                    dataTransfer.items.add(files[tempOrder]);
+                }
+                else if (i == tempOrder) {
+                    dataTransfer.items.add(files[currentOrder]);
+                }
+                else dataTransfer.items.add(files[i]);
+            }
+            imagePreviewer(dataTransfer.files, false);
+            fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
+        }
+        else {
+            currentOrder = maxOrder + 1;
+            $(this).html(1);
+            $("#0" + postIdValue).attr("id", maxOrder + postIdValue);
+            $(this).attr("id", "0" + postIdValue);
+            $("#" + maxOrder + postIdValue).html(currentOrder);
+
+            let dataTransfer = new DataTransfer();
+            for (let i = 0; i < files.length; i++) {
+                if (i == 0) {
+                    dataTransfer.items.add(files[currentOrder]);
+                }
+                else if (i == currentOrder) {
+                    dataTransfer.items.add(files[0]);
+                }
+                else dataTransfer.items.add(files[i]);
+            }
+        }
+        imagePreviewer(dataTransfer.files, false);
+        fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
+    }
+/*    else {*/
+        //let currentFileIndex = getTrueId($(this).attr("id"));
+        //if (currentFileIndex != undefined) {
+        //    let newDataTransfer = new DataTransfer();
+        //    let currentFiles = $("#EditImage_Files_Val").get(0).files;
+        //    for (let i = 0; i < currentFiles.length; i++) {
+        //        if (i != currentFileIndex) {
+        //            newDataTransfer.items.add(currentFiles[i]);
+        //        }
+        //    }
+        //    uncallAContainer(false, "ImagePreview_Container");
+        //    setTimeout(function () {
+        //        fileRenewer("EditImage_Files_Val", newDataTransfer, 6, null);
+        //    }, 600);
+        //}
+/*    }*/
+});
+
+$(document).on("mousedown", ".btn-delete-from-order", function () {
+    let currentFileIndex = getTrueId($(this).attr('id'));
+    let reorderTarget = $(this).attr("data-reorder-target");
+    if (currentFileIndex != undefined && reorderTarget != undefined) {
+        let currentFiles = $("#" + reorderTarget).get(0).files;
+        let dataTransfer = new DataTransfer();
+        if (parseInt(currentFiles.length) > 1) {
+            for (let i = 0; i < currentFiles.length; i++) {
+                if (i != currentFileIndex) dataTransfer.items.add(currentFiles[i]);
+            }
+            imagePreviewer(dataTransfer.files, false);
+            fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
+        }
+        else imagePreviewer(null, false);
+    }
+});
+
+$(document).on("mousedown", ".btn-save-images", function () {
+    let saveFormId = getTrueId($(this).attr("id"));
+    if (saveFormId != undefined) {
+        $("#" + saveFormId).submit();
+    }
+});
+
 $(document).on("mousedown", "input[type='file']", function () {
     let thisId = $(this).attr("id");
     if (thisId != undefined) $("#" + thisId).click();
@@ -274,102 +533,9 @@ $(document).on("change", "input[type='file']", function () {
     let thisId = $(this).attr("id");
     let imgs = $("#" + thisId).get(0).files;
     if (imgs != undefined) {
-        imagePreviewer(imgs);
+        imagePreviewer(imgs, true);
     }
 });
-
-function imagePreviewer(images) {
-    let isArray = Array.isArray(images) ? true : false;
-    let imagesLength = 0;
-    let imagesCodeLength = 0;
-    let rowsQty = 1;
-    let divExists = document.getElementById("ImagePreview_Container");
-    if (divExists == null) createInsideLgCard("ImagePreview", "Preview Images ∙ <span id='LoadedImagesQty_Span'>0</span>", '<div class="box-standard" id="ImagesListed_Box"></div>');
-
-    if (!isArray) {
-        let tempImages = images;
-        images = [];
-        images.push(tempImages);
-    }
-    imagesLength = images[0].length;
-    imagesCodeLength = imagesLength - 1;
-
-    for (let i = 0; i < imagesLength; i++) {
-        if (i == 0 || i % 3 == 0) {
-            rowsQty++;
-            let newRow = $("<div class='row mb-1'></div>");
-            newRow.attr("id", rowsQty + "-Row_Box");
-            $("#ImagesListed_Box").append(newRow);
-        }
-        let orderIndex = i;
-        let reorderBtn = $("<button type='button' class='btn btn-reorder btn-sm mb-1'></button>");
-        let elementCol = $("<div class='col'></div>");
-        let imagePreviewBox = $("<div class='image-preview-box'></div>");
-        let imgElement = $("<img src='#' class='image-preview' alt='This image cannot be displayed'/>");
-        imgElement.attr("id", i + "-Element_Img");
-        imgElement.attr("data-img-order", i);
-        elementCol.attr("id", i + "-ImgElement_Col");
-        imgElement.attr("src", window.URL.createObjectURL(images[0][i]));
-        reorderBtn.attr("id", i + "-ReorderTheImg_Btn");
-        reorderBtn.attr("data-max-order", imagesCodeLength);
-        reorderBtn.attr("data-reorder-target", "Element_Img");
-        reorderBtn.html(++orderIndex);
-
-        imagePreviewBox.append(reorderBtn);
-        imagePreviewBox.append(imgElement);
-        elementCol.append(imagePreviewBox);
-        $("#" + rowsQty + "-Row_Box").append(elementCol);
-    }
-    $("#LoadedImagesQty_Span").html(imagesLength);
-    callAContainer(false, "ImagePreview_Container");
-}
-
-$(document).on("mousedown", ".btn-reorder", function () {
-    let postIdValue = getTrueId($(this).attr("id"), true);
-    let reorderTarget = $(this).attr("data-reorder-target");
-    let currentOrder = parseInt(getTrueId($(this).attr("id")));
-    let maxOrder = parseInt($(this).attr("data-max-order"));
-
-    if (postIdValue != undefined && reorderTarget != undefined) {
-        if (currentOrder < maxOrder) {
-            let tempOrder = currentOrder + 1;
-            maxOrder = currentOrder + 2;
-            $(this).html(maxOrder);
-            $("#" + tempOrder + postIdValue).attr("id", currentOrder + postIdValue);
-            $(this).attr("id", tempOrder + postIdValue);
-            $("#" + currentOrder + postIdValue).html(tempOrder);
-        }
-        else {
-            currentOrder = maxOrder + 1;
-            $(this).html(1);
-            $("#0" + postIdValue).attr("id", maxOrder + postIdValue);
-            $(this).attr("id", "0" + postIdValue);
-            $("#" + maxOrder + postIdValue).html(currentOrder);
-        }
-    }
-});
-
-async function waitCounter(displayElementId, durationInSec) {
-    if (displayElementId != null) {
-        clearInterval(intervalValue);
-        let baseElementHtml = $("#" + displayElementId).html();
-        let newDuration = parseFloat(durationInSec);
-        durationInSec = parseFloat(durationInSec) > 0 ? durationInSec : 1;
-        $("#" + displayElementId).fadeIn(300);
-        intervalValue = setInterval(function () {
-            newDuration -= 0.1;
-            if (newDuration % 1 === 0) $("#" + displayElementId).html(baseElementHtml + " ∙ " + newDuration + " sec");
-            else $("#" + displayElementId).html(baseElementHtml + " ∙ " + newDuration.toFixed(1) + " sec");
-        }, 100);
-        await new Promise(resolve => setTimeout(resolve, durationInSec * 1000));
-        $("#" + displayElementId).html(baseElementHtml);
-        $("#" + displayElementId).fadeOut(300);
-        clearInterval(intervalValue);
-
-        return true;
-    }
-    else return false;
-}
 
 $(document).on("mousedown", ".btn-open-container", function () {
     let trueId = getTrueId($(this).attr("id"), false);
@@ -453,12 +619,129 @@ async function timer(durationInSec, display, updateEvery_N_Seconds, displayInSec
     else return false;
 }
 
+function fileRenewer(targetId, newFilesArr, acceptableFilesLength, updateTheWidget = null) {
+    if (newFilesArr != null && newFilesArr.files.length > 0) {
+        let dataTransfer = new DataTransfer();
+        let maxFilesLength = newFilesArr.files.length > acceptableFilesLength ? acceptableFilesLength : newFilesArr.files.length;
+        for (let i = 0; i < maxFilesLength; i++) {
+            dataTransfer.items.add(newFilesArr.files[i]);
+        }
+        let newInput = document.createElement("input");
+        let inputElement = document.getElementById(targetId);
+
+        newInput.type = "file";
+        newInput.multiple = inputElement.multiple;
+        newInput.accept = inputElement.accept;
+        newInput.name = inputElement.name;
+        newInput.id = inputElement.id;
+        newInput.className = inputElement.className;
+        newInput.files = dataTransfer.files;
+
+        document.getElementById(targetId).parentNode.replaceChild(newInput, inputElement);
+        if (updateTheWidget == null) $("#" + targetId).change();
+    }
+}
+
+function imagePreviewer(images, openPreviewBox = true) {
+    let isArray = Array.isArray(images) ? true : false;
+    let imagesLength = 0;
+    let imagesCodeLength = 0;
+    let rowsQty = 1;
+    let divExists = document.getElementById("ImagePreview_Container");
+    if (divExists == null) createInsideLgCard("ImagePreview", "Preview Images ∙ <span id='LoadedImagesQty_Span'>0</span>", '<div class="box-standard" id="ImagesListed_Box"></div>', '<button type="button" class="btn btn-standard-bolded btn-save-images btn-sm super-disabled me-1" id="EditProfileImages_Form-SaveChanges_Btn">Save</button>', '<div class="dropdown d-inline-block"> <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm p-1"> <li><button type="button" class="dropdown-item btn-add-more-images btn-sm super-disabled" id="EditImage_Files_Val-AddMoreImages_Btn"> <i class="fa-solid fa-plus"></i> Add More</button></li> <li><button type="button" class="dropdown-item btn-delete-all-images btn-sm super-disabled text-danger" id="EditProfileImages_Form-DeleteAllImages_Btn"> <i class="fa-solid fa-trash-can"></i> Delete all Images</button></li> </ul> </div>');
+
+    if (images != null) {
+        if (!isArray) {
+            let tempImages = images;
+            images = [];
+            images.push(tempImages);
+        }
+        imagesLength = images[0].length <= 6 ? images[0].length : 6;
+        imagesCodeLength = imagesLength - 1;
+        $("#ImagesListed_Box").empty();
+
+        if (imagesLength > 0) {
+            $('.btn-save-images').removeClass("super-disabled");
+            $('.btn-add-more-images').removeClass("super-disabled");
+            $('.btn-delete-all-images').removeClass("super-disabled");
+            for (let i = 0; i < imagesLength; i++) {
+                if (i == 0 || i % 3 == 0) {
+                    rowsQty++;
+                    let newRow = $("<div class='row mb-1'></div>");
+                    newRow.attr("id", rowsQty + "-Row_Box");
+                    $("#ImagesListed_Box").append(newRow);
+                }
+                let orderIndex = i;
+                let deleteBtn = $("<button type='button' class='btn btn-reorder-style btn-delete-from-order btn-sm bg-danger float-end'> <i class='fa-solid fa-xmark'></i> </button>");
+                let reorderBtn = $("<button type='button' class='btn btn-reorder btn-reorder-style btn-sm mb-1'></button>");
+                let elementCol = $("<div class='col'></div>");
+                let imagePreviewBox = $("<div class='image-preview-box'></div>");
+                let imgElement = $("<img src='#' class='image-preview' alt='This image cannot be displayed'/>");
+                imgElement.attr("id", i + "-Element_Img");
+                imgElement.attr("data-img-order", i);
+                elementCol.attr("id", i + "-ImgElement_Col");
+                imgElement.attr("src", window.URL.createObjectURL(images[0][i]));
+                imagePreviewBox.attr("id", i + "-ImgPreview_Box");
+                reorderBtn.attr("id", i + "-ReorderTheImg_Btn");
+                reorderBtn.attr("data-max-order", imagesCodeLength);
+                reorderBtn.attr("data-reorder-target", "EditImage_Files_Val");
+                deleteBtn.attr("id", i + "-DeleteImgFromTheOrder_Btn");
+                deleteBtn.attr("data-reorder-target", "EditImage_Files_Val");
+                reorderBtn.html(++orderIndex);
+
+                imagePreviewBox.append(deleteBtn);
+                imagePreviewBox.append(reorderBtn);
+                imagePreviewBox.append(imgElement);
+                elementCol.append(imagePreviewBox);
+                $("#" + rowsQty + "-Row_Box").append(elementCol);
+            }
+            $("#LoadedImagesQty_Span").html(imagesLength);
+            if (openPreviewBox) callAContainer(false, "ImagePreview_Container");
+        }
+        else {
+            $('.btn-save-images').addClass("super-disabled");
+            $('.btn-add-more-images').addClass("super-disabled");
+            $('.btn-delete-all-images').addClass("super-disabled");
+            uncallAContainer(false, "ImagePreview_Container");
+        }
+    }
+    else {
+        $('.btn-save-images').addClass("super-disabled");
+        $('.btn-add-more-images').addClass("super-disabled");
+        $('.btn-delete-all-images').addClass("super-disabled");
+        uncallAContainer(false, "ImagePreview_Container");
+    }
+}
+
+async function waitCounter(displayElementId, durationInSec) {
+    if (displayElementId != null) {
+        clearInterval(intervalValue);
+        let baseElementHtml = $("#" + displayElementId).html();
+        let newDuration = parseFloat(durationInSec);
+        durationInSec = parseFloat(durationInSec) > 0 ? durationInSec : 1;
+        $("#" + displayElementId).fadeIn(300);
+        intervalValue = setInterval(function () {
+            newDuration -= 0.1;
+            if (newDuration % 1 === 0) $("#" + displayElementId).html(baseElementHtml + " ∙ " + newDuration + " sec");
+            else $("#" + displayElementId).html(baseElementHtml + " ∙ " + newDuration.toFixed(1) + " sec");
+        }, 100);
+        await new Promise(resolve => setTimeout(resolve, durationInSec * 1000));
+        $("#" + displayElementId).html(baseElementHtml);
+        $("#" + displayElementId).fadeOut(300);
+        clearInterval(intervalValue);
+
+        return true;
+    }
+    else return false;
+}
+
 function elementDisabler(byClassname, id, displayId, displayText) {
     if (!byClassname) $("#" + id).attr("disabled", true);
     else $("." + id).attr("disabled", true);
 
     if (displayId != null) {
-        $("#" + displayId).fadeIn(300);
+        if (!byClassname) $("#" + displayId).fadeIn(300);
+        else $("." + displayId).fadeIn(300);
         if (displayText != null) $("#" + displayId).html(displayText);
         else $("#" + displayId).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Waiting...');
     }
@@ -467,9 +750,11 @@ function elementUndisabler(byClassname, id, displayId) {
     if (!byClassname) $("#" + id).attr("disabled", false);
     else $("." + id).attr("disabled", false);
 
-    if (displayId != null) $("#" + displayId).fadeOut(300);
+    if (displayId != null) {
+        if (!byClassname) $("#" + displayId).fadeOut(300);
+        else $("." + displayId).fadeOut(300);
+    }
 }
-
 
 function buttonDisabler(byClassname, id, specialText) {
     if (!byClassname) {
@@ -696,12 +981,18 @@ $(document).on("mousedown", ".btn-open-text-formatting", function () {
     }
 });
 
-function createInsideLgCard(id, title, body) {
+function createInsideLgCard(id, title, body, headerBtn1 = null, headerBtn2 = null) {
     let divExists = document.getElementById(id);
     if (divExists == null) {
-        $("body").append('<div class="box-lg-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-lg-inner-part-header p-2"> <div class="div-swiper mx-auto"></div> <div class="hstack gap-1"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl"></span> </div> </div> </div> <div class="mt-1 p-1" id="' + id + '_Box"></div></div>');
+        $("body").append('<div class="box-lg-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-lg-inner-part-header p-2"> <div class="div-swiper mx-auto"></div> <div class="hstack gap-1" id="' + id + '-HeaderBtns_Box"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl"></span> </div> </div> </div> <div class="mt-1 p-1" id="' + id + '_Box"></div></div>');
         $("#" + id + "_Container-Header_Lbl").html(title);
         $("#" + id + "_Box").append(body);
+        if (headerBtn1 != null) {
+            let headerStackRightPartBox = $("<div class='ms-auto'></div>");
+            headerStackRightPartBox.append(headerBtn1);
+            $("#" + id + "-HeaderBtns_Box").append(headerStackRightPartBox);
+            if (headerBtn2 != null) headerStackRightPartBox.append(headerBtn2);
+        }
 
         if (currentWindowSize < 1024) {
             $(".box-sm-part-inner").css("left", "0.75%");

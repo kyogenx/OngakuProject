@@ -85,6 +85,9 @@ body {
     z-index: 9000;
     width: 63%;
     min-height: 250px;
+    max-height: 80%;
+    overflow-y: auto;
+    overflow-x: hidden;
     left: 37%;
     bottom: -1200px;
     border-radius: 10px;
@@ -278,20 +281,19 @@ body {
     transition: all ease 0.3s;
 }
 
-.btn-reorder {
+.btn-reorder-style {
     cursor: pointer;
     width: 45px;
     font-size: 13px;
     background-color: #2b2b2b;
     color: #fdfdfd;
-    border: 1px solid transparent;
     border-radius: 12px;
     transition: all ease 0.3s;
 }
-.btn-reorder:hover,
-.btn-reorder:active {
-    border: 1px solid #2b2b2b;
-    background-color: #f0f0f0;
+.btn-reorder-style:hover,
+.btn-reorder-style:active {
+    color: #2b2b2b;
+    background-color: #f8f9fa;
 }
 
 .btn-close {
@@ -419,13 +421,6 @@ body {
     bottom: -1200px;
 }
 
-.profile-bg-box {
-    padding: 8px;
-    width: 100%;
-    background-color: #f8f9fa;
-    border-radius: 0 0 10px 10px;
-    transition: all ease 0.3s;
-}
 .profile-avatar {
     height: 85px;
     width: 85px;
@@ -434,20 +429,49 @@ body {
     color: #2b2b2b;
     content: '<i class="fa-solid fa-face-smile"></i>';
     border-radius: 99px;
-    transition: all ease 0.3s;
+    transition: all ease 1s;
 }
 .profile-avatar-img {
     height: 85px;
     width: 85px;
     border-radius: 99px;
     object-fit: cover;
-    transition: all ease 0.3s;
+    transition: all ease 0.4s;
+}
+.profile-avatar-img-enlarged {
+    height: auto;
+    min-height: 250px;
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+    transition: all ease 0.4s;
+}
+.profile-avatar-bg {
+    padding: 8px;
+    min-height: 250px;
+    height: auto;
+    background-image: none;
+    background-color: transparent;
+    border-radius: 10px 10px;
+    object-fit: cover;
+    transition: all ease 0.75s;
 }
 .profile-info-box {
     padding: 8px;
     border-radius: 10px 10px 0 0;
     background-color: #f8f9fa;
     transition: all ease 0.3s;
+}
+.profile-counter-slider {
+    width: 100%;
+    height: 3px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    transition: all ease 0.3s;
+}
+
+.bg-chosen {
+    background-color: #2b2b2b;
 }
 
 .ongaku-alert {

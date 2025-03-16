@@ -9,20 +9,22 @@ namespace OngakuProject.Repositories
     public class ProfileRep : IProfile
     {
         private readonly Context _context;
-        public ProfileRep(Context context)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public ProfileRep(Context context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<User?> GetUserByIdAsync(int Id)
         {
-            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { Id = Id, Nickname = u.Nickname, Searchname = u.Searchname, ImgUrl = u.ImgUrl }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { Id = Id, Nickname = u.Nickname, Searchname = u.Searchname, ImgUrl = u.UserImages != null ? u.UserImages.Where(u => !u.IsDeleted).Select(u => u.ImgUrl).FirstOrDefault() : null }).FirstOrDefaultAsync();
             else return null;
         }
 
         public async Task<User?> GetUserGutsByIdAsync(int Id)
         {
-            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { Id = u.Id, Nickname = u.Nickname, Searchname = u.Searchname, Email = u.Email, ImgUrl = u.ImgUrl }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { Id = u.Id, Nickname = u.Nickname, Searchname = u.Searchname, Email = u.Email, ImgUrl = u.UserImages != null ? u.UserImages!.Where(u => !u.IsDeleted).Select(u => u.ImgUrl).FirstOrDefault() : null }).FirstOrDefaultAsync();
             else return null;
         }
 
@@ -64,6 +66,79 @@ namespace OngakuProject.Repositories
                 if (Result > 0) return true;
             }
             return false;
+        }
+
+        public async Task<string?> UpdateImagesAsync(int Id, IFormFileCollection Files)
+        {
+            if (Id > 0)
+            {
+                int CurrentImgsQty = await _context.UserImages.AsNoTracking().CountAsync(c => c.UserId == Id);
+                if(CurrentImgsQty < 6)
+                {
+                    string? FirstImage = null;
+                    List<UserImage>? AddingImages = new List<UserImage>();
+                    CurrentImgsQty = 6 - CurrentImgsQty;
+                    CurrentImgsQty = Files.Count > CurrentImgsQty ? CurrentImgsQty : Files.Count;
+
+                    for (int i = 0; i < CurrentImgsQty; i++)
+                    {
+                        if (Path.GetExtension(Files[i].FileName).ToLower() == ".jpg" || Path.GetExtension(Files[i].FileName).ToLower() == ".png" || Path.GetExtension(Files[i].FileName).ToLower() == ".jpeg")
+                        {
+                            string? RandFileName = Guid.NewGuid().ToString("D").Substring(3, 9);
+                            RandFileName = RandFileName + Path.GetExtension(Files[i].FileName);
+                            if (i == 0) FirstImage = RandFileName;
+                            using (FileStream fs = new FileStream(_webHostEnvironment.WebRootPath + "/ProfileImages/" + RandFileName, FileMode.Create))
+                            {
+                                await Files[i].CopyToAsync(fs);
+                                UserImage userImageSample = new UserImage
+                                {
+                                    UserId = Id,
+                                    ImgUrl = RandFileName,
+                                };
+                                AddingImages.Add(userImageSample);
+                            }
+                        }
+                    }
+                    if(AddingImages.Count > 0)
+                    {
+                        //await _context.Users.AsNoTracking().Where(u => u.Id == Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.ImgUrl, FirstImage));
+                        await _context.AddRangeAsync(AddingImages);
+                        await _context.SaveChangesAsync();
+
+                        return FirstImage;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public async Task<string?> DeleteImageAsync(int Id, int ImageId)
+        {
+            if (Id > 0 && (ImageId > 0 || ImageId == -256))
+            {
+                if (ImageId > 0)
+                {
+                    int Result = await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && u.Id == ImageId && !u.IsDeleted).ExecuteUpdateAsync(u => u.SetProperty(u => u.IsDeleted, true));
+                    if (Result > 0) return await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).Select(u => u.ImgUrl).FirstOrDefaultAsync();
+                }
+            }
+            return null;
+        }
+
+        public async Task<string?> GetAnImageAsync(int Id, int Skip)
+        {
+            if (Id > 0)
+            {
+                string? Result = await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).Skip(Skip).Select(u => u.ImgUrl).FirstOrDefaultAsync();
+                if (Result is not null) return Result;
+            }
+            return null;
+        }
+
+        public async Task<int> GetImagesQtyAsync(int Id)
+        {
+            if (Id > 0) return await _context.UserImages.AsNoTracking().CountAsync(u => u.UserId == Id && !u.IsDeleted);
+            else return 0;
         }
     }
 }

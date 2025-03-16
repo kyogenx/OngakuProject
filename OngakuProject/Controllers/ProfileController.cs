@@ -59,5 +59,50 @@ namespace OngakuProject.Controllers
             }
             return Json(new { success = false });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EditImages(IFormFileCollection Files)
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(Id);
+            if(Files.Count > 0 && UserId > 0)
+            {
+                string? Result = await _profile.UpdateImagesAsync(UserId, Files);
+                if (Result is not null) return Json(new { success = true, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteImage(int ImageId)
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(Id);
+
+            if(ImageId > 0 && UserId > 0)
+            {
+                string? Result = await _profile.DeleteImageAsync(UserId, ImageId);
+                return Json(new { success = true, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetImage(int Skip)
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(Id);
+
+            string? Result = await _profile.GetAnImageAsync(UserId, Skip);
+            if (Result is not null) return Json(new { success = true, result = Result, skip = Skip });
+            else return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetImagesQty(int Id)
+        {
+            int Result = await _profile.GetImagesQtyAsync(Id);
+            return Json(new { success = true, result = Result });
+        }
     }
 }

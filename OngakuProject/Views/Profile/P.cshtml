@@ -1,42 +1,84 @@
 ﻿@model User
 @{
-    ViewData["Title"] = "P";
-
+    ViewData["Title"] = "Profile";
     User? UserInfo = ViewBag.UserInfo;   
 }
 
 <div class="box-sm-part shadow-sm">
     <div class="d-none">
-        <form method="post" asp-controller="Profile" asp-action="EditImage" id="EditProfileImage_Form">
-            <input type="file" accept="images/*" class="d-none" name="File" id="EditImage_File_Val" value="@UserInfo.ImgUrl" multiple />
+        <form method="post" asp-controller="Profile" asp-action="EditImages" id="EditProfileImages_Form" enctype="multipart/form-data">
+            <input asp-for="ImgUrl" type="file" name="Files" id="EditImage_Files_Val" accept="image/png, image/gif, image/jpeg" multiple />
+        </form>
+        <form method="get" asp-controller="Profile" asp-action="GetImagesQty" id="GetImagesQty_Form">
+            <input type="hidden" name="Id" value="@UserInfo.Id" />
+        </form>
+        <form method="get" asp-controller="Profile" asp-action="GetImage" id="ProfileGetImage_Form">
+            <input type="hidden" name="Skip" id="PGI_Skip_Val" value="0" />
         </form>
     </div>
     <div class="profile-info-box text-center">
-        <div class="float-start">
-            <div class="dropdown">
-                <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-                <ul class="dropdown-menu shadow-sm p-1">
-                    <li><button type="button" class="dropdown-item btn-edit-profile-image" onmousedown="$('#EditImage_File_Val').mousedown();"> <i class="fa-solid fa-image"></i> Edit Image</button></li>
-                    <li>
-                        <form method="post" asp-controller="Account" asp-action="LogOut" id="LogOut_Form">
-                            <button type="submit" class="dropdown-item text-danger"> <i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
-                        </form>
-                    </li>
-                </ul>
+        <div class="standard-profile-bar">
+            <div class="float-start">
+                <div class="dropdown">
+                    <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm p-1">
+                        <li><button type="button" class="dropdown-item btn-edit-profile-image" onmousedown="$('#EditImage_Files_Val').mousedown();"> <i class="fa-solid fa-image"></i> Edit Image</button></li>
+                        <li>
+                            <form method="post" asp-controller="Account" asp-action="LogOut" id="LogOut_Form">
+                                <button type="submit" class="dropdown-item text-danger"> <i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="float-end ms-1">
+                <button type="button" class="btn btn-standard btn-open-container btn-tooltip" id="EditProfile_Container-Open_Btn" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Edit nickname, searchname and/or account's description"> <i class="fa-solid fa-pencil"></i> </button>
             </div>
         </div>
-        <div class="float-end ms-1">
-            <button type="button" class="btn btn-standard btn-open-container btn-tooltip" id="EditProfile_Container-Open_Btn" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Edit nickname, searchname and/or account's description"> <i class="fa-solid fa-pencil"></i> </button>
+        <div class="standard-image-bar" style="display: none;">
+            <div class="hstack gap-1">
+                <div class="dropdown">
+                    <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm p-1">
+                        <li>
+                            <form method="post" asp-controller="Profile" asp-action="SetPhotoAsMain" id="ProfileSetPhotoAsMain_Form">
+                                <input type="hidden" name="Id" id="SPAM_Id_Val" value="0" />
+                                <button type="submit" class="dropdown-item super-disabled" id="SPAM_SbmtBtn"> <i class="fa-solid fa-circle-user"></i> Set as Main</button>
+                            </form>
+                        </li>
+                        <li>
+                            <form method="post" asp-controller="Profile" asp-action="DeleteImage" id="ProfileDeleteImage_Form">
+                                <input type="hidden" name="ImageId" id="PDI_ImageId_Val" value="0" />
+                                <button type="submit" class="dropdown-item text-danger super-disabled" id="ProfileDeleteImage_SbmtBtn"> <i class="fa-solid fa-trash-can"></i> Delete this Image</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-standard btn-exit-photo-mode ms-auto"> <i class="fa-solid fa-compress"></i> </button>
+            </div>
+            <div class="row" id="AvatarsCounter_Box">
+            </div>
         </div>
-        @if(UserInfo.ImgUrl == null) {
-            <div class="profile-avatar mx-auto">@UserInfo.Nickname![0]</div>
-            <img src="#" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" style="display: none;" />
-        }
-        else {
-            <div class="profile-avatar mx-auto" style="display: none;">@UserInfo.Nickname![0]</div>
-            <img src="/ProfileImages/@UserInfo.ImgUrl" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" style="display: none;" />
-        }
         <div class="mt-2">
+            @if (UserInfo.ImgUrl == null)
+            {
+                <div class="d-none" id="ImgHdnValues_Box">
+                    <input type="hidden" id="ImagesQty_Val" value="0" />
+                </div>
+                <div class="profile-avatar mx-auto">@UserInfo.Nickname![0]</div>
+                <img src="#" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" id="ProfileAvatar_Img" style="display: none;" />
+            }
+            else
+            {
+                <div class="d-none" id="ImgHdnValues_Box">
+                    <input type="hidden" id="ImagesQty_Val" value="0" />
+                    <input type="hidden" id="0-ImgHdn_Val" value="@UserInfo.ImgUrl" />
+                </div>
+                <div class="profile-avatar mx-auto" style="display: none;">@UserInfo.Nickname![0]</div>
+                <img src="/ProfileImages/@UserInfo.ImgUrl" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" id="ProfileAvatar_Img" />
+            }
+        </div>
+        <div class="standard-profile-initials-box mt-2">
             <h2 class="h2" id="ProfileMainName_Lbl">@UserInfo.Nickname</h2>
             <p class="card-text text-muted">@@<span id="ProfileMainSearchname_Lbl">@UserInfo.Searchname</span></p>
         </div>
@@ -107,6 +149,16 @@
             <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
             <div class="ms-2">
                 <span class="h5" id="ImagePreview_Container-Header_Lbl">Preview Images</span>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-standard-bolded btn-sm super-disabled me-1" id="EditProfileImage_Form-SaveChanges_Btn">Save</button>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm p-1">
+                        <li><button type="button" class="dropdown-item btn-add-more-images btn-sm super-disabled" id="EditImage_Files_Val-AddMoreImages_Btn"> <i class="fa-solid fa-plus"></i> Add More</button></li>
+                        <li><button type="button" class="dropdown-item btn-delete-all-images btn-sm super-disabled text-danger" id="EditProfileImage_Form-DeleteAllImages_Btn"> <i class="fa-solid fa-trash-can"></i> Delete all Images</button></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
