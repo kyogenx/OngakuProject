@@ -14,6 +14,8 @@ namespace OngakuProject.Models
         public string? Description { get; set; }
         public List<UserImage>? UserImages { get; set; }
         [NotMapped]
+        public int ImgId { get; set; }
+        [NotMapped]
         public string? ImgUrl { get; set; }
     }
 }

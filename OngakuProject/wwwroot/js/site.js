@@ -288,6 +288,116 @@ $("#EditProfileImages_Form").on("submit", function (event) {
     });
 });
 
+$("#ProfileSetImageAsMain_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#PSIAM_SbmtBtn").html();
+    buttonDisabler(false, "PSIAM_SbmtBtn", '<i class="fa-solid fa-arrows-rotate fa-spin"></i> Syncinc...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#PSIAM_ImgUrl_Val").val(null);
+            let allNeededInputs = document.getElementsByClassName("form-control-img");
+            for (let i = 0; i < allNeededInputs.length; i++) {
+                if (allNeededInputs[i].id != "") {
+                    if ($("#" + allNeededInputs[i].id).val() == response.result) {
+                        $("#" + allNeededInputs[i].id).val($("#0-ImgHdn_Val").val());
+                        break;
+                    }
+                }
+            }
+            $(".profile-counter-slider").removeClass("bg-chosen");
+            $("#0-ImgHdn_Val").val(response.result);
+            $("#0-ImgSlider_Box").addClass("bg-chosen");
+            $("#PGI_Skip_Val").val(0);
+            $("#PDI_ImgUrl_Val").val(response.result);
+            $("#PSIAM_ImgUrl_Val").val(response.result);
+            $(".profile-avatar-img").attr("src", "/ProfileImages/" + response.result);
+            $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + response.result);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Avatar editing is temporarily unavailable. Please, try again later", 4, "Close", 0, null);
+        }
+        buttonUndisabler(false, "PSIAM_SbmtBtn", baseHtml);
+    });
+});
+
+$("#ProfileDeleteImage_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#ProfileDeleteImage_SbmtBtn").html();
+    buttonDisabler(false, "ProfileDeleteImage_SbmtBtn", '<i class="fa-solid fa-spinner fa-spin-pulse"></i> Deleting...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#PSIAM_ImgUrl_Val").val(null);
+            let allNeededInputs = document.getElementsByClassName("form-control-img");
+            for (let i = 0; i < allNeededInputs.length; i++) {
+                if (allNeededInputs[i].id != "") {
+                    if ($("#" + allNeededInputs[i].id).val() == response.deleted) {
+                        $("#" + allNeededInputs[i].id).remove();
+                        $("#AvatarsCounter_Box").empty();
+                    }
+                    else $("#" + allNeededInputs[i].id).attr("id", i + "-ImgHdn_Val");
+                }
+            }
+            allNeededInputs = document.getElementsByClassName("form-control-img");
+            $("#ImagesQty_Val").val(allNeededInputs.length);
+            for (let i = 0; i < allNeededInputs.length; i++) {
+                let column = $("<div class='col'></div>");
+                let slider = $("<div class='profile-counter-slider'></div>");
+                if (i == 0) slider.addClass("bg-chosen");
+                slider.attr("id", i + "-ImgSlider_Box");
+                column.attr("id", i + "-ImgColumn_Box");
+                column.append(slider);
+                $("#AvatarsCounter_Box").append(column);
+            }
+
+            $(".profile-counter-slider").removeClass("bg-chosen");
+            $("#0-ImgHdn_Val").val(response.result);
+            $("#0-ImgSlider_Box").addClass("bg-chosen");
+            $("#PGI_Skip_Val").val(0);
+            $("#PDI_ImgUrl_Val").val(response.result);
+            $("#PSIAM_ImgUrl_Val").val(response.result);
+            $(".profile-avatar-img").attr("src", "/ProfileImages/" + response.result);
+            $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + response.result);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-image"></i>', null, null, "Avatar deleting caused an unexpected error. Please, try again later", 4.25, "Close", 0, null);
+        }
+        buttonUndisabler(false, "ProfileDeleteImage_SbmtBtn", baseHtml);
+    });
+});
+
+$("#ProfileDeleteAllImages_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#ProfileDeleteAllImages_SbmtBtn").html();
+    buttonDisabler(false, "ProfileDeleteAllImages_SbmtBtn", '<i class="fa-solid fa-spinner fa-spin-pulse"></i> Deleting...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#PGI_Skip_Val").val(0);
+            $("#PSIAM_ImgUrl_Val").val(null);
+            $("#PDI_ImgUrl_Val").val(null);
+            $(".form-control-img").remove();
+            $(".btn-exit-photo-mode").mousedown();
+            setTimeout(function () {
+                $(".profile-avatar-img").attr("src", "#");
+                $(".profile-avatar-img").fadeOut(0);
+                $(".profile-avatar").fadeIn(0);
+            }, 600);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-image"></i>', null, null, "An unexpected error occurred while deleting profile images. Please try again later", 4.25, "Close", 0, null);
+        }
+        buttonUndisabler(false, "ProfileDeleteAllImages_SbmtBtn", baseHtml);
+    });
+});
+
 $(document).on("mousedown", ".profile-avatar-img", function () {
     if (currentPageUrl.toLowerCase().includes("/profile/p")) {
         if ($(this).hasClass("loaded")) {
@@ -316,28 +426,41 @@ function loadAnotherFile(loadForward = true, skipValue = 1, maxLength, skippingI
         let skipTrueValue = parseInt($("#" + skippingInputId).val());
         if (loadForward) {
             skipTrueValue += skipValue;
-            skipTrueValue = skipTrueValue > parseInt(maxLength) ? 0 : skipTrueValue;
+            skipTrueValue = skipTrueValue >= parseInt(maxLength) ? 0 : skipTrueValue;
         }
         else {
             skipTrueValue -= skipValue;
             skipTrueValue = skipTrueValue < 0 ? 0 : skipTrueValue;
         }
         let isNextImgLoaded = $("#" + skipTrueValue + "-ImgHdn_Val").val();
-        if (isNextImgLoaded == undefined) $("#" + formId).submit();
+        if (isNextImgLoaded == undefined) {
+            $("#" + skippingInputId).val(skipTrueValue);
+            $("#" + formId).submit();
+        }
         else {
             $(".profile-counter-slider").removeClass("bg-chosen");
             $("#" + skipTrueValue + "-ImgSlider_Box").addClass("bg-chosen");
             $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + isNextImgLoaded);
+            $("#" + skippingInputId).val(skipTrueValue);
         }
-        $("#" + skippingInputId).val(skipTrueValue);
-        $("#SPAM_SbmtBtn").removeClass("super-disabled");
-        $("#ProfileDeleteImage_SbmtBtn").removeClass("super-disabled");
+        $(".btn-edit-some-files").removeClass("super-disabled");
+        return isNextImgLoaded;
     }
+    else return null;
 }
 
 $(document).on("mousedown", ".profile-avatar-img-enlarged", function () {
     let filesMaxLength = $("#ImagesQty_Val").val();
-    loadAnotherFile(true, 1, filesMaxLength, "PGI_Skip_Val", "ProfileGetImage_Form");
+    let thisFileUrl = loadAnotherFile(true, 1, filesMaxLength, "PGI_Skip_Val", "ProfileGetImage_Form");
+
+    if (thisFileUrl != undefined || thisFileUrl != null) {
+        $("#PDI_ImgUrl_Val").val(thisFileUrl);
+        $("#PSIAM_ImgUrl_Val").val(thisFileUrl);
+    }
+    else {
+        $("#PDI_ImgUrl_Val").val(null);
+        $("#PSIAM_ImgUrl_Val").val(null);
+    } 
 });
 
 $("#ProfileGetImage_Form").on("submit", function (event) {
@@ -347,21 +470,29 @@ $("#ProfileGetImage_Form").on("submit", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
-            let imgHdnUrl = $("<input type='hidden' />");
+            let imgHdnUrl = $("<input type='hidden' class='form-control-img' />");
             imgHdnUrl.attr("id", response.skip + "-ImgHdn_Val");
             imgHdnUrl.val(response.result);
             $("#ImgHdnValues_Box").append(imgHdnUrl);
             $(".profile-counter-slider").removeClass("bg-chosen");
             $("#" + response.skip + "-ImgSlider_Box").addClass("bg-chosen");
             $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + response.result);
+            $("#PDI_ImgUrl_Val").val(response.result);
+            $("#PSIAM_ImgUrl_Val").val(response.result);
         }
         else {
             let firstImgUrl = $("#0-ImgHdn_Val").val();
-            if (firstImgUrl != null) $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + firstImgUrl);
+            if (firstImgUrl != null) {
+                $("#PDI_ImgUrl_Val").val(firstImgUrl);
+                $("#PSIAM_ImgUrl_Val").val(firstImgUrl);
+                $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + firstImgUrl);
+            } 
             else {
                 $('.btn-exit-photo-mode').mousedown();
                 $(".profile-avatar-img-enlarged").fadeOut(0);
                 $(".profile-avatar").fadeIn(0);
+                $("#PDI_ImgUrl_Val").val(null);
+                $("#PSIAM_ImgUrl_Val").val(null);
             }
         }
     });

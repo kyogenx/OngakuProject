@@ -74,17 +74,35 @@ namespace OngakuProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteImage(int ImageId)
+        public async Task<IActionResult> SetImageAsMain(string? ImageUrl)
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(Id);
+            string? Result = await _profile.UpdateMainImageAsync(UserId, ImageUrl);
+
+            if (Result is not null) return Json(new { success = true, result = Result });
+            else return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteImage(string? ImageUrl)
         {
             string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int UserId = _profile.ParseCurrentUserId(Id);
 
-            if(ImageId > 0 && UserId > 0)
-            {
-                string? Result = await _profile.DeleteImageAsync(UserId, ImageId);
-                return Json(new { success = true, result = Result });
-            }
-            return Json(new { success = false });
+            string? Result = await _profile.DeleteImageAsync(UserId, ImageUrl);
+            if(Result is not null) return Json(new { success = true, deleted = ImageUrl, result = Result });
+            else return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteAllImages()
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(Id);
+
+            bool Result = await _profile.DeleteAllImagesAsync(UserId);
+            return Json(new { success = Result });
         }
 
         [HttpGet]

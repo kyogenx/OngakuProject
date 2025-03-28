@@ -112,17 +112,43 @@ namespace OngakuProject.Repositories
             return null;
         }
 
-        public async Task<string?> DeleteImageAsync(int Id, int ImageId)
+        public async Task<string?> UpdateMainImageAsync(int Id, string? ImageUrl)
         {
-            if (Id > 0 && (ImageId > 0 || ImageId == -256))
+            if (Id > 0 && !String.IsNullOrWhiteSpace(ImageUrl))
             {
-                if (ImageId > 0)
+                bool DoesChosenImgExist = await _context.UserImages.AsNoTracking().AnyAsync(u => u.UserId == Id && u.ImgUrl == ImageUrl && !u.IsDeleted);
+                if (DoesChosenImgExist)
                 {
-                    int Result = await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && u.Id == ImageId && !u.IsDeleted).ExecuteUpdateAsync(u => u.SetProperty(u => u.IsDeleted, true));
-                    if (Result > 0) return await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).Select(u => u.ImgUrl).FirstOrDefaultAsync();
+                    UserImage? CurrentMainImgInfo = await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).Select(u => new UserImage { Id = u.Id, ImgUrl = u.ImgUrl }).FirstOrDefaultAsync();
+                    if (CurrentMainImgInfo is not null)
+                    {
+                        await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && u.ImgUrl == ImageUrl && !u.IsDeleted).ExecuteUpdateAsync(u => u.SetProperty(u => u.ImgUrl, CurrentMainImgInfo.ImgUrl));
+                        int Result = await _context.UserImages.AsNoTracking().Where(u => u.Id == CurrentMainImgInfo.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.ImgUrl, ImageUrl));
+                        if (Result > 0) return ImageUrl;
+                    }
                 }
             }
             return null;
+        }
+
+        public async Task<string?> DeleteImageAsync(int Id, string? ImgUrl)
+        {
+            if (Id > 0 && !String.IsNullOrWhiteSpace(ImgUrl))
+            {
+                int Result = await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && u.ImgUrl == ImgUrl && !u.IsDeleted).ExecuteUpdateAsync(u => u.SetProperty(u => u.IsDeleted, true));
+                if (Result > 0) return await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).Select(u => u.ImgUrl).FirstOrDefaultAsync();
+            }
+            return null;
+        }
+
+        public async Task<bool> DeleteAllImagesAsync(int Id)
+        {
+            if(Id > 0)
+            {
+                int Result = await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).ExecuteUpdateAsync(u => u.SetProperty(u => u.IsDeleted, true));
+                if (Result > 0) return true;
+            }
+            return false;
         }
 
         public async Task<string?> GetAnImageAsync(int Id, int Skip)

@@ -41,15 +41,20 @@
                     <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
                     <ul class="dropdown-menu shadow-sm p-1">
                         <li>
-                            <form method="post" asp-controller="Profile" asp-action="SetPhotoAsMain" id="ProfileSetPhotoAsMain_Form">
-                                <input type="hidden" name="Id" id="SPAM_Id_Val" value="0" />
-                                <button type="submit" class="dropdown-item super-disabled" id="SPAM_SbmtBtn"> <i class="fa-solid fa-circle-user"></i> Set as Main</button>
+                            <form method="post" asp-controller="Profile" asp-action="SetImageAsMain" id="ProfileSetImageAsMain_Form">
+                                <input type="hidden" name="ImageUrl" id="PSIAM_ImgUrl_Val" />
+                                <button type="submit" class="dropdown-item btn-edit-some-files super-disabled" id="PSIAM_SbmtBtn"> <i class="fa-solid fa-user-check"></i> Set as Main</button>
                             </form>
                         </li>
                         <li>
                             <form method="post" asp-controller="Profile" asp-action="DeleteImage" id="ProfileDeleteImage_Form">
-                                <input type="hidden" name="ImageId" id="PDI_ImageId_Val" value="0" />
-                                <button type="submit" class="dropdown-item text-danger super-disabled" id="ProfileDeleteImage_SbmtBtn"> <i class="fa-solid fa-trash-can"></i> Delete this Image</button>
+                                <input type="hidden" name="ImageUrl" id="PDI_ImgUrl_Val" />
+                                <button type="submit" class="dropdown-item btn-edit-some-files text-danger super-disabled" id="ProfileDeleteImage_SbmtBtn"> <i class="fa-solid fa-trash-can"></i> Delete this Image</button>
+                            </form>
+                        </li>
+                        <li>
+                            <form method="post" asp-controller="Profile" asp-action="DeleteAllImages" id="ProfileDeleteAllImages_Form">
+                                <button type="submit" class="dropdown-item btn-edit-some-files text-danger super-disabled" id="ProfileDeleteAllImages_SbmtBtn"> <i class="fa-solid fa-dumpster"></i> Delete all Images</button>
                             </form>
                         </li>
                     </ul>
@@ -72,7 +77,7 @@
             {
                 <div class="d-none" id="ImgHdnValues_Box">
                     <input type="hidden" id="ImagesQty_Val" value="0" />
-                    <input type="hidden" id="0-ImgHdn_Val" value="@UserInfo.ImgUrl" />
+                    <input type="hidden" class="form-control-img" id="0-ImgHdn_Val" value="@UserInfo.ImgUrl" />
                 </div>
                 <div class="profile-avatar mx-auto" style="display: none;">@UserInfo.Nickname![0]</div>
                 <img src="/ProfileImages/@UserInfo.ImgUrl" class="profile-avatar-img mx-auto" alt="This image cannot be displayed" id="ProfileAvatar_Img" />
@@ -141,97 +146,3 @@
         </div>
     </div>
 </div>
-
-@* <div class="box-lg-part-inner shadow-sm" id="ImagePreview_Container" style="display: block; bottom: 120px;">
-    <div class="box-lg-inner-part-header p-2">
-        <div class="div-swiper mx-auto"></div>
-        <div class="hstack gap-1">
-            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
-            <div class="ms-2">
-                <span class="h5" id="ImagePreview_Container-Header_Lbl">Preview Images</span>
-            </div>
-            <div class="ms-auto">
-                <button type="button" class="btn btn-standard-bolded btn-sm super-disabled me-1" id="EditProfileImage_Form-SaveChanges_Btn">Save</button>
-                <div class="dropdown d-inline-block">
-                    <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-                    <ul class="dropdown-menu shadow-sm p-1">
-                        <li><button type="button" class="dropdown-item btn-add-more-images btn-sm super-disabled" id="EditImage_Files_Val-AddMoreImages_Btn"> <i class="fa-solid fa-plus"></i> Add More</button></li>
-                        <li><button type="button" class="dropdown-item btn-delete-all-images btn-sm super-disabled text-danger" id="EditProfileImage_Form-DeleteAllImages_Btn"> <i class="fa-solid fa-trash-can"></i> Delete all Images</button></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="mt-1 p-2" id="ImagePreview_Box">
-        <div class="box-standard" id="ImagesListed_Box">
-
-        </div>
-    </div>
-</div> *@
-@* <div class="box-lg-part-inner shadow-sm" id="EditText_Container" style="display: block; bottom: 120px;">
-    <div class="box-lg-inner-part-header p-2">
-        <div class="div-swiper mx-auto"></div>
-        <div class="hstack gap-1">
-            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
-            <div class="ms-2">
-                <span class="h5" id="EditText_Container-Header_Lbl">Format Text</span>
-            </div>
-        </div>
-    </div>
-    <div class="mt-1 p-2" id="EditText_Box">
-        <div class="d-none">
-            <input type="hidden" id="TextFormat_Target_Val" value="UMI_Description_Val" />
-        </div>
-        <div class="box-standard ps-2 pb-1">
-            <h6 class="h6">Text Types</h6>
-        </div>
-        <div class="hstack gap-2">
-            <div class="x-row-sliding-only-box">
-                <button type="button" class="btn btn-text-format btn-text-format-script fw-500 ms-1" data-type="0">Heading</button>
-                <button type="button" class="btn btn-text-format btn-text-format-script fw-500" data-type="1">Subheading</button>
-                <button type="button" class="btn btn-text-format btn-text-format-script fw-500" data-type="2">Label</button>
-                <button type="button" class="btn btn-text-format btn-text-format-script" data-type="3">Text</button>
-                <button type="button" class="btn btn-text-format btn-text-format-script code-similar-font" data-type="4">Monospaced</button>
-            </div>
-            <div class="ms-auto">
-                <button type="button" class="btn btn-text-format btn-text-format-script" data-type="5" data-addition="#2b2b2b"> <i class="fa-solid fa-paintbrush"></i> Color <span class="text-format-color-indicator"></span></button>
-                <button type="button" class="btn btn-text-format btn-text-format-script" data-type="6"> <i class="fa-solid fa-up-right-from-square"></i> Link</button>
-            </div>
-        </div>
-        <div class="hr-styled mt-2 pt-2">
-            <div class="box-standard ps-2 pb-1">
-                <h6 class="h6">Text Styles</h6>
-            </div>
-            <div class="hstack gap-1">
-                <div class="x-row-sliding-only-box">
-                    <button type="button" class="btn btn-text-format btn-text-format-script fw-500" data-type="7">Bold</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script fst-italic" data-type="8">Italic</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script text-decoration-underline" data-type="9">Underlined</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script text-decoration-line-through" data-type="10">Strikethrough</button>
-                </div>
-                <div class="ms-auto">
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="11"> <i class="fa-solid fa-list-ul"></i> Unordered List</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="12"> <i class="fa-solid fa-list-ol"></i> Ordered List</button>
-                </div>
-            </div>
-        </div>
-        <div class="hr-styled mt-2 pt-2">
-            <div class="box-standard ps-2 pb-1">
-                <h6 class="h6">Other</h6>
-            </div>
-            <div class="hstack gap-1">
-                <div class="x-row-sliding-only-box">
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="13"><i class="fa-solid fa-quote-right"></i> Quote</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="14"> <i class="fa-solid fa-play"></i> Play a Track</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="15"> <i class="fa-solid fa-guitar"></i> Artist Page Link</button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="16"> <i class="fa-solid fa-square"></i> Container</button>
-                </div>
-                <div class="ms-auto">
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="18" data-addition="#f8f9fa"> <i class="fa-solid fa-fill-drip"></i> Background <span class="text-format-color-indicator" style="background-color: #f8f9fa"></span></button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="19"> <i class="fa-solid fa-border-top-left"></i> Corner Radius <span class="text-format-indicator">10px</span></button>
-                    <button type="button" class="btn btn-text-format btn-text-format-script" data-type="20"> <i class="fa-solid fa-text-width"></i> Element Width <span class="text-format-indicator">100%</span></button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> *@
