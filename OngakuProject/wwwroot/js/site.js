@@ -87,8 +87,15 @@ $("#RPS1_SbmtBtn").on("mousedown", function () {
     if (email != undefined) {
         $("#CABE_Type_Val").val(1);
         $("#CABE_Email_Val").val(email);
-        buttonDisabler(false, "RPS1_SbmtBtn", "Verifying Email...");
+        buttonDisabler(false, "RPS1_SbmtBtn", "Verifying & Sending...");
         $("#CheckAccountByEmail_Form").submit();
+    }
+});
+$("#RPStep1_SbmtBtn").on("mousedown", function () {
+    let email = $("#SPRC_Email_Val").val();
+    if (email != undefined) {
+        buttonDisabler(false, "RPStep1_SbmtBtn", "Sending the Code...");
+        $("#SendPasswordResetCode_Form").submit();
     }
 });
 
@@ -148,6 +155,9 @@ $("#SendPasswordResetCode_Form").on("submit", function (event) {
                     payAttention("SPRC_SbmtBtn", 9, 1);
                 }
             });
+            if (currentPageUrl.toLowerCase().includes("/profile/p")) {
+                showInsideBox("SPRCStep2_Box");
+            }
         }
         else {
             callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Unable to send the code (internal server error). Please try again later", 4.25, "Close", 0, null);
@@ -156,17 +166,34 @@ $("#SendPasswordResetCode_Form").on("submit", function (event) {
     });
 });
 
+$(document).on("keyup", ".form-control-guard-code", function () {
+    let currentLength = $(this).val().length;
+    if (currentLength > 0) {
+        $(".char-indicator-active").addClass("char-indicator-empty");
+        $(".char-indicator-active").removeClass("char-indicator-active");
+        for (let i = 0; i < currentLength; i++) {
+            $("#" + i + "-" + $(this).attr("id") + "-Indicator").removeClass("char-indicator-empty");
+            $("#" + i + "-" + $(this).attr("id") + "-Indicator").addClass("char-indicator-active");
+        }
+    }
+});
+
 $("#CheckPasswordResetEmailCode_Form").on("submit", function (event) {
     event.preventDefault();
+    if (currentPageUrl.toLowerCase().includes("/profile/p")) $("#CPREC_Type_Val").val(1);
     let url = $(this).attr("action");
     let data = $(this).serialize();
 
     $.post(url, data, function (response) {
         if (response.success) {
             $("#CPREC_Code_Val").val(null);
-            slideSmContainers(null, "RPS3_Container");
+            if (response.code != null) {
+                $("#UTP_Type_Val").val(1);
+                $("#UTP_AdditionalInfo_Val").val(response.code);
+                showSwitchableBox("SetNewPassword_Box");
+            }
+            else slideSmContainers(null, "RPS3_Container");
             callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "Well done. Now, create or generate new strong password for your account", 4.25, "Close", 0, null);
-            //r.saqanyan2000@gmail.com
         }
         else {
             $("#CPREC_Code_Val").val(null);
@@ -179,6 +206,27 @@ $("#CheckPasswordResetEmailCode_Form").on("submit", function (event) {
                 clearInterval(localIntervalValue);
             }, 4500);
         }
+    });
+});
+
+$("#CheckThePassword_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#CheckThePassword_SbmtBtn").html();
+    buttonDisabler(false, "CheckThePassword_SbmtBtn", 'Verifying...');
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            $("#UTP_Type_Val").val(0);
+            $("#UTP_AdditionalInfo_Val").val(response.password);
+            showSwitchableBox("SetNewPassword_Box");
+        }
+        else {
+            $("#CTP_Password_Val").val(null);
+            callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Entered password is incorrect. Please review it and try again", 3.5, "Close", 0, null);
+        }
+        $("#CheckThePassword_SbmtBtn").html(baseHtml);
     });
 });
 
@@ -203,6 +251,93 @@ $("#ResetPassword_Form").on("submit", function (event) {
         $("#ResetPassword_Password_Val").val(null);
         $("#ResetPassword_ConfirmPassword_Val").val(null);
         buttonUndisabler(false, "ResetPassword_SbmtBtn", baseHtml);
+    });
+});
+
+$("#UpdateThePassword_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#UpdateThePassword_SbmtBtn").html();
+    buttonDisabler(false, "UpdateThePassword_SbmtBtn", ' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Updating...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            uncallAContainer(false, "ProfileSecurity_Container");
+            setTimeout(function () {
+                $("#UTP_Password_Val").val(null);
+                $("#UTP_ConfirmPassword_Val").val(null);
+                $("#ResetPasswordViaEmail_Box-ShowBtn").removeClass("btn-box-switcher-member-active");
+                $("#ResetPasswordViaCurrentPassword_Box-ShowBtn").addClass("btn-box-switcher-member-active");
+                showSwitchableBox("ResetPasswordViaCurrentPassword_Box");
+            }, 350);
+            callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "Your password has been successfully updated. From now on, please use your new password to sign in", 4, "Close", 0, null);
+        }
+        else {
+            $("#UTP_ConfirmPassword_Val").val(null);
+            callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "The passwords do not match. Please check and try again before saving", 4, "Close", 0, null);
+        }
+        $("#UpdateThePassword_SbmtBtn").html(baseHtml);
+    });
+});
+
+$("#GetAccountGuts_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.guts.email != null) {
+                createAContainer("ProfileSecurity", "Security Settings", '<div class="box-vertical-switcher shadow-sm" id="ProfileSecurity_VS_Box"> <div class="box-vertical-switcher-header hstack gap-1"> <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button> </div> <div class="mt-2"> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-box-vertical-swticher-active btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasswordSettings_Box-Show_Btn"> <i class="fa-solid fa-shield-halved"></i> Password Settings</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasscodeLockSettings_Box-Show_Btn"> <i class="fa-solid fa-lock"></i> Passcode Lock</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="EmailVerification_Box-Show_Btn"> <i class="fa-solid fa-envelope-circle-check"></i> Email Verification</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" id="TFA_VS_Btn"> <i class="fa-solid fa-key"></i> 2FA Settings</button> </div> </div> <div class="ps-1 pe-1"> <div class="big-box-switchable" id="PasswordSettings_Box"> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaCurrentPassword_Box-ShowBtn">via Current Password</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaEmail_Box-ShowBtn">via Email Code</button> </div> </div> <div class="box-switchable" id="ResetPasswordViaCurrentPassword_Box"> <form method="get" asp-controller="Account" asp-action="CheckThePassword" id="CheckThePassword_Form"> <div class="d-none"> <input type="hidden" asp-for="Email" name="Email" id="CTP_Email_Val" value="@UserInfo.Email" /> </div> <div class="mt-2"> <span class="form-label fw-500">Current Password</span> <div> <small class="card-text text-muted" id="CTP_Email_Span">@UserInfo.Email</small> </div> <input type="password" class="form-control form-control-guard mt-2" name="Password" id="CTP_Password_Val" data-min-length="8" data- data-target="CheckThePassword_SbmtBtn" placeholder="Your current password" maxlength="32" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">No verification is required, just enter your account password to confirm ownership</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="CheckThePassword_SbmtBtn">Continue</button> </div> </form> </div> <div class="box-switchable" id="ResetPasswordViaEmail_Box" style="display: none;"> <div class="box-inside" id="SPRCStep1_Box"> <div class="mt-2"> <label class="form-label fw-500">Email</label> <input type="email" asp-for="Email" class="form-control super-disabled" placeholder="Your email address" maxlength="75" value="@UserInfo.Email" id="SPRCStep1_Email_Val" readonly disabled /> </div> <div class="mt-3"> <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="RPStep1_SbmtBtn">Send Code</button> </div> <div class="box-bordered text-center p-2 mt-1"> <small class="card-text text-muted">A one-time verification code will be sent to your email within <span class="fw-500">6</span> minutes after completing the verification process. Please check your inbox for further instructions</small> </div> </div> <div class="box-inside" id="SPRCStep2_Box" style="display: none;"> <form method="post" asp-controller="Account" asp-action="CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form"> <div> <input type="hidden" name="UserId" id="CPREC_Id_Val" /> <input type="hidden" name="Type" id="CPREC_Type_Val" value="1" /> <div class="text-center"> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="0-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="1-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="2-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="3-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="4-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="5-CPREC_Code_Val-Indicator"></div> </div> <div> <input type="text" name="Code" id="CPREC_Code_Val" class="form-control form-control-for-numbers-only form-control-guard-code form-control-guard mt-2" data-min-length="6" data-on-fulfill="CheckPasswordResetEmailCode_Form" placeholder="6-digit code" maxlength="6" /> </div> </div> </form> <div class="box-bordered text-center mt-1 p-2" id="CodeResendTime_Box"> <small class="card-text text-muted" id="CodeResendTimer_Lbl">You will be able to receive a new code shortly</small> <div class="mt-1"> <form method="post" asp-controller="Account" asp-action="SendPasswordResetCode" id="SendPasswordResetCode_Form"> <input type="hidden" name="Email" id="SPRC_Email_Val" value="@UserInfo.Email" /> <button type="submit" class="btn btn-standard-bolded super-disabled w-100" id="SPRC_SbmtBtn"> <i class="fa-solid fa-arrow-rotate-right"></i> Resend Code</button> </form> </div> </div> </div> </div> <div class="box-switchable" id="SetNewPassword_Box" style="display: none;"> <form method="post" asp-controller="Profile" asp-action="UpdateThePassword" id="UpdateThePassword_Form"> <div class="d-none"> <input type="hidden" name="Type" id="UTP_Type_Val" value="0" /> <input type="hidden" name="AdditionalInfo" id="UTP_AdditionalInfo_Val" /> </div> <div> <label class="form-label fw-500">New Password</label> <input type="password" name="NewPassword" id="UTP_Password_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Your new password..." /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Your new password must be between <span class="fw-500">8</span> and <span class="fw-500">32</span> characters long and must not be the same as your current password</small> </div> <div class="mt-3"> <label class="form-label fw-500">Confirm Password</label> <input type="password" name="ConfirmPassword" id="UTP_ConfirmPassword_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Confirm your new password" /> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="UpdateThePassword_SbmtBtn">Save Changes</button> </div> </form> </div> </div> <div class="big-box-switchable" id="PasscodeLockSettings_Box" style="display: none;"> <div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3> <h4 class="h4">Passcode Lock</h4> <small class="card-text text-muted">When a passcode is set, an additional account verification step is required whenever someone attempts to access your account. Another passcode must be entered before the account can be used</small> <div class="mt-2"> <small class="card-text text-muted"><span class="fw-500">Notice: </span>If you forget your passcode, you can disable it through email verification. For standard disabling, only your passcode is required.</small> </div> </div> <div class="mt-2"> <div class="box-inside" id="PasscodeNotSet_Box"> <form method="post" asp-controller="Account" asp-action="SetPasscodeLock" id="SetPasscodeLock_Form"> <div> <label class="form-label fw-500">Passcode</label> <input type="text" class="form-control form-control-guard form-textarea" asp-for="Passcode" id="SPL_Passcode_Val" placeholder="Passcode value" data-min-length="1" data-target="SetPasscodeLock_SbmtBtn" maxlength="12" /> </div> <div class="mt-1 ms-1"> <button type="button" class="btn btn-standard-bordered btn-sm float-end ms-1" id="SPL_Passcode_Val-Indicator_Span">0/12</button> <small class="card-text text-muted">The passcode can include any character, but its length cannot exceed <span class="fw-500">12</span> characters</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="SetPasscodeLock_SbmtBtn">Turn On</button> </div> </form> </div> <div class="box-inside" id="PasscodeSet_Box" style="display: none;"> <div class="box-btn-group"> <button type="button" class="btn box-btn-group-member box-btn-group-top-member text-start"> <span id="PasscodeLockIcon_Span"><i class="fa-solid fa-lock"></i></span> Passcode Status: <span class="fw-500" id="PasscodeLockStatus_Span">Unlocked</span> <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button> <button type="button" class="btn box-btn-group-member box-btn-group-mid-member text-start"> <i class="fa-solid fa-pencil"></i> Edit Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button> <button type="button" class="btn box-btn-group-member box-btn-group-bot-member text-start text-danger"> <i class="fa-solid fa-xmark"></i> Disable Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button> </div> </div> </div> </div> </div>', '<button type="button" class="btn btn-standard btn-open-vertical-switcher btn-sm" id="ProfileSecurity_VS_Box-Open"> <i class="fa-solid fa-bars"></i> Menu</button>', null);
+                $("#SPRC_Email_Val").val(response.guts.email);
+                $("#CTP_Email_Val").val(response.guts.email);
+                $("#SPRCStep1_Email_Val").val(response.guts.email);
+                $("#CTP_Email_Span").text(response.guts.email);
+
+                if (response.guts.passcode == null) {
+                    $("#PasscodeSet_Box").fadeOut(0);
+                    $("#PasscodeNotSet_Box").fadeIn(0);
+                    $("#PasscodeLockStatus_Span").text("Unlocked");
+                    $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock-open"></i>');
+                }
+                else {
+                    $("#PasscodeSet_Box").fadeIn(0);
+                    $("#PasscodeNotSet_Box").fadeOut(0);
+                    $("#PasscodeLockStatus_Span").text("Locked");
+                    $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock"></i>');
+                }
+                setTimeout(function () {
+                    callAContainer(false, "ProfileSecurity_Container");
+                }, 150);
+            }
+        }
+        else callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Security settings are temporarily unavailable", 3.5, "Close", 0, null);
+    });
+});
+
+$("#SetPasscodeLock_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#SetPasscodeLock_SbmtBtn").html();
+    buttonDisabler(false, "SetPasscodeLock_SbmtBtn", "Setting Passcode...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#PasscodeLockStatus_Span").text("Locked");
+            $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock"></i>');
+            showInsideBox("PasscodeSet_Box");
+            setTimeout(function () {
+                $("#SPL_Passcode_Val").val(null);
+                callAlert('<i class="fa-solid fa-lock"></i>', null, null, "The passcode lock has been successfully enabled on your account", 3.25, "Close", 0, null);
+            }, 350);
+        }
+        else {
+            $("#SPL_Passcode_Val").val(null);
+            callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;></i>', null, null, "The passcode is not acceptable. Please try another one", 3.75, "Close", 0, null);
+        }
+        buttonUndisabler(false, "SetPasscodeLock_SbmtBtn", baseHtml);
     });
 });
 
@@ -420,6 +555,89 @@ $(document).on("mousedown", ".btn-exit-photo-mode", function () {
         $(".profile-avatar-img").removeClass("profile-avatar-img-enlarged");
     }, 300);
 });
+
+$(document).on("mousedown", ".btn-show-inside-box", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        let isBigBox = $(this).attr("data-big-switcher");
+        if (isBigBox == "true") showSwitchableBox(true, trueId);
+        else showSwitchableBox(false, trueId);
+    }
+});
+$(document).on("mousedown", ".btn-box-switcher-member", function () {
+    let currentSwitchers = [];
+    let allSwitchers = document.getElementsByClassName("btn-box-switcher-member");
+    let currentSwitcherInternalId = $(this).attr("data-switcher-internal-id");
+    if (allSwitchers.length > 0 && currentSwitcherInternalId != undefined) {
+        for (let i = 0; i < allSwitchers.length; i++) {
+            if ($("#" + allSwitchers[i].id).attr("data-switcher-internal-id") == currentSwitcherInternalId) currentSwitchers.push(allSwitchers[i]);
+        }
+    }
+
+    if (currentSwitchers.length > 0) {
+        for (let i = 0; i < currentSwitchers.length; i++) {
+            $("#" + currentSwitchers[i].id).removeClass("btn-box-switcher-member-active");
+        }
+        $(this).addClass("btn-box-switcher-member-active");
+    }
+});
+
+$(document).on("mousedown", '.btn-open-vertical-switcher', function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        $("#" + trueId).fadeIn(0);
+        $("#" + trueId).css("bottom", bottomNavbarH + 20 + "px");
+        setTimeout(function () {
+            $("#" + trueId).css("bottom", bottomNavbarH + 4 + "px");
+        }, 350);
+    }
+});
+$(document).on("mousedown", ".btn-close-vertical-switcher", function () {
+    $(".box-vertical-switcher").css("bottom", bottomNavbarH + 18 + "px");
+    setTimeout(function () {
+        $(".box-vertical-switcher").css("bottom", "-1200px");
+    }, 350);
+});
+
+$(document).on("mousedown", ".btn-box-vertical-swticher", function () {
+    let currentSwitchers = [];
+    let allSwitchers = document.getElementsByClassName("btn-box-vertical-swticher");
+    let currentSwitcherInternalId = $(this).attr("data-switcher-internal-id");
+    if (allSwitchers.length > 0 && currentSwitcherInternalId != undefined) {
+        for (let i = 0; i < allSwitchers.length; i++) {
+            if ($("#" + allSwitchers[i].id).attr("data-switcher-internal-id") == currentSwitcherInternalId) currentSwitchers.push(allSwitchers[i]);
+        }
+    }
+
+    if (currentSwitchers.length > 0) {
+        for (let i = 0; i < currentSwitchers.length; i++) {
+            $("#" + currentSwitchers[i].id).removeClass("btn-box-vertical-swticher-active");
+        }
+        $(this).addClass("btn-box-vertical-swticher-active");
+    }
+});
+
+function showSwitchableBox(isBig, currentElementId) {
+    if (isBig) {
+        $(".big-box-switchable").fadeOut(300);
+        setTimeout(function () {
+            $("#" + currentElementId).fadeIn(300);
+        }, 300);
+    }
+    else {
+        $(".box-switchable").fadeOut(300);
+        setTimeout(function () {
+            $("#" + currentElementId).fadeIn(300);
+        }, 300);
+    }
+}
+
+function showInsideBox(currentElementId) {
+    $(".box-inside").fadeOut(300);
+    setTimeout(function () {
+        $("#" + currentElementId).fadeIn(300);
+    }, 300);
+}
 
 function loadAnotherFile(loadForward = true, skipValue = 1, maxLength, skippingInputId, formId) {
     if (formId != null && skippingInputId != null) {
@@ -939,7 +1157,8 @@ function displayCorrector(currentWidth, onPageStart) {
         $(".box-lg-part").css("left", "0");
         $(".box-lg-part").css("width", "100%");
         $(".box-lg-part-header").css("width", "100%");
-        $(".box-lg-part-header").css("width", "100%");
+        $(".box-vertical-switcher").css("width", "98.25%");
+        $(".box-vertical-switcher").css("left", "0.75%");
         $(".box-lg-part-inner").css("left", "0.75%");
         $(".box-lg-part-inner").css("width", "98.25%");
         $(".box-sm-part").css("left", "-1200px");
@@ -969,6 +1188,8 @@ function displayCorrector(currentWidth, onPageStart) {
         $(".box-lg-part-header").css("width", "63%");
         $(".box-lg-part-inner").css("left", "37.5%");
         $(".box-lg-part-inner").css("width", "62%");
+        $(".box-vertical-switcher").css("width", "62%");
+        $(".box-vertical-switcher").css("left", "37.5%");
         $(".box-sm-part").css("left", 0);
         $(".box-sm-part").css("width", "37%");
         $(".box-sm-part-inner").css("left", "0.4%");
@@ -1132,6 +1353,40 @@ function createInsideLgCard(id, title, body, headerBtn1 = null, headerBtn2 = nul
         else {
             $(".box-lg-part-inner").css("left", "37.5%");
             $(".box-lg-part-inner").css("width", "62%");
+        }
+    }
+}
+
+function createAContainer(id, title, body, headerBtn1 = null, headerBtn2 = null) {
+    let divExists = document.getElementById(id);
+    if (divExists == null) {
+        $("body").append('<div class="box-lg-part shadow-sm" id="' + id + '_Container"> <div class="box-lg-part-header p-2"> <div class="div-swiper mx-auto"></div> <div class="hstack gap-1"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl">' + title + '</span> </div> <div class="ms-auto" id="' + id + '-Header_Box"></div></div> </div> <div class="box-lg-part-body mt-5" id="' + id + '_Box"> </div> </div>');
+        $("#" + id + "_Box").append(body);
+        if (headerBtn1 != null) {
+            let firstButton = $(headerBtn1);
+            $("#" + id + "-Header_Box").append(firstButton);
+
+            if (headerBtn2 != null) {
+                let secondBtn = $(headerBtn2);
+                $("#" + id + "-Header_Box").append(secondBtn);
+            }
+        }
+
+        if (currentWindowSize > 1024) {
+            $(".box-lg-part").css("left", "37%");
+            $(".box-lg-part").css("width", "63%");
+            $(".box-lg-part-header").css("left", "37%");
+            $(".box-lg-part-header").css("width", "63%");
+            $(".box-vertical-switcher").css("width", "62%");
+            $(".box-vertical-switcher").css("left", "37.5%");
+        }
+        else {
+            $(".box-lg-part").css("left", "0");
+            $(".box-lg-part").css("width", "100%");
+            $(".box-lg-part-header").css("width", "100%");
+            $(".box-lg-part-header").css("width", "100%");
+            $(".box-vertical-switcher").css("left", "0.75%");
+            $(".box-vertical-switcher").css("width", "98.25%");
         }
     }
 }

@@ -1,18 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using OngakuProject.Data;
 using OngakuProject.Interfaces;
+using OngakuProject.Models;
 using OngakuProject.ViewModels;
+using System.Security.Claims;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace OngakuProject.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly UserManager<User> _userManager;
         private readonly IAccount _account;
+        private readonly IProfile _profile;
         private readonly Context _context;
 
-        public AccountController(IAccount account, Context context)
+        public AccountController(UserManager<User> userManager, IAccount account, IProfile profile, Context context)
         {
+            _userManager = userManager;
             _account = account;
+            _profile = profile;
             _context = context;
         }
 
@@ -54,12 +62,32 @@ namespace OngakuProject.Controllers
             else return Json(new { success = false });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CheckThePassword(string? Email, string? Password)
+        {
+            bool Result = await _account.CheckPasswordByEmail(Email, Password);
+            if (Result) return Json(new { success = true, password = Password });
+            else return Json(new { success = false });
+        }
+
         [HttpPost]
-        public IActionResult CheckPasswordResetEmailCode(int UserId, string? Code)
+        public async Task<IActionResult> CheckPasswordResetEmailCode(int UserId, string? Code, byte Type)
         {
             bool Result = _account.CheckPasswordResetCodeAsync(UserId, Code);
-            if (Result) return Json(new { success = true });
-            else return Json(new { success = false });
+            if (Result)
+            {
+                if(Type == 0) return Json(new { success = true });
+                else
+                {
+                    User? UserInfo = await _userManager.FindByIdAsync(UserId.ToString());
+                    if(UserInfo != null)
+                    {
+                        string? PasswordResetCode = await _userManager.GeneratePasswordResetTokenAsync(UserInfo);
+                        return Json(new { success = true, code = PasswordResetCode });
+                    }
+                }
+            }
+            return Json(new { success = false });
         }
 
         [HttpPost]
@@ -68,6 +96,19 @@ namespace OngakuProject.Controllers
             bool Result = await _account.ResetPasswordAsync(Email, Password, ConfirmPassword);
             if (Result) return Json(new { success = true, email = Email });
             else return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SetPasscodeLock(PasscodeLock_VM Model)
+        {
+            if(ModelState.IsValid)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
+                bool Result = await _account.TurnPasscodeLockOnAsync(Model);
+                if (Result) return Json(new { success = true });
+            }
+            return Json(new { success = false });
         }
 
         public async Task<IActionResult> Initiate()

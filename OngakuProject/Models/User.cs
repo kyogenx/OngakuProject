@@ -12,6 +12,8 @@ namespace OngakuProject.Models
         public string? Searchname { get; set; }
         [MaxLength(2500)]
         public string? Description { get; set; }
+        [MaxLength(12)]
+        public string? Passcode { get; set; }
         public List<UserImage>? UserImages { get; set; }
         [NotMapped]
         public int ImgId { get; set; }

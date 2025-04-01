@@ -35,6 +35,20 @@ namespace OngakuProject.Repositories
             else return true;
         }
 
+        public async Task<bool> CheckPasswordByEmail(string? Email, string? Password)
+        {
+            if (!String.IsNullOrWhiteSpace(Email) && !String.IsNullOrWhiteSpace(Password))
+            {
+                User? UserInfo = await _userManager.FindByEmailAsync(Email);
+                if(UserInfo != null)
+                {
+                    bool Result = await _userManager.CheckPasswordAsync(UserInfo, Password);
+                    if (Result) return true;
+                }
+            }
+            return false;
+        }
+
         public Task<int> AutoSignInAsync()
         {
             throw new NotImplementedException();
@@ -134,6 +148,67 @@ namespace OngakuProject.Repositories
                         if (Result.Succeeded) return true;
                     }
                 }
+            }
+            return false;
+        }
+
+        public async Task<bool> UpdatePasswordAsync(UpdatePassword_VM Model)
+        {
+            if(Model.Id != null && Model.AdditionalInfo is not null && !String.IsNullOrWhiteSpace(Model.NewPassword) && !String.IsNullOrWhiteSpace(Model.ConfirmPassword))
+            {
+                User? UserInfo = await _userManager.FindByIdAsync(Model.Id);
+                if(UserInfo is not null)
+                {
+                    if (Model.Type == 0)
+                    {
+                        IdentityResult? Result = await _userManager.ChangePasswordAsync(UserInfo, Model.AdditionalInfo, Model.NewPassword);
+                        if (Result.Succeeded) return true;
+                    }
+                    else
+                    {
+                        IdentityResult? Result = await _userManager.ResetPasswordAsync(UserInfo, Model.AdditionalInfo, Model.NewPassword);
+                        if (Result.Succeeded) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public async Task<bool> TurnPasscodeLockOnAsync(PasscodeLock_VM Model)
+        {
+            if(Model.Id != 0 && !String.IsNullOrWhiteSpace(Model.Passcode))
+            {
+                bool CheckCurrentUsersPasscode = await _context.Users.AsNoTracking().AnyAsync(u => u.Id == Model.Id && u.Passcode != null);
+                if (!CheckCurrentUsersPasscode)
+                {
+                    int Result = await _context.Users.AsNoTracking().Where(u => u.Id == Model.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.Passcode, Model.Passcode));
+                    if (Result > 0) return true;
+                }
+            }
+            return false;
+        }
+
+        public async Task<bool> TurnPasscodeLockOffAsync(PasscodeLock_VM Model)
+        {
+            if(Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.CurrentPasscode))
+            {
+                bool CheckCurrentUsersPasscode = await _context.Users.AsNoTracking().AnyAsync(u => u.Id == Model.Id && u.Passcode != Model.CurrentPasscode);
+                if (CheckCurrentUsersPasscode)
+                {
+                    string? NullPasscode = null;
+                    int Result = await _context.Users.AsNoTracking().Where(u => u.Id == Model.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.Passcode, NullPasscode));
+                    if(Result > 0) return true; 
+                }
+            }
+            return false;
+        }
+
+        public async Task<bool> EditPasscodeLockAsync(PasscodeLock_VM Model)
+        {
+            if(Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.Passcode) && !String.IsNullOrWhiteSpace(Model.CurrentPasscode))
+            {
+                int Result = await _context.Users.AsNoTracking().Where(u => u.Id == Model.Id && u.Passcode == Model.CurrentPasscode).ExecuteUpdateAsync(u => u.SetProperty(u => u.Passcode, Model.Passcode));
+                if (Result > 0) return true;
             }
             return false;
         }

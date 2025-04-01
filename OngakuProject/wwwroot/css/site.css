@@ -475,6 +475,128 @@ body {
     background-color: #2b2b2b;
 }
 
+.char-indicator-empty {
+    height: 15px;
+    width: 15px;
+    background-color: #f0f0f0;
+    border-radius: 99px;
+    display: inline-block;
+    transition: all ease 0.24s;
+}
+.char-indicator-active {
+    height: 15px;
+    width: 15px;
+    border-radius: 99px;
+    transition: all ease 0.24s;
+    display: inline-block;
+    background-color: #2b2b2b;
+}
+
+.box-inside {
+    transition: all ease 0.28s;
+}
+
+.box-swithcable {
+    transition: all ease 0.3s;
+}
+
+.box-switcher {
+    padding: 1px;
+    background-color: white;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    transition: all ease 0.3s;
+}
+.btn-box-switcher-member {
+    border-radius: 10px;
+    font-weight: 500;
+    width: 100%;
+    background-color: white;
+    color: black;
+    transition: all ease 0.3s;
+}
+.btn-box-switcher-member:hover,
+.btn-box-switcher-member:active {
+    background-color: #f0f0f0;
+}
+.btn-box-switcher-member-active {
+    background-color: #f8f9fa;
+}
+
+.box-vertical-switcher {
+    z-index: 1000;
+    padding: 4px;
+    border-radius: 10px 10px 0 0;
+    background-color: #fdfdfd;
+    border: 1px solid #f0f0f0;
+    border-bottom: 0;
+    width: auto;
+    border-radius: 10px;
+    bottom: -1200px;
+    display: none;
+    position: fixed;
+    transition: all ease 0.3s;
+}
+.btn-box-vertical-swticher {
+    margin-bottom: 3px;
+    cursor: pointer;
+    text-align: start;
+    background-color: transparent;
+    border-radius: 10px;
+    width: 100%;
+    color: black;
+    font-weight: 500;
+    display: block;
+    transition: all ease 0.24s;
+}
+.btn-box-vertical-swticher:hover,
+.btn-box-vertical-swticher:active {
+    background-color: #f8f9fa;
+}
+.btn-box-vertical-swticher-active {
+    background-color: #f0f0f0;
+}
+
+.box-btn-group {
+    padding: 6px;
+    border-radius: 10px;
+    width: 100%;
+}
+.box-btn-group-member-icon {
+    padding: 5px;
+    font-size: 17px;
+    width: 30px;
+    border-radius: 10px;
+}
+.box-btn-group-member {
+    cursor: pointer;
+    padding: 6px 12px 6px 6px;
+    background-color: #f8f9fa;
+    color: black;
+    width: 100%;
+    transition: all ease 0.3s;
+}
+.box-btn-group-member:hover,
+.box-btn-group-member:active {
+    background-color: #f0f0f0;
+}
+.box-btn-group-top-member {
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.box-btn-group-mid-member {
+    border-radius: 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.box-btn-group-bot-member {
+    border-radius: 0 0 10px 10px;
+    border: none;
+}
+.box-btn-group-solo-member {
+    border-radius: 10px;
+    border: none;
+}
+
 .ongaku-alert {
     z-index: 9000;
     background-color: #2B2B2B;

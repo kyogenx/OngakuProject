@@ -11,11 +11,13 @@ namespace OngakuProject.Controllers
     {
         private readonly Context _context;
         private readonly IProfile _profile;
+        private readonly IAccount _account;
 
-        public ProfileController(Context context, IProfile profile)
+        public ProfileController(Context context, IProfile profile, IAccount account)
         {
             _context = context;
             _profile = profile;
+            _account = account;
         }
 
         public async Task<IActionResult> P()
@@ -24,7 +26,7 @@ namespace OngakuProject.Controllers
             {
                 string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 int Id = _profile.ParseCurrentUserId(CurrentUserId);
-                User? UserInfo = await _profile.GetUserByIdAsync(Id);
+                User? UserInfo = await _profile.GetUserGutsByIdAsync(Id);
                 if (UserInfo is not null)
                 {
                     ViewBag.UserInfo = UserInfo;
@@ -56,6 +58,19 @@ namespace OngakuProject.Controllers
 
                 bool Result = await _profile.UpdateMainInfoAsync(Model);
                 if (Result) return Json(new { success = true, result = Model });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateThePassword(UpdatePassword_VM Model)
+        {
+            string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Model.Id = _profile.ParseCurrentUserId(CurrentUserId).ToString();
+            if(ModelState.IsValid)
+            {
+                bool Result = await _account.UpdatePasswordAsync(Model);
+                return Json(new { success = Result });
             }
             return Json(new { success = false });
         }
@@ -103,6 +118,17 @@ namespace OngakuProject.Controllers
 
             bool Result = await _profile.DeleteAllImagesAsync(UserId);
             return Json(new { success = Result });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAccountGuts()
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(Id);
+            User? UserGuts = await _profile.GetUserGutsOnlyByIdAsync(UserId);
+
+            if (UserGuts is not null) return Json(new { success = true, guts = UserGuts });
+            else return Json(new { success = false });
         }
 
         [HttpGet]

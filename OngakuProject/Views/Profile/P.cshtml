@@ -6,6 +6,7 @@
 
 <div class="box-sm-part shadow-sm">
     <div class="d-none">
+        <input type="hidden" id="CurrentEmail_Val" value="@UserInfo.Email" />
         <form method="post" asp-controller="Profile" asp-action="EditImages" id="EditProfileImages_Form" enctype="multipart/form-data">
             <input asp-for="ImgUrl" type="file" name="Files" id="EditImage_Files_Val" accept="image/png, image/gif, image/jpeg" multiple />
         </form>
@@ -88,7 +89,193 @@
             <p class="card-text text-muted">@@<span id="ProfileMainSearchname_Lbl">@UserInfo.Searchname</span></p>
         </div>
     </div>
+    <div class="box-btn-group mt-2">
+        <button type="button" class="btn box-btn-group-member box-btn-group-top-member hstack gap-1">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fill-drip"></i> </div>
+            <span class="card-text ms-1">Appearance</span>
+            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+        </button>
+        <div>
+            <form method="get" asp-controller="Profile" asp-action="GetAccountGuts" id="GetAccountGuts_Form">
+                <button type="submit" class="btn box-btn-group-member box-btn-group-mid-member hstack gap-1" id="GetAccountGuts_SbmtBtn">
+                    <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fingerprint"></i> </div>
+                    <span class="card-text ms-1">Security Settings</span>
+                    <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+                </button>
+            </form>
+        </div>
+        <button type="button" class="btn box-btn-group-member box-btn-group-mid-member hstack gap-1">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-id-card-clip"></i> </div>
+            <span class="card-text ms-1">Personal Information</span>
+            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+        </button>
+        <button type="button" class="btn box-btn-group-member box-btn-group-bot-member hstack gap-1">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-shield-halved"></i> </div>
+            <span class="card-text ms-1">Privacy Settings</span>
+            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+        </button>
+@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container text-start" id="ProfileSecurity_Container-Open"> <i class="fa-solid fa-fingerprint"></i> Security Settings <small class="card-text text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </small></button> *@
+    </div>
 </div>
+
+@* <div class="box-lg-part shadow-sm" id="ProfileSecurity_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="ProfileSecurity_Container-Header_Lbl">Security Settings</span>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-standard btn-open-vertical-switcher btn-sm" id="ProfileSecurity_VS_Box-Open"> <i class="fa-solid fa-bars"></i> Menu</button>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="ProfileSecurity_Box">
+        <div class="box-vertical-switcher shadow-sm" id="ProfileSecurity_VS_Box">
+            <div class="box-vertical-switcher-header hstack gap-1">
+                <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button>
+            </div>
+            <div class="mt-2">
+                <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-box-vertical-swticher-active btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasswordSettings_Box-Show_Btn"> <i class="fa-solid fa-shield-halved"></i> Password Settings</button>
+                <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasscodeLockSettings_Box-Show_Btn"> <i class="fa-solid fa-lock"></i> Passcode Lock</button>
+                <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="EmailVerification_Box-Show_Btn"> <i class="fa-solid fa-envelope-circle-check"></i> Email Verification</button>
+                <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" id="TFA_VS_Btn"> <i class="fa-solid fa-key"></i> 2FA Settings</button>
+            </div>
+        </div>
+        <div class="ps-1 pe-1">
+            <div class="big-box-switchable" id="PasswordSettings_Box">
+                <div class="box-switcher row ms-1 me-1">
+                    <div class="col">
+                        <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaCurrentPassword_Box-ShowBtn">via Current Password</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-box-switcher-member btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaEmail_Box-ShowBtn">via Email Code</button>
+                    </div>
+                </div>
+                <div class="box-switchable" id="ResetPasswordViaCurrentPassword_Box">
+                    <form method="get" asp-controller="Account" asp-action="CheckThePassword" id="CheckThePassword_Form">
+                        <div class="d-none">
+                            <input type="hidden" asp-for="Email" name="Email" id="CTP_Email_Val" value="@UserInfo.Email" />
+                        </div>
+                        <div class="mt-3">
+                            <span class="form-label fw-500">Current Password</span>
+                            <div>
+                                <small class="card-text text-muted" id="CTP_Email_Span">@UserInfo.Email</small>
+                            </div>
+                            <input type="password" class="form-control form-control-guard mt-2" name="Password" id="CTP_Password_Val" data-min-length="8" data- data-target="CheckThePassword_SbmtBtn" placeholder="Your current password" maxlength="32" />
+                        </div>
+                        <div class="mt-1 ms-1">
+                            <small class="card-text text-muted">No verification is required, just enter your account password to confirm ownership</small>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="CheckThePassword_SbmtBtn">Continue</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="box-switchable" id="ResetPasswordViaEmail_Box" style="display: none;">
+                    <div class="box-inside" id="SPRCStep1_Box">
+                        <div class="mt-2">
+                            <label class="form-label fw-500">Email</label>
+                            <input type="email" asp-for="Email" class="form-control super-disabled" placeholder="Your email address" maxlength="75" value="@UserInfo.Email" id="SPRCStep1_Email_Val" readonly disabled />
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="RPStep1_SbmtBtn">Send Code</button>
+                        </div>
+                        <div class="box-bordered text-center p-2 mt-1">
+                            <small class="card-text text-muted">A one-time verification code will be sent to your email within <span class="fw-500">6</span> minutes after completing the verification process. Please check your inbox for further instructions</small>
+                        </div>
+                    </div>
+                    <div class="box-inside" id="SPRCStep2_Box" style="display: none;">
+                        <form method="post" asp-controller="Account" asp-action="CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form">
+                            <div>
+                                <input type="hidden" name="UserId" id="CPREC_Id_Val" />
+                                <input type="hidden" name="Type" id="CPREC_Type_Val" value="1" />
+                                <div class="text-center">
+                                    <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="0-CPREC_Code_Val-Indicator"></div>
+                                    <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="1-CPREC_Code_Val-Indicator"></div>
+                                    <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="2-CPREC_Code_Val-Indicator"></div>
+                                    <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="3-CPREC_Code_Val-Indicator"></div>
+                                    <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="4-CPREC_Code_Val-Indicator"></div>
+                                    <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="5-CPREC_Code_Val-Indicator"></div>
+                                </div>
+                                <div>
+                                    <input type="text" name="Code" id="CPREC_Code_Val" class="form-control form-control-for-numbers-only form-control-guard-code form-control-guard mt-2" data-min-length="6" data-on-fulfill="CheckPasswordResetEmailCode_Form" placeholder="6-digit code" maxlength="6" />
+                                </div>
+                            </div>
+                        </form>
+                        <div class="box-bordered text-center mt-1 p-2" id="CodeResendTime_Box">
+                            <small class="card-text text-muted" id="CodeResendTimer_Lbl">You will be able to receive a new code shortly</small>
+                            <div class="mt-1">
+                                <form method="post" asp-controller="Account" asp-action="SendPasswordResetCode" id="SendPasswordResetCode_Form">
+                                    <input type="hidden" name="Email" id="SPRC_Email_Val" value="@UserInfo.Email" />
+                                    <button type="submit" class="btn btn-standard-bolded super-disabled w-100" id="SPRC_SbmtBtn"> <i class="fa-solid fa-arrow-rotate-right"></i> Resend Code</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-switchable" id="SetNewPassword_Box" style="display: none;">
+                    <form method="post" asp-controller="Profile" asp-action="UpdateThePassword" id="UpdateThePassword_Form">
+                        <div class="d-none">
+                            <input type="hidden" name="Type" id="UTP_Type_Val" value="0" />
+                            <input type="hidden" name="AdditionalInfo" id="UTP_AdditionalInfo_Val" />
+                        </div>
+                        <div>
+                            <label class="form-label fw-500">New Password</label>
+                            <input type="password" name="NewPassword" id="UTP_Password_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Your new password..." />
+                        </div>
+                        <div class="mt-1 ms-1">
+                            <small class="card-text text-muted">Your new password must be between <span class="fw-500">8</span> and <span class="fw-500">32</span> characters long and must not be the same as your current password</small>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label fw-500">Confirm Password</label>
+                            <input type="password" name="ConfirmPassword" id="UTP_ConfirmPassword_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Confirm your new password" />
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="UpdateThePassword_SbmtBtn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="big-box-switchable" id="PasscodeLockSettings_Box" style="display: none;">
+                <div class="box-bordered text-center p-2">
+                    <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3>
+                    <h4 class="h4">Passcode Lock</h4>
+                    <small class="card-text text-muted">When a passcode is set, an additional account verification step is required whenever someone attempts to access your account. Another passcode must be entered before the account can be used</small>
+                    <div class="mt-2">                        
+                        <small class="card-text text-muted"><span class="fw-500">Notice: </span>If you forget your passcode, you can disable it through email verification. For standard disabling, only your passcode is required.</small>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="box-inside" id="PasscodeNotSet_Box">
+                        <form method="post" asp-controller="Account" asp-action="SetPasscodeLock" id="SetPasscodeLock_Form">
+                            <div>
+                                <label class="form-label fw-500">Passcode</label>
+                                <input type="text" class="form-control form-control-guard form-textarea" asp-for="Passcode" id="SPL_Passcode_Val" placeholder="Passcode value" data-min-length="1" data-target="SetPasscodeLock_SbmtBtn" maxlength="12" />
+                            </div>
+                            <div class="mt-1 ms-1">
+                                <button type="button" class="btn btn-standard-bordered btn-sm float-end ms-1" id="SPL_Passcode_Val-Indicator_Span">0/12</button>
+                                <small class="card-text text-muted">The passcode can include any character, but its length cannot exceed <span class="fw-500">12</span> characters</small>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="SetPasscodeLock_SbmtBtn">Turn On</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="box-inside" id="PasscodeSet_Box" style="display: none;">
+                        <div class="box-btn-group">
+                            <button type="button" class="btn box-btn-group-member box-btn-group-top-member text-start"> <span id="PasscodeLockIcon_Span"><i class="fa-solid fa-lock"></i></span> Passcode Status: <span class="fw-500" id="PasscodeLockStatus_Span">Unlocked</span> <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button>
+                            <button type="button" class="btn box-btn-group-member box-btn-group-mid-member text-start"> <i class="fa-solid fa-pencil"></i> Edit Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button>
+                            <button type="button" class="btn box-btn-group-member box-btn-group-bot-member text-start text-danger"> <i class="fa-solid fa-xmark"></i> Disable Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
 
 <div class="box-lg-part shadow-sm" id="EditProfile_Container">
     <div class="box-lg-part-header p-2">

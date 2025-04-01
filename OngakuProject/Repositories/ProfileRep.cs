@@ -28,6 +28,12 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
+        public async Task<User?> GetUserGutsOnlyByIdAsync(int Id)
+        {
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { Id = Id, Email = u.Email, EmailConfirmed = u.EmailConfirmed, Passcode = u.Passcode }).FirstOrDefaultAsync();
+            else return null;
+        }
+
         public async Task<string?> GetUserDescriptionAsync(int Id)
         {
             if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => u.Description).FirstOrDefaultAsync();
