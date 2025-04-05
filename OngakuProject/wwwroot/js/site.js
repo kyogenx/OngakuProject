@@ -4,7 +4,10 @@ let bottomNavbarH = 0;
 let intervalValue;
 let timeoutValue;
 let sentRequest = null;
+let openedContainers = [];
+let openedCards = [];
 
+//showSwitchableBox
 window.onload = function () {
     displayCorrector(currentWindowSize, true);
     $(".ongaku-alert").fadeOut(0);
@@ -13,6 +16,7 @@ window.onload = function () {
     setTimeout(function () {
         bottomNavbarH = $(".bottom-navbar").innerHeight();
         callAContainer(false, "Primary_Container");
+        callTheMusicIsland(currentWindowSize);
     }, 350);
     currentPageUrl = window.location.href;
 }
@@ -22,6 +26,7 @@ window.onresize = function () {
     displayCorrector(currentWindowSize, false);
     setTimeout(function () {
         bottomNavbarH = $(".bottom-navbar").innerHeight();
+        callTheMusicIsland(currentWindowSize);
     }, 350);
 }
 
@@ -127,13 +132,41 @@ $("#SignIn_Form").on("submit", function (event) {
 
     $.post(url, data, function (response) {
         if (response.success) {
-            $("#SignIn_SbmtBtn").html(' <i class="fa-solid fa-circle-check"></i> Signed In Successfully');
-            document.location = "/Home/Index";
+            if (parseInt(response.result) == 1) {
+                $("#SignIn_SbmtBtn").html(' <i class="fa-solid fa-circle-check"></i> Signed In Successfully');
+                document.location = "/Home/Index";
+            }
+            else if (parseInt(response.result) == 2) {
+                createInsideLgCard("PasscodeSignIn", "Passcode Required", '<div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3> <h4 class="h4">Passcode Secured</h4> <small class="card-text text-muted">This account is protected by a passcode. Please enter it to complete the sign-in process</small> </div> <div class="mt-2"> <form method="post" href="/Account/PasscodeSignIn" id="PasscodeSignIn_Form"> <div class="d-none"> <input type="text" name="Password" id="PasscodeSignIn_Password_Val" /> <input type="text" name="Username" id="PasscodeSignIn_Username_Val" /> </div> <div> <input type="text" class="form-control form-textarea form-control-guard" name="Passcode" id="PasscodeSignIn_Passcode_Val" placeholder="Enter the passcode" data-min-length="1" data- data-target="PasscodeSignIn_SbmtBtn" /> </div> <div class="mt-2"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="PasscodeSignIn_SbmtBtn">Sign In</button> </div> </form> </div>', '<form method="post" href="/Account/SendThePasscodeViaInbox" id="SendThePasscodeViaInbox_Form"> <button type="submit" class="btn btn-standard btn-sm" id="SendThePasscodeViaInbox_SbmtBtn">Forgot Passcode</button> </form>', null);
+                setTimeout(function () {
+                    $("#PasscodeSignIn_Password_Val").val(response.model.password);
+                    $("#PasscodeSignIn_Username_Val").val(response.model.username);
+                    callAContainer(false, "PasscodeSignIn_Container");
+                }, 150);
+            }
         }
         else {
             callAlert('<i class="fa-solid fa-triangle-exclamation"></i>', null, null, "Unable to sign in. Email or password incorrect", 4.75, "Close", 0, null);
             buttonUndisabler(false, "SignIn_SbmtBtn", buttonHtml);
             $("#SignIn_Password_Val").val(null);
+        }
+    });
+});
+
+$(document).on("submit", "#PasscodeSignIn_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#PasscodeSignIn_SbmtBtn").html();
+    buttonDisabler(false, "PasscodeSignIn_SbmtBtn", "Verifying the Passcode...");
+
+    $.post(url, data, function (response) {
+        if (response.success) document.location = "/Home/Index";
+        else {
+            callAlert('<i class="fa-solid fa-triangle-exclamation"></i>', null, null, "Invalid passcode. Please try again", 3.25, "Close", 0, null);
+            $("#PasscodeSignIn_Passcode_Val").val(null);
+            buttonUndisabler(false, "PasscodeSignIn_SbmtBtn", baseHtml);
+            $("#PasscodeSignIn_SbmtBtn").addClass("super-disabled");
         }
     });
 });
@@ -156,7 +189,7 @@ $("#SendPasswordResetCode_Form").on("submit", function (event) {
                 }
             });
             if (currentPageUrl.toLowerCase().includes("/profile/p")) {
-                showInsideBox("SPRCStep2_Box");
+                showSwitchableBox(false, "SPRCStep2_Box");
             }
         }
         else {
@@ -178,7 +211,7 @@ $(document).on("keyup", ".form-control-guard-code", function () {
     }
 });
 
-$("#CheckPasswordResetEmailCode_Form").on("submit", function (event) {
+$(document).on("submit", "#CheckPasswordResetEmailCode_Form", function (event) {
     event.preventDefault();
     if (currentPageUrl.toLowerCase().includes("/profile/p")) $("#CPREC_Type_Val").val(1);
     let url = $(this).attr("action");
@@ -209,18 +242,19 @@ $("#CheckPasswordResetEmailCode_Form").on("submit", function (event) {
     });
 });
 
-$("#CheckThePassword_Form").on("submit", function (event) {
+$(document).on("submit", "#CheckThePassword_Form", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
     let data = $(this).serialize();
     let baseHtml = $("#CheckThePassword_SbmtBtn").html();
     buttonDisabler(false, "CheckThePassword_SbmtBtn", 'Verifying...');
-
+  
     $.get(url, data, function (response) {
         if (response.success) {
             $("#UTP_Type_Val").val(0);
             $("#UTP_AdditionalInfo_Val").val(response.password);
-            showSwitchableBox("SetNewPassword_Box");
+            $("#CTP_Password_Val").val(null);
+            showSwitchableBox(false, "SetNewPassword_Box");
         }
         else {
             $("#CTP_Password_Val").val(null);
@@ -254,7 +288,7 @@ $("#ResetPassword_Form").on("submit", function (event) {
     });
 });
 
-$("#UpdateThePassword_Form").on("submit", function (event) {
+$(document).on("submit", "#UpdateThePassword_Form", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
     let data = $(this).serialize();
@@ -289,26 +323,32 @@ $("#GetAccountGuts_Form").on("submit", function (event) {
     $.get(url, data, function (response) {
         if (response.success) {
             if (response.guts.email != null) {
-                createAContainer("ProfileSecurity", "Security Settings", '<div class="box-vertical-switcher shadow-sm" id="ProfileSecurity_VS_Box"> <div class="box-vertical-switcher-header hstack gap-1"> <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button> </div> <div class="mt-2"> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-box-vertical-swticher-active btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasswordSettings_Box-Show_Btn"> <i class="fa-solid fa-shield-halved"></i> Password Settings</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasscodeLockSettings_Box-Show_Btn"> <i class="fa-solid fa-lock"></i> Passcode Lock</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="EmailVerification_Box-Show_Btn"> <i class="fa-solid fa-envelope-circle-check"></i> Email Verification</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" id="TFA_VS_Btn"> <i class="fa-solid fa-key"></i> 2FA Settings</button> </div> </div> <div class="ps-1 pe-1"> <div class="big-box-switchable" id="PasswordSettings_Box"> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaCurrentPassword_Box-ShowBtn">via Current Password</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaEmail_Box-ShowBtn">via Email Code</button> </div> </div> <div class="box-switchable" id="ResetPasswordViaCurrentPassword_Box"> <form method="get" asp-controller="Account" asp-action="CheckThePassword" id="CheckThePassword_Form"> <div class="d-none"> <input type="hidden" asp-for="Email" name="Email" id="CTP_Email_Val" value="@UserInfo.Email" /> </div> <div class="mt-2"> <span class="form-label fw-500">Current Password</span> <div> <small class="card-text text-muted" id="CTP_Email_Span">@UserInfo.Email</small> </div> <input type="password" class="form-control form-control-guard mt-2" name="Password" id="CTP_Password_Val" data-min-length="8" data- data-target="CheckThePassword_SbmtBtn" placeholder="Your current password" maxlength="32" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">No verification is required, just enter your account password to confirm ownership</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="CheckThePassword_SbmtBtn">Continue</button> </div> </form> </div> <div class="box-switchable" id="ResetPasswordViaEmail_Box" style="display: none;"> <div class="box-inside" id="SPRCStep1_Box"> <div class="mt-2"> <label class="form-label fw-500">Email</label> <input type="email" asp-for="Email" class="form-control super-disabled" placeholder="Your email address" maxlength="75" value="@UserInfo.Email" id="SPRCStep1_Email_Val" readonly disabled /> </div> <div class="mt-3"> <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="RPStep1_SbmtBtn">Send Code</button> </div> <div class="box-bordered text-center p-2 mt-1"> <small class="card-text text-muted">A one-time verification code will be sent to your email within <span class="fw-500">6</span> minutes after completing the verification process. Please check your inbox for further instructions</small> </div> </div> <div class="box-inside" id="SPRCStep2_Box" style="display: none;"> <form method="post" asp-controller="Account" asp-action="CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form"> <div> <input type="hidden" name="UserId" id="CPREC_Id_Val" /> <input type="hidden" name="Type" id="CPREC_Type_Val" value="1" /> <div class="text-center"> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="0-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="1-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="2-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="3-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="4-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="5-CPREC_Code_Val-Indicator"></div> </div> <div> <input type="text" name="Code" id="CPREC_Code_Val" class="form-control form-control-for-numbers-only form-control-guard-code form-control-guard mt-2" data-min-length="6" data-on-fulfill="CheckPasswordResetEmailCode_Form" placeholder="6-digit code" maxlength="6" /> </div> </div> </form> <div class="box-bordered text-center mt-1 p-2" id="CodeResendTime_Box"> <small class="card-text text-muted" id="CodeResendTimer_Lbl">You will be able to receive a new code shortly</small> <div class="mt-1"> <form method="post" asp-controller="Account" asp-action="SendPasswordResetCode" id="SendPasswordResetCode_Form"> <input type="hidden" name="Email" id="SPRC_Email_Val" value="@UserInfo.Email" /> <button type="submit" class="btn btn-standard-bolded super-disabled w-100" id="SPRC_SbmtBtn"> <i class="fa-solid fa-arrow-rotate-right"></i> Resend Code</button> </form> </div> </div> </div> </div> <div class="box-switchable" id="SetNewPassword_Box" style="display: none;"> <form method="post" asp-controller="Profile" asp-action="UpdateThePassword" id="UpdateThePassword_Form"> <div class="d-none"> <input type="hidden" name="Type" id="UTP_Type_Val" value="0" /> <input type="hidden" name="AdditionalInfo" id="UTP_AdditionalInfo_Val" /> </div> <div> <label class="form-label fw-500">New Password</label> <input type="password" name="NewPassword" id="UTP_Password_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Your new password..." /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Your new password must be between <span class="fw-500">8</span> and <span class="fw-500">32</span> characters long and must not be the same as your current password</small> </div> <div class="mt-3"> <label class="form-label fw-500">Confirm Password</label> <input type="password" name="ConfirmPassword" id="UTP_ConfirmPassword_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Confirm your new password" /> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="UpdateThePassword_SbmtBtn">Save Changes</button> </div> </form> </div> </div> <div class="big-box-switchable" id="PasscodeLockSettings_Box" style="display: none;"> <div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3> <h4 class="h4">Passcode Lock</h4> <small class="card-text text-muted">When a passcode is set, an additional account verification step is required whenever someone attempts to access your account. Another passcode must be entered before the account can be used</small> <div class="mt-2"> <small class="card-text text-muted"><span class="fw-500">Notice: </span>If you forget your passcode, you can disable it through email verification. For standard disabling, only your passcode is required.</small> </div> </div> <div class="mt-2"> <div class="box-inside" id="PasscodeNotSet_Box"> <form method="post" asp-controller="Account" asp-action="SetPasscodeLock" id="SetPasscodeLock_Form"> <div> <label class="form-label fw-500">Passcode</label> <input type="text" class="form-control form-control-guard form-textarea" asp-for="Passcode" id="SPL_Passcode_Val" placeholder="Passcode value" data-min-length="1" data-target="SetPasscodeLock_SbmtBtn" maxlength="12" /> </div> <div class="mt-1 ms-1"> <button type="button" class="btn btn-standard-bordered btn-sm float-end ms-1" id="SPL_Passcode_Val-Indicator_Span">0/12</button> <small class="card-text text-muted">The passcode can include any character, but its length cannot exceed <span class="fw-500">12</span> characters</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="SetPasscodeLock_SbmtBtn">Turn On</button> </div> </form> </div> <div class="box-inside" id="PasscodeSet_Box" style="display: none;"> <div class="box-btn-group"> <button type="button" class="btn box-btn-group-member box-btn-group-top-member text-start"> <span id="PasscodeLockIcon_Span"><i class="fa-solid fa-lock"></i></span> Passcode Status: <span class="fw-500" id="PasscodeLockStatus_Span">Unlocked</span> <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button> <button type="button" class="btn box-btn-group-member box-btn-group-mid-member text-start"> <i class="fa-solid fa-pencil"></i> Edit Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button> <button type="button" class="btn box-btn-group-member box-btn-group-bot-member text-start text-danger"> <i class="fa-solid fa-xmark"></i> Disable Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button> </div> </div> </div> </div> </div>', '<button type="button" class="btn btn-standard btn-open-vertical-switcher btn-sm" id="ProfileSecurity_VS_Box-Open"> <i class="fa-solid fa-bars"></i> Menu</button>', null);
+                //btn-show-inside-box CheckThePassword_Form
+                createAContainer("ProfileSecurity", "Security Settings", '<div class="box-vertical-switcher shadow-sm" id="ProfileSecurity_VS_Box"> <div class="box-vertical-switcher-header hstack gap-1"> <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button> </div> <div class="mt-2"> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-box-vertical-swticher-active btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasswordSettings_Box-Show_Btn"> <i class="fa-solid fa-shield-halved"></i> Password Settings</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="PasscodeLockSettings_Box-Show_Btn"> <i class="fa-solid fa-lock"></i> Passcode Lock</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" data-big-switcher="true" id="EmailVerification_Box-Show_Btn"> <i class="fa-solid fa-envelope-circle-check"></i> Email Verification</button> <button type="button" class="btn btn-box-vertical-swticher btn-close-vertical-switcher btn-show-inside-box" data-switcher-internal-id="0" id="TFA_VS_Btn"> <i class="fa-solid fa-key"></i> 2FA Settings</button> </div> </div> <div class="ps-1 pe-1"> <div class="big-box-switchable" id="PasswordSettings_Box"> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaCurrentPassword_Box-ShowBtn">via Current Password</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-show-inside-box" data-switcher-internal-id="0" id="ResetPasswordViaEmail_Box-ShowBtn">via Email Code</button> </div> </div> <div class="box-switchable" id="ResetPasswordViaCurrentPassword_Box"> <form method="get" action="/Account/CheckThePassword" id="CheckThePassword_Form"> <div class="d-none"> <input type="hidden" name="Email" id="CTP_Email_Val" value="@UserInfo.Email" /> </div> <div class="mt-3"> <span class="form-label fw-500">Current Password</span> <div> <small class="card-text text-muted" id="CTP_Email_Span">@UserInfo.Email</small> </div> <input type="password" class="form-control form-control-guard mt-2" name="Password" id="CTP_Password_Val" data-min-length="8" data-target="CheckThePassword_SbmtBtn" placeholder="Your current password" maxlength="32" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">No verification is required, just enter your account password to confirm ownership</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="CheckThePassword_SbmtBtn">Continue</button> </div> </form> </div> <div class="box-switchable mt-2" id="ResetPasswordViaEmail_Box" style="display: none;"> <div class="box-switchable" id="SPRCStep1_Box" style="display: block;"> <div class="mt-2"> <label class="form-label fw-500">Email</label> <input type="email" name="Email" class="form-control super-disabled" placeholder="Your email address" maxlength="75" value="@UserInfo.Email" id="SPRCStep1_Email_Val" readonly /> </div> <div class="mt-3"> <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="RPStep1_SbmtBtn">Send Code</button> </div> <div class="box-bordered text-center p-2 mt-1"> <small class="card-text text-muted">A one-time verification code will be sent to your email within <span class="fw-500">6</span> minutes after completing the verification process. Please check your inbox for further instructions</small> </div> </div> <div class="box-switchable" id="SPRCStep2_Box" style="display: none;"> <form method="post" action="/Account/CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form"> <div> <input type="hidden" name="UserId" id="CPREC_Id_Val" /> <input type="hidden" name="Type" id="CPREC_Type_Val" value="1" /> <div class="text-center"> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="0-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="1-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="2-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="3-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="4-CPREC_Code_Val-Indicator"></div> <div class="char-indicator-empty" data-parent="CPREC_Code_Val" id="5-CPREC_Code_Val-Indicator"></div> </div> <div> <input type="text" name="Code" id="CPREC_Code_Val" class="form-control form-control-for-numbers-only form-control-guard-code form-control-guard mt-2" data-min-length="6" data-on-fulfill="CheckPasswordResetEmailCode_Form" placeholder="6-digit code" maxlength="6" /> </div> </div> </form> <div class="box-bordered text-center mt-1 p-2" id="CodeResendTime_Box"> <small class="card-text text-muted" id="CodeResendTimer_Lbl">You will be able to receive a new code shortly</small> <div class="mt-1"> <form method="post" action="/Account/SendPasswordResetCode" id="SendPasswordResetCode_Form"> <input type="hidden" name="Email" id="SPRC_Email_Val" value="@UserInfo.Email" /> <button type="submit" class="btn btn-standard-bolded super-disabled w-100" id="SPRC_SbmtBtn"> <i class="fa-solid fa-arrow-rotate-right"></i> Resend Code</button> </form> </div> </div> </div> </div> <div class="box-switchable mt-2" id="SetNewPassword_Box" style="display: none;"> <form method="post" action="/Profile/UpdateThePassword" id="UpdateThePassword_Form"> <div class="d-none"> <input type="hidden" name="Type" id="UTP_Type_Val" value="0" /> <input type="hidden" name="AdditionalInfo" id="UTP_AdditionalInfo_Val" /> </div> <div> <label class="form-label fw-500">New Password</label> <input type="password" name="NewPassword" id="UTP_Password_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Your new password" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Your new password must be between <span class="fw-500">8</span> and <span class="fw-500">32</span> characters long and must not be the same as your current password</small> </div> <div class="mt-3"> <label class="form-label fw-500">Confirm Password</label> <input type="password" name="ConfirmPassword" id="UTP_ConfirmPassword_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Confirm your new password" /> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="UpdateThePassword_SbmtBtn">Save Changes</button> </div> </form> </div> </div> <div class="big-box-switchable" id="PasscodeLockSettings_Box" style="display: none;"> <div class="box-bordered p-2"> <div class="dropdown float-end ms-1"> <button class="btn btn-standard-bordered btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm p-1"> <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-clock"></i> Passcode timer</button></li> </ul> </div> <div class="hstack gap-1"> <div> <small class="card-text"><span id="PasscodeLockIcon_Span"><i class="fa-solid fa-lock"></i></span> Passcode Status: <span class="fw-500" id="PasscodeLockStatus_Span">Unlocked</span></small> <div class="mt-1"> <button type="button" class="btn btn-standard-bordered btn-show-inside-box btn-sm text-start me-1" id="PasscodeEdit_Box-OpenBtn"> <i class="fa-solid fa-pencil"></i> Edit</button> <button type="button" class="btn btn-standard-bordered btn-show-inside-box btn-sm text-start text-danger" id="PasscodeDrop_Box-OpenBtn"> <i class="fa-solid fa-xmark"></i> Disable</button> </div> </div> </div> </div> <div class="box-switchable mt-2" id="PasscodeNotSet_Box" style="display: none;"> <div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3> <h4 class="h4">Passcode Lock</h4> <small class="card-text text-muted">When a passcode is set, an additional account verification step is required whenever someone attempts to access your account. Another passcode must be entered before the account can be used</small> <div class="mt-2"> <small class="card-text text-muted"><span class="fw-500">Notice: </span>If you forget your passcode, you can disable it through email verification. For standard disabling, only your passcode is required</small> </div> </div> <div class="mt-2"> <form method="post" action="/Account/SetPasscodeLock" id="SetPasscodeLock_Form"> <div> <label class="form-label fw-500">Passcode</label> <input type="text" class="form-control form-control-guard form-textarea" name="Passcode" id="SPL_Passcode_Val" placeholder="Passcode value" data-min-length="1" data-target="SetPasscodeLock_SbmtBtn" maxlength="12" /> </div> <div class="mt-1 ms-1"> <button type="button" class="btn btn-standard-bordered btn-sm float-end ms-1" id="SPL_Passcode_Val-Indicator_Span">0/12</button> <small class="card-text text-muted">The passcode can include any character, but its length cannot exceed <span class="fw-500">12</span> characters</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="SetPasscodeLock_SbmtBtn">Turn On</button> </div> </form> </div> </div> <div class="box-switchable mt-2" id="PasscodeEdit_Box" style="display: none;"> <div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-pencil"></i> </h3> <h4 class="h4">Edit Passcode</h4> <small class="card-text text-muted">Modify your passcode without removing it</small> </div> <div class="mt-2"> <form method="post" action="/Account/EditPasscodeLock" id="EditPasscodeLock_Form"> <div> <label class="form-label fw-500">Current Passcode</label> <input type="text" name="CurrentPasscode" id="EPL_CurrentPasscode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="EditPasscodeLock_SbmtBtn" maxlength="12" placeholder="Current passcode" /> </div> <div class="mt-3"> <label class="form-label fw-500">New Passcode</label> <input type="text" name="Passcode" id="EPL_Passcode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="EditPasscodeLock_SbmtBtn" maxlength="12" placeholder="New passcode" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">The passcode can include any character, but its length is limited to <span class="fw-500">12</span> characters</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditPasscodeLock_SbmtBtn">Save Changes</button> </div> </form> <div class="box-bordered text-center p-2 mt-2"> <small class="card-text text-muted">Forgot your current passcode?</small> <div class="mt-2"> <button type="button" class="btn btn-standard-bordered btn-sm text-center w-100" id="SendPasscodeViaEmail_Btn">Send via Email</button> </div> </div> </div> </div> <div class="box-switchable" id="PasscodeDrop_Box" style="display: none;"> <div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock-open"></i> </h3> <h4 class="h4">Passcode Disabling</h4> <small class="card-text text-muted">When a passcode is disabled, you will no longer need to enter an additional code to access or manage your account. To remove your passcode, simply enter it here.<br />If you forgot your passcode, you can reset it by receiving a special code in your inbox to verify ownership of the account</small> </div> <div class="mt-2"> <form method="post" action="/Account/DisablePasscodeLock" id="DisablePasscodeLock_Form"> <div> <label class="form-label fw-500">Passcode</label> <input type="text" name="CurrentPasscode" id="DPL_Passcode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="DisablePasscodeLock_SbmtBtn" maxlength="12" placeholder="Current passcode" /> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="DisablePasscodeLock_SbmtBtn">Turn Off</button> </div> </form> </div> <div class="box-bordered text-center p-2 mt-2"> <small class="card-text text-muted">Forgot your passcode?</small> <div class="mt-2"> <form method="post" action="/Account/SendThePasscodeViaInbox" id="SendThePasscodeViaInbox_Form"> <button type="submit" class="btn btn-standard btn-sm bg-light w-100" id="SendThePasscodeViaInbox_SbmtBtn">Send via Email</button> </form> </div> </div> </div> </div> </div>', '<button type="button" class="btn btn-standard btn-open-vertical-switcher btn-sm" id="ProfileSecurity_VS_Box-Open"> <i class="fa-solid fa-bars"></i> Menu</button>', null);
                 $("#SPRC_Email_Val").val(response.guts.email);
                 $("#CTP_Email_Val").val(response.guts.email);
                 $("#SPRCStep1_Email_Val").val(response.guts.email);
-                $("#CTP_Email_Span").text(response.guts.email);
-
+                $("#CTP_Email_Span").text(response.guts.email);//btn-show-inside-box
+                
                 if (response.guts.passcode == null) {
                     $("#PasscodeSet_Box").fadeOut(0);
                     $("#PasscodeNotSet_Box").fadeIn(0);
                     $("#PasscodeLockStatus_Span").text("Unlocked");
+                    $("#PasscodeDrop_Box-OpenBtn").addClass("super-disabled");
                     $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock-open"></i>');
+                    showSwitchableBox(false, "PasscodeNotSet_Box");
                 }
                 else {
                     $("#PasscodeSet_Box").fadeIn(0);
                     $("#PasscodeNotSet_Box").fadeOut(0);
                     $("#PasscodeLockStatus_Span").text("Locked");
+                    $("#PasscodeDrop_Box-OpenBtn").removeClass("super-disabled");
                     $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock"></i>');
+                    showSwitchableBox(false, "PasscodeEdit_Box");
                 }
+                $("#ResetPasswordViaCurrentPassword_Box").fadeIn(0);
                 setTimeout(function () {
-                    callAContainer(false, "ProfileSecurity_Container");
+                    slideContainers(null, "ProfileSecurity_Container");
                 }, 150);
             }
         }
@@ -316,7 +356,7 @@ $("#GetAccountGuts_Form").on("submit", function (event) {
     });
 });
 
-$("#SetPasscodeLock_Form").on("submit", function (event) {
+$(document).on("submit", "#SetPasscodeLock_Form", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
     let data = $(this).serialize();
@@ -327,7 +367,8 @@ $("#SetPasscodeLock_Form").on("submit", function (event) {
         if (response.success) {
             $("#PasscodeLockStatus_Span").text("Locked");
             $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock"></i>');
-            showInsideBox("PasscodeSet_Box");
+            $("#PasscodeDrop_Box-OpenBtn").removeClass("super-disabled");
+            showSwitchableBox(false, "PasscodeSet_Box");
             setTimeout(function () {
                 $("#SPL_Passcode_Val").val(null);
                 callAlert('<i class="fa-solid fa-lock"></i>', null, null, "The passcode lock has been successfully enabled on your account", 3.25, "Close", 0, null);
@@ -335,10 +376,100 @@ $("#SetPasscodeLock_Form").on("submit", function (event) {
         }
         else {
             $("#SPL_Passcode_Val").val(null);
+            $("#SetPasscodeLock_SbmtBtn").addClass("super-disabled");
             callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;></i>', null, null, "The passcode is not acceptable. Please try another one", 3.75, "Close", 0, null);
         }
         buttonUndisabler(false, "SetPasscodeLock_SbmtBtn", baseHtml);
     });
+});
+
+$(document).on("submit", "#EditPasscodeLock_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#EditPasscodeLock_SbmtBtn").html();
+    buttonDisabler(false, "EditPasscodeLock_SbmtBtn", "Editing Passcode...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#PasscodeLockStatus_Span").text("Locked");
+            $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock"></i>');
+            $("#PasscodeDrop_Box-OpenBtn").removeClass("super-disabled");
+            showSwitchableBox(false, "PasscodeSet_Box");
+            setTimeout(function () {
+                $("#EPL_Passcode_Val").val(null);
+                $("#EPL_CurrentPasscode_Val").val(null);
+                callAlert('<i class="fa-solid fa-pencil"></i>', null, null, "The passcode has been successfully edited", 3.25, "Close", 0, null);
+            }, 350);
+        }
+        else {
+            $("#EPL_Passcode_Val").val(null);
+            $("#EPL_CurrentPasscode_Val").val(null);
+            $("#EditPasscodeLock_SbmtBtn").addClass("super-disabled");
+            callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;></i>', null, null, "Current passcode is not valid. Please try again", 3.5, "Close", 0, null);
+        }
+        buttonUndisabler(false, "EditPasscodeLock_SbmtBtn", baseHtml);
+    });
+});
+
+$(document).on("submit", "#DisablePasscodeLock_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#DisablePasscodeLock_SbmtBtn").html();
+    buttonDisabler(false, "DisablePasscodeLock_SbmtBtn", "Disabling Passcode...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#PasscodeLockStatus_Span").text("Disabled");
+            $("#PasscodeLockIcon_Span").html('<i class="fa-solid fa-lock-open"></i>');
+            $("#PasscodeDrop_Box-OpenBtn").addClass("super-disabled");
+            showSwitchableBox(false, "PasscodeSet_Box");
+            setTimeout(function () {
+                $("#SPL_Passcode_Val").val(null);
+                $("#DPL_Passcode_Val").val(null);
+                callAlert('<i class="fa-solid fa-lock-open"></i>', null, null, "The passcode lock has been successfully disabled on your account", 3.5, "Close", 0, null);
+            }, 350);
+        }
+        else {
+            $("#DPL_Passcode_Val").val(null);
+            $("#DisablePasscodeLock_SbmtBtn").addClass("super-disabled");
+            callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;></i>', null, null, "This passcode is not valid. Please try a different one", 3.25, "Close", 0, null);
+        }
+        buttonUndisabler(false, "DisablePasscodeLock_SbmtBtn", baseHtml);
+    });
+});
+
+$(document).on("submit", "#SendThePasscodeViaInbox_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#SendThePasscodeViaInbox_SbmtBtn").html();
+    buttonDisabler(false, "SendPasscodeViaEmail_Btn", "Sending the Code...");
+    buttonDisabler(false, "SendThePasscodeViaInbox_SbmtBtn", "Sending the Code...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            callAlert('<i class="fa-solid fa-envelope-open-text"></i>', null, null, "We've sent your passcode to your email. Please check your inbox", 3.5, "Close", -1, null);
+            let timerResult = timer(90, "SendThePasscodeViaInbox_SbmtBtn", 1, false).then(function () {
+                if (timerResult) {
+                    buttonDisabler(false, "SendPasscodeViaEmail_Btn", baseHtml);
+                    buttonDisabler(false, "SendThePasscodeViaInbox_SbmtBtn", baseHtml);
+                    payAttention("SendPasscodeViaEmail_Btn", 5, 0.5);
+                    payAttention("SendThePasscodeViaInbox_SbmtBtn", 5, 0.5);
+                }
+            });
+            $("#SendPasscodeViaEmail_Btn").html("Resend in 90 seconds");
+        }
+        else {
+            callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;></i>', null, null, "Sorry, but we are currently unable to send your passcode to your email. Please try again later", 4, "Close", 0, null);
+            buttonUndisabler(false, "SendPasscodeViaEmail_Btn", baseHtml);
+            buttonUndisabler(false, "SendThePasscodeViaInbox_SbmtBtn", baseHtml);
+        }
+    });
+});
+$("#SendPasscodeViaEmail_Btn").on("mousedown", function () {
+    $("#SendThePasscodeViaInbox_Form").submit();
 });
 
 $("#ProfileUpdateSearchname_Form").on("submit", function (event) {
@@ -383,6 +514,54 @@ $("#ProfileUpdateMainInfo_Form").on("submit", function (event) {
             callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Information updating is temporarily unavailable. Please try again later", 4, "Close", 0, null);
         }
         buttonUndisabler(false, "UpdateMainInfo_SbmtBtn", defaultHtml);
+    });
+});
+
+$(document).on("submit", "#ProfileUpdatePrivacySettings_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#ProfileUpdatePrivacySettings_SbmtBtn").html();
+    buttonDisabler(false, "ProfileUpdatePrivacySettings_SbmtBtn", "Updating...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            uncallAContainer(false, "PrivacySettings_Container");
+            callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "Your account's privacy settings has been updated", 4, "Close", 0, null);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Privacy info updating is temporarily unavailable. Please try again later", 4, "Close", 0, null);
+        }
+        buttonUndisabler(false, "ProfileUpdatePrivacySettings_SbmtBtn", baseHtml);
+    });
+});
+
+$(document).on("submit", "#ProfileEditPersonal_Info", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let fullRealName;
+            if (response.result.realName.length > 0) {
+                for (let i = 0; i < response.result.realName.length; i++) {
+                    if (i == 0) fullRealName = response.result.realName[i];
+                    else fullRealName += ", " + response.result.realName[i];
+                }
+                $("#PersonaInfo_RealName_Lbl").html(fullRealName);
+            }
+            else $("#PersonaInfo_RealName_Lbl").html("Not Provided");
+            if (response.reuslt.countryId > 0) $("#PersonaInfo_CountryInfo_Lbl").html($("#LoadCountries_Btn").html());
+            else $("PersonaInfo_CountryInfo_Lbl").html(' <i class="fa-solid fa-flag-checkered"></i> ' + "Country not provided");
+            if (response.result.webpageLink != null) $("#WebpageLink_Span").html(response.result.webpageLink);
+            else $("#WebpageLink_Span").html("Not Provided");
+            callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "Personal information has been updated", 3.5, "Close", 0, null);
+        }
+        else {
+            uncallAContainer(false, "PersonalInfo_Container");
+            callAlert('<i class="fa-solid fa-circle-xmark fa-shake" --fa-animation-duration: 0.75s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, "Personal info updating is temporarily unavailable. Please try again later", 3.75, "Close", 0, null);
+        }
     });
 });
 
@@ -533,6 +712,255 @@ $("#ProfileDeleteAllImages_Form").on("submit", function (event) {
     });
 });
 
+$("#GetAccountPersonalInformation_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#GetAccountPersonalInformation_SbmtBtn").html();
+    buttonDisabler(false, "GetAccountPersonalInformation_SbmtBtn", "Loading...");
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            createAContainer("PersonalInfo", "Personal Info", '<div class="box-vertical-switcher shadow-sm" id="PersonalInfo_VS_Box"> <div class="box-vertical-switcher-header hstack gap-1"> <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button> </div> <div class="mt-2" id="PersonalInfo_VSItems_Box"> <span class="h5" id="PersonalInfo_VMMembersQty_Lbl"></span> <div></div> <small class="card-text text-muted">Tap on each member to remove them</small> <div class="mt-2" id="PersonalInfo_VMMembersListed_Box"> </div> </div> </div> <div class="box-bordered p-2"> <span class="h4" id="PersonaInfo_RealName_Lbl">Donald J. Trump</span> <div class="hstack gap-1"> <small class="card-text me-1" id="PersonaInfo_CountryInfo_Lbl"> <img src="https://flagcdn.com/16x12/jp.png" srcset="https://flagcdn.com/32x24/jp.png 2x, https://flagcdn.com/48x36/jp.png 3x" width="20" height="15" alt="Japan"> Japan </small> <button type="button" class="btn btn-link btn-sm" id="PersonalInfo_WebpageLink_Btn"><span class="card-text text-muted"> <i class="fa-solid fa-link"></i> </span> <span id="WebpageLink_Span">DonaldJTrump.com</span></button> </div> </div> <div class="mt-2"> <form method="post" asp-controller="Profile" asp-action="EditPersonalInfo" id="ProfileEditPersonal_Info"> <div> <span class="form-label fw-500 ms-1">Full Name</span> <div class="mt-1" id="EPI_Fullnames_Box"> <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" id="AddRealNameMember_Btn" data-prototype="EPI_RealName-0"> <i class="fa-solid fa-user-plus"></i> Add Member</button> <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm" id="PersonalInfo_VS_Box-OpenBtn" data-prototype="EPI_RealName-0" style="display: none;"> <i class="fa-solid fa-user-minus"></i> Remove Member</button> <button type="button" class="btn btn-standard-bordered btn-sm ms-1" id="EPI_RealnamesCounter_Span">0/350</button> <input type="text" class="form-control form-control-juxtaposed mt-1" name="RealName" id="EPI_RealName-0" placeholder="Provide your full name" data-update="PersonaInfo_RealName_Lbl" data-base-value="Unknown" data-target="EditPersonalInfo_SbmtBtn" data-counter-display="EPI_RealnamesCounter_Span" data-counter-maxlength="350" data-index="0" /> <input type="text" class="d-none" name="CountryId" id="EPI_CountryId_Val" value="0" /> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="EPI_RealName-Warn" data-list="false">If you are a band, add extra rows to list all band your names</small > </div > <div class="mt-3"> <label class="form-label fw-500 ms-1">Webpage Link</label> <input type="text" class="form-control form-control-guard" name="WebpageLink" id="EPI_WebPage_Val" data-update="WebpageLink_Span" data-base-value="Not provided" placeholder="https://webpagelink.com/" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Enter the link to your official webpage (if available). This field is optional</small> </div> <div class="mt-3"> <span class="form-label fw-500 ms-1">Country</span> <div class="mt-1" id="CountryBtn_Box"> <button type="button" class="btn btn-standard-bordered btn-load-countries btn-sm" id="LoadCountries_Btn" data-is-loaded="false"> <img src="https://flagcdn.com/20x15/de.png" srcset="https://flagcdn.com/40x30/jp.png 2x, https://flagcdn.com/60x45/jp.png 3x" width="20" height="15" alt="Japan" /> Japan </button> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Tap the button to choose your country</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled w-100" id="EditPersonalInfo_SbmtBtn">Save Changes</button> </div> </form> </div>', null, null);
+            if (response.result.realName != null) {
+                $("#PersonaInfo_RealName_Lbl").html(response.result.realName);
+                let realNames = getCommaSeparatedValues(response.result.realName);
+                if (realNames.length > 1) {
+                    $("#EPI_RealName-0").val(realNames[0]);
+                    for (let i = 0; i < realNames.length - 1; i++) {
+                        let acutalIndex = i + 1;
+                        let id = copyAnElement("EPI_RealName-" + i, true);
+                        $("#" + id).val(realNames[acutalIndex]);
+                    }
+                    $("#PersonalInfo_VS_Box-OpenBtn").fadeIn(300);
+                }
+                else {
+                    $("#EPI_RealName-0").val(realNames[0]);
+                    $("#PersonalInfo_VS_Box-OpenBtn").fadeOut(300);
+                }
+                let trueLength = parseInt(realNames.length) - 1;
+                let maxLength = $("#EPI_RealName-0").attr("data-counter-maxlength");
+                $("#AddRealNameMember_Btn").attr("data-prototype", "EPI_RealName-" + trueLength);
+                juxtaposedCharsCounter("EPI_RealName-0", maxLength, "EPI_RealnamesCounter_Span");
+            }
+            else $("#PersonaInfo_RealName_Lbl").text("Unknown");
+            if (response.result.countryId > 0) {
+                $("#LoadCountries_Btn").html(createCountryFlagIcon(response.result.country.shortname, 20, 15) + " " + response.result.country.name);
+                $("#PersonaInfo_CountryInfo_Lbl").html(createCountryFlagIcon(response.result.country.shortname, 20, 15) + " " + response.result.country.name);
+            }
+            else {
+                $("#LoadCountries_Btn").text("Tap to Show");
+                $("#PersonaInfo_CountryInfo_Lbl").html(' <i class="fa-solid fa-flag-checkered"></i> ' + 'Country not provided');
+            }
+            if (response.result.webpage != null) {
+                $("#EPI_WebPage_Val").val(response.result.webpage);
+                $("#WebpageLink_Span").html(response.result.webpage);
+            }
+            else {
+                $("#EPI_WebPage_Val").val(null);
+                $("#WebpageLink_Span").text("Web page not provided");
+            }
+        }
+        else {
+            callAlert('<i class="fa-solid fa-image"></i>', null, null, "Personal information is temporarily unavailable", 3.5, "Close", 0, null);
+        }
+        buttonUndisabler(false, "GetAccountPersonalInformation_SbmtBtn", baseHtml);
+
+        setTimeout(function () {
+            slideContainers(null, "PersonalInfo_Container");
+        }, 150);
+    });
+});
+
+function unsetCurrentSwitcherValues(elementId, switcherInternalIndex) {
+    elementId = elementId.includes("-") ? getTrueId(elementId, false) : elementId;
+    let neccessarySwitchers = [];
+    let allSwitchersOnPage = document.getElementsByClassName("btn-box-switcher-member");
+    if (allSwitchersOnPage.length > 0) {
+        for (let i = 0; i < allSwitchersOnPage.length; i++) {
+            if (($("#" + allSwitchersOnPage[i].id).attr("data-switcher-internal-id") == switcherInternalIndex) && (getTrueId(allSwitchersOnPage[i].id) == elementId)) {
+                neccessarySwitchers.push(allSwitchersOnPage[i]);
+            }
+        }
+
+        if (neccessarySwitchers.length > 0) {
+            for (let i = 0; i < neccessarySwitchers.length; i++) {
+                $("#" + neccessarySwitchers[i].id).removeClass("btn-box-switcher-member-active");
+            }
+        }
+    }
+}
+
+$("#GetPrivacySettings_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#ProfileUpdatePrivacySettings_SbmtBtn").html();
+    buttonDisabler(false, "ProfileUpdatePrivacySettings_SbmtBtn", "Loading Setting...");
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            createAContainer("PrivacySettings", "Privacy Settings", '<div> <form method="post" href="/Profile/UpdatePrivacySettings" id="ProfileUpdatePrivacySettings_Form"> <div> <label class="form-label fw-500">Who is able to send you messages?</label> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="0" data-description="Everyone can send you messages and receive your replies" id="WhoCanChat-0_Btn">Everyone</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="1" data-description="Only your subscribers can send you messages and receive your replies" id="WhoCanChat-1_Btn">Subscribers</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="2" data-description="Only individually by you chosen people will be able to send you messages and receive your replies" id="WhoCanChat-2_Btn">Individual</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="3" data-description="Your direct messages will remain completely silent" id="WhoCanChat-3_Btn">No One</button> </div> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="UPS_WhoCanChat_Val-Warn">Everyone can send you messages and receive your replies</small> </div> <div class="mt-3"> <div> <label class="form-label fw-500">Who is able to download content from your page?</label> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="0" data-description="Everyone can save content from your page" id="WhoCanDownload-0_Btn">Everyone</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="1" data-description="Only subscribers can save your content" id="WhoCanDownload-1_Btn">Subscribers</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="2" data-description="Only individually chosen users can save your content" id="WhoCanDownload-2_Btn">Individual</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="3" data-description="No one can save your content" id="WhoCanDownload-3_Btn">No One</button> </div> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="UPS_WhoCanDownload_Val-Warn">Everyone can save content from your page</small> </div> </div> <div class="mt-3"> <div> <label class="form-label fw-500">Who can see your last seen date and time?</label> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="2" data-target="UPS_WhoCanSeeLastSeenInfo_Val" data-value="0" data-description="Your last seen date and time are visible to everyone" id="WhoCanSeeLastSeen-0_Btn">Everyone</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="2" data-target="UPS_WhoCanSeeLastSeenInfo_Val" data-value="1" data-description="Only your subscribers can see your last seen date and time" id="WhoCanSeeLastSeen-1_Btn">Subscribers</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="2" data-target="UPS_WhoCanSeeLastSeenInfo_Val" data-value="2" data-description="No one can see your last seen date and time" id="WhoCanSeeLastSeen-2_Btn">No One</button> </div> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="UPS_WhoCanSeeLastSeenInfo_Val-Warn">Your last seen date and time are visible to everyone</small> </div> </div> <div class="mt-3"> <div> <label class="form-label fw-500">Is your account visible?</label> <div class="box-switcher row ms-1 me-1"> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="3" data-target="UPS_IsVisible_Val" data-value="true" data-description="Your account can be found through a regular user search" id="IsVisible-0_Btn">Standard</button> </div> <div class="col"> <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="3" data-target="UPS_IsVisible_Val" data-value="false" data-description="Your account cannot be found through regular search, but you can still gain new subscribers and users via your special link" id="IsVisible-1_Btn">Hidden</button> </div> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="UPS_IsVisible_Val-Warn">Your account can be found through a regular user search</small> </div> </div> <div class="d-none"> <input type="number" name="WhoCanChat" id="UPS_WhoCanChat_Val" value="0" /> <input type="number" name="WhoCanDownload" id="UPS_WhoCanDownload_Val" value="0" /> <input type="number" name="WhoCanSeeLastSeenInfo" id="UPS_WhoCanSeeLastSeenInfo_Val" value="0" /> <input type="text" name="IsVisible" id="UPS_IsVisible_Val" value="true" /> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled w-100" id="ProfileUpdatePrivacySettings_SbmtBtn">Save Changes</button> </div> </form> </div> </div>', null, null);
+            unsetCurrentSwitcherValues("WhoCanChat", 0);
+            unsetCurrentSwitcherValues("WhoCanDownload", 1);
+            unsetCurrentSwitcherValues("WhoCanSeeLastSeen", 2);
+            if (response.result.isVisible) {
+                $("#IsVisible-0_Btn").addClass("btn-box-switcher-member-active");
+                $("#IsVisible-1_Btn").removeClass("btn-box-switcher-member-active");
+            }
+            else {
+                $("#IsVisible-0_Btn").removeClass("btn-box-switcher-member-active");
+                $("#IsVisible-1_Btn").addClass("btn-box-switcher-member-active");
+            }
+            $("#WhoCanChat-" + response.result.whoCanChat + "_Btn").mousedown();
+            $("#WhoCanDownload-" + response.result.whoCanDownload + "_Btn").mousedown();
+            $("#WhoCanSeeLastSeen-" + response.result.whoCanSeeLastSeenInfo + "_Btn").mousedown();
+            $("#UPS_WhoCanChat_Val").val(response.result.whoCanChat);
+            $("#UPS_WhoCanDownload_Val").val(response.result.whoCanDownload);
+            $("#UPS_WhoCanSeeLastSeenInfo_Val").val(response.result.whoCanSeeLastSeenInfo);
+            $("#UPS_IsVisible_Val").val(response.result.isVisible);
+
+            setTimeout(function () {
+                slideContainers(null, "PrivacySettings_Container");
+            }, 150);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-shield-halved"></i>', null, null, "Privacy settings are temporarily unavailable", 3.5, "Close", 0, null);
+        }
+        buttonUndisabler(false, "ProfileUpdatePrivacySettings_SbmtBtn", baseHtml);
+    });
+});
+
+$(document).on("mousedown", "#PersonalInfo_Container-Open", function () {
+    $("#GetAccountPersonalInformation_Form").submit();
+});
+
+$("#GetCountries_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    buttonDisabler(true, "btn-load-countries", "Loading...");
+   
+    $.get(url, data, function (response) {
+        if (response.success) {
+            createInsideLgCard("CountriesList", "Countries (Listed)", '<div class="box-standard p-2 pt-0"> <div class="form-control-search-container"> <span class="form-control-search-icon" id="CountriesListed_Search_Val-Icon_Span"><i class="fa-solid fa-magnifying-glass"></i></span> <input type="text" class="form-control form-control-search" autocomplete="off" placeholder="Search" id="CountriesListed_Search_Val" data-search-in="country-search-member" /> </div> <div class="mt-2" id="CountriesListed_Box"> </div> </div>', null, null);
+            setTimeout(function () {
+                $.each(response.result, function (index) {
+                    let countryFlagImg = createCountryFlagIcon(response.result[index].shortname, 20, 15);
+                    let countryBtn = $("<button type='button' class='btn btn-standard btn-sm text-start country-search-member w-100'></button>");
+                    let countryNameSpan = $("<span class='ms-1'></span>");
+                    countryNameSpan.html(response.result[index].name);
+                    countryBtn.append(countryFlagImg);
+                    countryBtn.append(countryNameSpan);
+                    countryBtn.attr("id", response.result[index].id + "-Country_Btn");
+
+                    $("#CountriesListed_Box").append(countryBtn);
+                });
+                callAContainer(false, "CountriesList_Container", true);
+                $(".btn-load-countries").attr("data-is-loaded", true);
+            }, 150);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-globe"></i>', null, null, "Countries are temporarily unavailable. Please try again later", 3.5, "Close", 0, null);
+        }
+        buttonUndisabler(true, "btn-load-countries", "Tap to Show");
+    });
+});
+
+$(document).on("keyup", ".form-control-juxtaposed", function () {
+    let elementTrueId = getTrueId($(this).attr("id"));
+    if (elementTrueId != undefined) {
+        let maxLength = parseInt($(this).attr("data-counter-maxlength"));
+        let resultDisplay = $(this).attr("data-counter-display");
+        let updateDisplay = $(this).attr("data-update");
+        let baseValue = $(this).attr("data-base-value");
+        juxtaposedCharsUpdater(elementTrueId, baseValue, updateDisplay);
+        juxtaposedCharsCounter(elementTrueId, maxLength, resultDisplay);
+    }
+});
+
+$(document).on("mousedown", ".btn-add-element", function () {
+    let prototype = $(this).attr("data-prototype");
+    let newElementId = copyAnElement(prototype, true);
+    $("#PersonalInfo_VS_Box-OpenBtn").fadeIn(300);
+    $(this).attr("data-prototype", newElementId);
+});
+
+$(document).on("mousedown", ".btn-remove-element", function () {
+    let trueId = getTrueId($(this).attr("id"), true);
+    if (trueId != undefined) {
+        $("#" + trueId).remove();
+        $(".btn-close-vertical-switcher").mousedown();
+    }
+});
+
+$(document).on("mousedown", ".btn-elements-listed", function () {
+    let prototype = $(this).attr("data-prototype");
+    if (prototype != undefined) {
+        let qty = 0;
+        let prototypeTrueId = getTrueId(prototype, false);
+        let allItems = $("[id*='" + prototypeTrueId + "']");
+        $("#PersonalInfo_VMMembersListed_Box").empty();
+        if (allItems.length > 0) {
+            for (let i = 0; i < allItems.length; i++) {
+                if ($("#" + allItems[i].id).attr("data-list") != "false") {
+                    qty++;
+                    let itemsToEdit = $("<button type='button' class='btn btn-standard btn-standard-bordered btn-remove-element btn-sm w-100 mb-1'></button>");
+                    itemsToEdit.attr("id", "ToRemove-" + allItems[i].id);
+                    if ($("#" + allItems[i].id).val() != "") itemsToEdit.html($("#" + allItems[i].id).val());
+                    else itemsToEdit.text("Not provided");
+
+                    $("#PersonalInfo_VMMembersListed_Box").append(itemsToEdit);
+                }
+            }
+            $("#PersonalInfo_VMMembersQty_Lbl").html("Members: " + qty);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-load-countries", function () {
+    let isCurrentlyLoaded = $(this).attr("data-is-loaded");
+    if (isCurrentlyLoaded == "true") {
+        callAContainer(false, "CountriesList_Container", true);
+    }
+    else $("#GetCountries_Form").submit();
+});
+
+$(document).on("keyup", ".form-control-search", function () {
+    let trueId = $(this).attr("id");
+    if (trueId != undefined) {
+        let currentLength = $(this).val().length;
+        let filterMembersClassname = $(this).attr("data-search-in");
+        let itemsArr = [];
+        let items = document.getElementsByClassName(filterMembersClassname);
+
+        if (currentLength > 0) $("#" + trueId + "-Icon_Span").html('<i class="fa-solid fa-ellipsis fa-fade"></i>');
+        else $("#" + trueId + "-Icon_Span").html('<i class="fa-solid fa-magnifying-glass"></i>');
+
+        if (filterMembersClassname != undefined && currentLength > 0) {
+            for (let i = 0; i < items.length; i++) {
+                itemsArr.push(items[i]);
+            }
+            localItemFilter(itemsArr, $(this).val());
+        }
+        else {
+            for (let i = 0; i < items.length; i++) {
+                $("#" + items[i].id).fadeIn(0);
+            }
+        }
+    }
+});
+
+$(document).on("mousedown", ".country-search-member", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        $(".country-search-member").removeClass("bg-chosen-bright");
+        $(this).addClass("bg-chosen-bright");
+        $("#EPI_CountryId_Val").val(trueId);
+        $("#LoadCountries_Btn").html($(this).html());
+    }
+});
+
 $(document).on("mousedown", ".profile-avatar-img", function () {
     if (currentPageUrl.toLowerCase().includes("/profile/p")) {
         if ($(this).hasClass("loaded")) {
@@ -560,14 +988,27 @@ $(document).on("mousedown", ".btn-show-inside-box", function () {
     let trueId = getTrueId($(this).attr("id"), false);
     if (trueId != undefined) {
         let isBigBox = $(this).attr("data-big-switcher");
+        console.log(isBigBox);
         if (isBigBox == "true") showSwitchableBox(true, trueId);
         else showSwitchableBox(false, trueId);
     }
 });
+
+$(document).on("mousedown", ".btn-change-the-value", function () {
+    let value = $(this).attr("data-value");
+    let target = $(this).attr("data-target");
+    if (value != undefined && target != undefined) {
+        if (Number.isInteger(value)) value = parseInt(value);
+        else if (value == "true" || value == "false") value = value == "false" ? false : true;
+        $("#" + target).val(value);
+    }
+});
+
 $(document).on("mousedown", ".btn-box-switcher-member", function () {
     let currentSwitchers = [];
     let allSwitchers = document.getElementsByClassName("btn-box-switcher-member");
     let currentSwitcherInternalId = $(this).attr("data-switcher-internal-id");
+    let description = $(this).attr("data-description");
     if (allSwitchers.length > 0 && currentSwitcherInternalId != undefined) {
         for (let i = 0; i < allSwitchers.length; i++) {
             if ($("#" + allSwitchers[i].id).attr("data-switcher-internal-id") == currentSwitcherInternalId) currentSwitchers.push(allSwitchers[i]);
@@ -579,6 +1020,10 @@ $(document).on("mousedown", ".btn-box-switcher-member", function () {
             $("#" + currentSwitchers[i].id).removeClass("btn-box-switcher-member-active");
         }
         $(this).addClass("btn-box-switcher-member-active");
+    }
+    if (description != undefined) {
+        let targetId = $(this).attr('data-target');
+        if (targetId != undefined) $("#" + targetId + "-Warn").html(description);
     }
 });
 
@@ -616,56 +1061,6 @@ $(document).on("mousedown", ".btn-box-vertical-swticher", function () {
         $(this).addClass("btn-box-vertical-swticher-active");
     }
 });
-
-function showSwitchableBox(isBig, currentElementId) {
-    if (isBig) {
-        $(".big-box-switchable").fadeOut(300);
-        setTimeout(function () {
-            $("#" + currentElementId).fadeIn(300);
-        }, 300);
-    }
-    else {
-        $(".box-switchable").fadeOut(300);
-        setTimeout(function () {
-            $("#" + currentElementId).fadeIn(300);
-        }, 300);
-    }
-}
-
-function showInsideBox(currentElementId) {
-    $(".box-inside").fadeOut(300);
-    setTimeout(function () {
-        $("#" + currentElementId).fadeIn(300);
-    }, 300);
-}
-
-function loadAnotherFile(loadForward = true, skipValue = 1, maxLength, skippingInputId, formId) {
-    if (formId != null && skippingInputId != null) {
-        let skipTrueValue = parseInt($("#" + skippingInputId).val());
-        if (loadForward) {
-            skipTrueValue += skipValue;
-            skipTrueValue = skipTrueValue >= parseInt(maxLength) ? 0 : skipTrueValue;
-        }
-        else {
-            skipTrueValue -= skipValue;
-            skipTrueValue = skipTrueValue < 0 ? 0 : skipTrueValue;
-        }
-        let isNextImgLoaded = $("#" + skipTrueValue + "-ImgHdn_Val").val();
-        if (isNextImgLoaded == undefined) {
-            $("#" + skippingInputId).val(skipTrueValue);
-            $("#" + formId).submit();
-        }
-        else {
-            $(".profile-counter-slider").removeClass("bg-chosen");
-            $("#" + skipTrueValue + "-ImgSlider_Box").addClass("bg-chosen");
-            $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + isNextImgLoaded);
-            $("#" + skippingInputId).val(skipTrueValue);
-        }
-        $(".btn-edit-some-files").removeClass("super-disabled");
-        return isNextImgLoaded;
-    }
-    else return null;
-}
 
 $(document).on("mousedown", ".profile-avatar-img-enlarged", function () {
     let filesMaxLength = $("#ImagesQty_Val").val();
@@ -909,7 +1304,7 @@ $(document).on("mousedown", ".btn-box-backslide", function () {
 
 function getTrueId(id, afterwards = false) {
     if (id != null) {
-        if (afterwards) id = id.substring(id.indexOf("-"), id.length);
+        if (afterwards) id = id.substring(id.indexOf("-") + 1, id.length);
         else id = id.substring(0, id.indexOf("-"));
         return id;
     }
@@ -1084,6 +1479,30 @@ async function waitCounter(displayElementId, durationInSec) {
     else return false;
 }
 
+function copyAnElement(prototypeElementId, insertAfter = true) {
+    let prototypeElement = $("#" + prototypeElementId);
+    if (prototypeElement != undefined) {
+        if ($("#" + prototypeElementId).val().length > 0) {
+            let currentIndex = $("#" + $("#" + prototypeElementId).attr("id")).attr("data-index");
+            if (parseInt(currentIndex) != undefined) {
+                let newElementTrueId = getTrueId(prototypeElementId, false);
+                if (insertAfter) $("#" + prototypeElementId).clone().attr("id", newElementTrueId + "-" + ++currentIndex).insertAfter($("#" + prototypeElementId));
+                else $("#" + prototypeElementId).clone().attr("id", newElementTrueId + "-" + ++currentIndex).insertBefore($("#" + prototypeElementId));
+                $("#" + newElementTrueId + "-" + currentIndex).val(null);
+                $("#" + newElementTrueId + "-" + currentIndex).attr("data-index", currentIndex);
+
+                return newElementTrueId + "-" + currentIndex;
+            }
+            else return null;
+        }
+        else {
+            prototypeElementId = getTrueId(prototypeElementId, false);
+            textAlert(prototypeElementId + "-Warn", 0, "Start by naming the first one to add more rows", 3.5);
+        }
+    }
+    else return null;
+}
+
 function elementDisabler(byClassname, id, displayId, displayText) {
     if (!byClassname) $("#" + id).attr("disabled", true);
     else $("." + id).attr("disabled", true);
@@ -1152,10 +1571,58 @@ function forwardSlider(currentStep, maxStep, id) {
     }
 }
 
+function callTheMusicIsland(currentWidth) {
+    let newBotNavbarH = 0;
+    $(".ongaku-player-box").fadeIn(0);
+    if (parseInt(currentWidth) < 1024) {
+        newBotNavbarH = bottomNavbarH + 35;
+        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        setTimeout(function () {
+            newBotNavbarH -= 35;
+            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        }, 350);
+        setTimeout(function () {
+            newBotNavbarH += 10;
+            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        }, 700);
+    }
+    else {
+        newBotNavbarH = 56;
+        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        setTimeout(function () {
+            newBotNavbarH -= 48;
+            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        }, 350);
+        setTimeout(function () {
+            newBotNavbarH += 4;
+            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        }, 700);
+    }
+}
+
+function uncallTheMusicIsland(currentWidth) {
+    let newBotNavbarH = 0;
+    if (parseInt(currentWidth) < 1024) {
+        newBotNavbarH = bottomNavbarH + 32;
+        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", "-1200px");
+        }, 300);
+    }
+    else {
+        newBotNavbarH = 24;
+        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", "-1200px");
+        }, 300);
+    }
+}
+
 function displayCorrector(currentWidth, onPageStart) {
     if (parseInt(currentWidth) < 1024) {
         $(".box-lg-part").css("left", "0");
         $(".box-lg-part").css("width", "100%");
+        $(".box-lg-part-header").css("left", 0);
         $(".box-lg-part-header").css("width", "100%");
         $(".box-vertical-switcher").css("width", "98.25%");
         $(".box-vertical-switcher").css("left", "0.75%");
@@ -1169,6 +1636,8 @@ function displayCorrector(currentWidth, onPageStart) {
         $(".bottom-navbar").css("left", 0);
         $(".ongaku-alert").css("left", "1%");
         $(".ongaku-alert").css("width", "98.5%");
+        $(".ongaku-player-box").css("width", "98.25%");
+        $(".ongaku-player-box").css("left", "0.75%");
         if (onPageStart) {
             setTimeout(function () {
                 $(".box-sm-part").css("left", 0);
@@ -1198,6 +1667,9 @@ function displayCorrector(currentWidth, onPageStart) {
         $(".bottom-navbar").css("left", "37%");
         $(".ongaku-alert").css("left", "37.5%");
         $(".ongaku-alert").css("width", "62%");
+        $(".ongaku-player-box").css("width", "36%");
+        $(".ongaku-player-box").css("left", "0.4%");
+        $(".ongaku-player-box").css("bottom", "12px");
         $(".bottom-navbar").fadeIn(350);
         $(".box-lg-part").fadeIn(350);
         $(".ongaku-alert").fadeIn(350);
@@ -1321,7 +1793,6 @@ $(document).on("mousedown", ".btn-text-deformatting-off", function () {
     }
 });
 
-
 $(document).on("mousedown", ".btn-open-text-formatting", function () {
     let trueId = getTrueId($(this).attr("id"), true);
     if (trueId != undefined) {
@@ -1333,10 +1804,47 @@ $(document).on("mousedown", ".btn-open-text-formatting", function () {
     }
 });
 
+function createCountryFlagIcon(countryISO, width, height) {
+    if (countryISO != null || countryName != undefined) {
+        width = parseInt(width) == undefined ? 16 : width;
+        height = parseInt(height) == undefined ? 12 : height;
+        let countryImgTag = '<img src="https://flagcdn.com/16x12/' + countryISO.toLowerCase() + '.png" srcset = "https://flagcdn.com/32x24/' + countryISO.toLowerCase() + '.png 2x, https://flagcdn.com/48x36/' + countryISO.toLowerCase() + '.png 3x" "width="' + width + '" height="' + height + '" alt="' + countryISO + '"> ';
+        return countryImgTag;
+    }
+    else return null;
+}
+
+function localItemFilter(items, keyword) {
+    if (items != null && keyword != null) {
+        let newItems = [];
+        const mainTags = [
+            "BUTTON", "P", "IMG", "DIV", "SPAN", "A", "INPUT", "TEXTAREA",
+            "SELECT", "FORM", "TABLE", "TR", "TD", "UL", "OL", "LI",
+            "H1", "H2", "H3", "H4", "H5", "H6", "SECTION", "ARTICLE", "NAV"
+        ];
+        if (Array.isArray(items)) {
+            for (let i = 0; i < items.length; i++) {
+                if (mainTags.includes($("#" + items[i].id).prop("tagName"))) {
+                    if (!$("#" + items[i].id).html().toLowerCase().includes(keyword.toLowerCase())) {
+                        $("#" + items[i].id).fadeOut(0);
+                    }
+                }
+                else {
+                    if (items[i].toLowerCase().includes(keyword.toLowerCase())) {
+                        newItems.push(items[i]);
+                    }
+                }
+            }
+        }
+        return newItems;
+    }
+    else return null;
+}
+
 function createInsideLgCard(id, title, body, headerBtn1 = null, headerBtn2 = null) {
     let divExists = document.getElementById(id);
     if (divExists == null) {
-        $("body").append('<div class="box-lg-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-lg-inner-part-header p-2"> <div class="div-swiper mx-auto"></div> <div class="hstack gap-1" id="' + id + '-HeaderBtns_Box"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl"></span> </div> </div> </div> <div class="mt-1 p-1" id="' + id + '_Box"></div></div>');
+        $("body").append('<div class="box-lg-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-lg-inner-part-header p-2"> <div class="div-swiper mx-auto" id="' + id + '_Container-Swiper"></div> <div class="hstack gap-1" id="' + id + '-HeaderBtns_Box"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl"></span> </div> </div> </div> <div class="mt-1 p-1" id="' + id + '_Box"></div></div>');
         $("#" + id + "_Container-Header_Lbl").html(title);
         $("#" + id + "_Box").append(body);
         if (headerBtn1 != null) {
@@ -1358,9 +1866,9 @@ function createInsideLgCard(id, title, body, headerBtn1 = null, headerBtn2 = nul
 }
 
 function createAContainer(id, title, body, headerBtn1 = null, headerBtn2 = null) {
-    let divExists = document.getElementById(id);
+    let divExists = document.getElementById(id + "_Container");
     if (divExists == null) {
-        $("body").append('<div class="box-lg-part shadow-sm" id="' + id + '_Container"> <div class="box-lg-part-header p-2"> <div class="div-swiper mx-auto"></div> <div class="hstack gap-1"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl">' + title + '</span> </div> <div class="ms-auto" id="' + id + '-Header_Box"></div></div> </div> <div class="box-lg-part-body mt-5" id="' + id + '_Box"> </div> </div>');
+        $("body").append('<div class="box-lg-part shadow-sm" id="' + id + '_Container"> <div class="box-lg-part-header p-2"> <div class="div-swiper mx-auto" id="' + id + '_Container-Swiper"></div> <div class="hstack gap-1"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl">' + title + '</span> </div> <div class="ms-auto" id="' + id + '-Header_Box"></div></div> </div> <div class="box-lg-part-body mt-5" id="' + id + '_Box"> </div> </div>');
         $("#" + id + "_Box").append(body);
         if (headerBtn1 != null) {
             let firstButton = $(headerBtn1);
@@ -1389,6 +1897,104 @@ function createAContainer(id, title, body, headerBtn1 = null, headerBtn2 = null)
             $(".box-vertical-switcher").css("width", "98.25%");
         }
     }
+}
+
+function textAlert(element, type, text, durationInSeconds = 3.5) {
+    let elementInitialText = $("#" + element).html();
+    let addedClass = "text-danger";
+    let classesToKeepForLater = [];
+    let currentClassList = document.getElementById(element).classList;
+    $("#" + element).html(text);
+    for (let i = 0; i < currentClassList.length; i++) {
+        if (getTrueId(currentClassList[i], false) == "text") {
+            classesToKeepForLater.push(currentClassList[i]);
+            $("#" + element).removeClass(currentClassList[i]);
+        }
+    }
+
+    switch (parseInt(type)) {
+        case 0:
+            addedClass = "text-danger";
+            break;
+        case 1:
+            addedClass = "text-warning";
+            break;
+        case 2:
+            addedClass = "text-success";
+            break;
+        case 3:
+            addedClass = "text-primary";
+            break;
+        case 4:
+            addedClass = "text-muted";
+            break;
+        default:
+            addedClass = "text-danger";
+            break;
+    }
+    $("#" + element).addClass(addedClass);
+    setTimeout(function () {
+        $("#" + element).html(elementInitialText);
+        $("#" + element).removeClass(addedClass);
+        if (classesToKeepForLater.length > 0) {
+            for (let i = 0; i < classesToKeepForLater.length; i++) {
+                $("#" + element).addClass(classesToKeepForLater[i]);
+            }
+        }
+    }, durationInSeconds * 1000);
+}
+
+function juxtaposedCharsCounter(elementId, maxLength, displayId) {
+    elementId = elementId.includes("-") ? getTrueId(elementId, false) : elementId;
+    if (elementId != null) {
+        let fullValueLength = 0;
+        let similarItemsArr = [];
+        let similarItems = $("[id*='" + elementId + "']");
+        for (let i = 0; i < similarItems.length; i++) {
+            if ($("#" + similarItems[i].id).hasClass("form-control-juxtaposed")) similarItemsArr.push(similarItems[i]);
+        }
+
+        if (similarItemsArr.length > 0) {
+            for (let i = 0; i < similarItemsArr.length; i++) {
+                if ($("#" + similarItemsArr[i].id).hasClass("form-control-juxtaposed") && $("#" + similarItemsArr[i].id).val() != "") {
+                    fullValueLength += $("#" + similarItemsArr[i].id).val().length;
+                }
+            }
+        }
+        if (displayId != null) $("#" + displayId).html(fullValueLength + "/" + maxLength);
+        return fullValueLength;
+    }
+    else 0;
+}
+
+function juxtaposedCharsUpdater(elementId, baseValue, updatingDisplayId) {
+    elementId = elementId.includes("-") ? getTrueId(elementId, false) : elementId;
+    if (elementId != null && updatingDisplayId != null) {
+        let fullValue;
+        let similarItemsArr = [];
+        let similarItems = $("[id*='" + elementId + "']");
+        for (let i = 0; i < similarItems.length; i++) {
+            if ($("#" + similarItems[i].id).hasClass("form-control-juxtaposed")) similarItemsArr.push(similarItems[i]);
+        }
+
+        if (similarItemsArr.length > 0) {
+            for (let i = 0; i < similarItemsArr.length; i++) {
+                if ($("#" + similarItemsArr[i].id).hasClass("form-control-juxtaposed") && $("#" + similarItemsArr[i].id).val() != "") {
+                    if (i == 0) fullValue = $("#" + similarItemsArr[i].id).val();
+                    else fullValue += ", " + $("#" + similarItemsArr[i].id).val();
+                }
+            }
+        }
+        if (updatingDisplayId != undefined) {
+            if (fullValue.length > 0) $("#" + updatingDisplayId).html(fullValue);
+            else {
+                if (baseValue != undefined) $("#" + updatingDisplayId).html(baseValue);
+                else $("#" + updatingDisplayId).html("Not provided");
+            }
+        }
+        return fullValue;
+    }
+    else return null;
 }
 
 function textDeformatting(value) {
@@ -1473,7 +2079,7 @@ function getElementLength(id, indicatorId, isText = false) {
 
 function getCommaSeparatedValues(initialValue) {
     if (initialValue != null) {
-        initialValue = initialValue.replaceAll(" ", "");
+        initialValue = initialValue.replaceAll(", ", ",");
         let commaIndex = 0;
         let values = [];
         for (let i = 0; i < initialValue.length; i++) {
@@ -1733,6 +2339,7 @@ function uncallASmContainer(callByClassname, id) {
 }
 
 function uncallAContainer(callByClassname, id) {
+    let newOpenedContainersArr = [];
     let alertBottom = bottomNavbarH;
     if (callByClassname) {
         $(".box-lg-part").css("bottom", alertBottom + 32 + "px");
@@ -1742,6 +2349,12 @@ function uncallAContainer(callByClassname, id) {
         setTimeout(function () {
             $(".box-lg-part").fadeOut(0);
         }, 600);
+
+        for (let i = 0; i < openedContainers.length; i++) {
+            if (openedContainers[i] != "." + id) {
+                newOpenedContainersArr.push(openedContainers[i]);
+            }
+        }
     }
     else {
         $("#" + id).css("bottom", alertBottom + 32 + "px");
@@ -1751,10 +2364,17 @@ function uncallAContainer(callByClassname, id) {
         setTimeout(function () {
             $("#" + id).fadeOut(0);
         }, 600);
+
+        for (let i = 0; i < openedContainers.length; i++) {
+            if (openedContainers[i] != "." + id) {
+                newOpenedContainersArr.push(openedContainers[i]);
+            }
+        }
     }
+    openedContainers = newOpenedContainersArr;
 }
 
-function callAContainer(callByClassname, id) {
+function callAContainer(callByClassname, id, doNotList) {
     let isNowOpen = false;
     let alertBottom = bottomNavbarH;
     if (callByClassname) {
@@ -1817,6 +2437,7 @@ function callAContainer(callByClassname, id) {
             }, 300);
         }
     }
+    if (!doNotList) openedContainers.push(id); 
 }
 
 function callAlert(icon, backgroundColor, foregroundColor, text, duration, buttonText, buttonActionType, buttonAction) {
@@ -1921,6 +2542,213 @@ function uncallAlert() {
     clearTimeout(timeoutValue);
 }
 
+$(document).on("input", ".volume-range-slider", function () {
+    let currentValue = parseFloat($(this).val());
+    let maxValue = parseFloat($(this).attr("max"));
+    let volumeChangeLbl = $(this).attr("data-value-label");
+
+    if (currentValue != undefined && maxValue != undefined) {
+        let valuePercentage = currentValue / maxValue * 100;
+        if (volumeChangeLbl != undefined) {
+            if (valuePercentage > 0) $("#" + volumeChangeLbl).html(parseInt(valuePercentage));
+            else if (valuePercentage == 100) $("#" + volumeChangeLbl).text("Max");
+            else $("#" + volumeChangeLbl).text("Min");
+        }
+    }
+});
+
+$(document).on("change", ".form-range-slider", function () {
+    let currentValue = parseFloat($(this).val());
+    let maxValue = parseFloat($(this).attr("max"));
+    let valueLabel = $(this).attr("data-value-label");
+
+    if (currentValue != undefined && maxValue != undefined) {
+        if (valueLabel != undefined) $("#" + valueLabel).html(currentValue);
+    }
+});
+
+$(document).on("dblclick", ".ongaku-player-box", function () {
+    if ($("#OngakuPlayerMainPart_Box").css("display") != "none") showBySlidingToRight(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
+    else hideBySlidingToLeft(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
+});
+
+$(document).on("touchstart", ".ongaku-player-box", function (event) {
+    handleTouchStart(event);
+});
+$(document).on("touchmove", ".ongaku-player-box", function (event) {
+    let moveDirection = handleTouchMove(event);
+    if (moveDirection == 2) {
+        if ($("#OngakuPlayerMainPart_Box").css("display") != "none") showBySlidingToRight(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
+        else hideBySlidingToLeft(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
+    }
+    else if (moveDirection == 3) {
+        hideBySlidingToLeft(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
+    }
+
+    xDown = null;
+    yDown = null;
+});
+
+$(document).on("mousedown", ".ongaku-player-box", function () {
+    if ($(this).hasClass("ongaku-player-box-enlarged")) {
+        dwindleMusicIsland(currentWindowSize);
+    }
+    else enlargeMusicIsland(currentWindowSize);
+});
+
+function dwindleMusicIsland(currentWidth) {
+    if (currentWidth < 1024) {
+
+    }
+    else {
+        let botNavbarH = 0;
+        $(".ongaku-player-box").css("bottom", botNavbarH);
+        $(".ongaku-player-box").css("left", 0);
+        $(".ongaku-player-box").css("width", "36%");
+        $(".ongaku-player-box").removeClass("ongaku-player-box-enlarged");
+        $(".ongaku-player-bg-box-enlarged").fadeOut(0);
+        setTimeout(function () {
+            $(".ongaku-player-bg-box").fadeIn(300);
+        }, 300);
+
+        setTimeout(function () {
+            botNavbarH += 24;
+            $(".ongaku-player-box").css("left", "0.4%");
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 400);
+        setTimeout(function () {
+            botNavbarH -= 12;
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 800);
+    }
+}
+
+function enlargeMusicIsland(currentWidth) {
+    if (currentWidth < 1024) {
+
+    }
+    else {
+        let botNavbarH = bottomNavbarH + 36;
+        $(".ongaku-player-box").css("bottom", botNavbarH);
+        $(".ongaku-player-box").css("left", "40%");
+        $(".ongaku-player-box").css("width", "62%");
+        $(".ongaku-player-box").addClass("ongaku-player-box-enlarged");
+
+        $(".ongaku-player-bg-box").fadeOut(300);
+        setTimeout(function () {
+            $(".ongaku-player-bg-box-enlarged").fadeIn(300);
+        }, 300);
+        setTimeout(function () {
+            botNavbarH -= 28;
+            $(".ongaku-player-box").css("left", "34.5%");
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 400);
+        setTimeout(function () {
+            botNavbarH += 4;
+            $(".ongaku-player-box").css("left", "37.5%");
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 800);
+    }
+}
+
+function showBySlidingToRight(byClassname = false, closingElementId, targetElementId) {
+    if (closingElementId != null && targetElementId != null) {
+        if (byClassname) {
+            $("." + closingElementId).fadeOut(300);
+            setTimeout(function () {
+                $("." + targetElementId).fadeIn(0);
+                $("." + targetElementId).css("margin-left", "15%");
+            }, 350);
+            setTimeout(function () {
+                $("." + targetElementId).css("margin-left", "-3%");
+            }, 700);
+            setTimeout(function () {
+                $("." + targetElementId).css("margin-left", 0);
+            }, 1050);
+        }
+        else {
+            $("#" + closingElementId).fadeOut(300);
+            setTimeout(function () {
+                $("#" + targetElementId).fadeIn(0);
+                $("#" + targetElementId).css("margin-left", "15%");
+            }, 350);
+            setTimeout(function () {
+                $("#" + targetElementId).css("margin-left", "-3%");
+            }, 700);
+            setTimeout(function () {
+                $("#" + targetElementId).css("margin-left", 0);
+            }, 1050);
+        }
+    }
+}
+
+function hideBySlidingToLeft(byClassname = false, openingElement, targetElementId) {
+    if (openingElement != null && targetElementId != null) {
+        if (byClassname) {
+            $("." + targetElementId).css("margin-left", "15%");
+            setTimeout(function () {
+                $("." + targetElementId).css("margin-left", "-1200px");               
+            }, 350);
+            setTimeout(function () {
+                $("." + openingElement).fadeIn(300);
+                $("." + targetElementId).fadeOut(0);
+            }, 700);
+        }
+        else {
+            $("#" + targetElementId).css("margin-left", "15%");
+            setTimeout(function () {
+                $("#" + targetElementId).css("margin-left", "-1200px");
+            }, 350);
+            setTimeout(function () {
+                $("#" + openingElement).fadeIn(300);
+                $("#" + targetElementId).fadeOut(0);
+            }, 700);
+        }
+    }
+}
+
+function showSwitchableBox(isBig, currentElementId) {
+    if (isBig) {
+        $(".big-box-switchable").fadeOut(300);
+        setTimeout(function () {
+            $("#" + currentElementId).fadeIn(300);
+        }, 300);
+    }
+    else {
+        $(".box-switchable").fadeOut(300);
+        setTimeout(function () {
+            $("#" + currentElementId).fadeIn(300);
+        }, 300);
+    }
+}
+function loadAnotherFile(loadForward = true, skipValue = 1, maxLength, skippingInputId, formId) {
+    if (formId != null && skippingInputId != null) {
+        let skipTrueValue = parseInt($("#" + skippingInputId).val());
+        if (loadForward) {
+            skipTrueValue += skipValue;
+            skipTrueValue = skipTrueValue >= parseInt(maxLength) ? 0 : skipTrueValue;
+        }
+        else {
+            skipTrueValue -= skipValue;
+            skipTrueValue = skipTrueValue < 0 ? 0 : skipTrueValue;
+        }
+        let isNextImgLoaded = $("#" + skipTrueValue + "-ImgHdn_Val").val();
+        if (isNextImgLoaded == undefined) {
+            $("#" + skippingInputId).val(skipTrueValue);
+            $("#" + formId).submit();
+        }
+        else {
+            $(".profile-counter-slider").removeClass("bg-chosen");
+            $("#" + skipTrueValue + "-ImgSlider_Box").addClass("bg-chosen");
+            $(".profile-avatar-img-enlarged").attr("src", "/ProfileImages/" + isNextImgLoaded);
+            $("#" + skippingInputId).val(skipTrueValue);
+        }
+        $(".btn-edit-some-files").removeClass("super-disabled");
+        return isNextImgLoaded;
+    }
+    else return null;
+}
+
 function isElementVisible(byElementClassname = false, element) {
     let elementInfo;
     let resultInfo = false;
@@ -1943,6 +2771,89 @@ function isElementVisible(byElementClassname = false, element) {
     }
     return resultInfo;
 }
+
+$(document).on("mousedown", ".btn-back", function () {
+    let newOpenedContainersArr = [];
+    if (openedContainers.length > 0) {
+        let closingContainer = openedContainers[openedContainers.length - 1];
+        let openingContainer = openedContainers[openedContainers.length - 2];
+        openedContainers[openedContainers.length - 1] = null;
+        for (let i = 0; i < openedContainers.length; i++) {
+            if (openedContainers[i] != null) newOpenedContainersArr.push(openedContainers[i]);
+        }
+
+        openedContainers = newOpenedContainersArr;
+        uncallAContainer(false, closingContainer);
+        setTimeout(function () {
+            callAContainer(false, openingContainer, true);
+        }, 600);
+    }
+});
+
+let xDown = null;
+let yDown = null;
+
+function getTouches(event) {
+    return event.touches || event.originalEvent.touches; // jQuery
+}
+
+function handleTouchStart(event) {
+    const firstTouch = getTouches(event)[0];
+    xDown = firstTouch.clientX;
+    yDown = firstTouch.clientY;
+};
+
+function handleTouchMove(evt) {
+    if (!xDown || !yDown) return;
+
+    let xUp = evt.touches[0].clientX;
+    let yUp = evt.touches[0].clientY;
+
+    let xDiff = xDown - xUp;
+    let yDiff = yDown - yUp;
+
+    // 0 - down swipe, 1 - up swipe, 2 - left swipe, 3 - right swipe;
+    if (Math.abs(xDiff) > Math.abs(yDiff)) {
+        if (xDiff > 0) {
+            return 3;
+        } else {
+            return 2;
+        }
+    } else {
+        if (yDiff > 0) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+};
+
+$(document).on("dblclick", ".div-swiper", function (event) {
+    let trueId = getTrueId(event.target.id, false);
+    if (trueId != undefined) {
+        uncallAContainer(false, trueId);
+    }
+});
+
+$(document).on("touchstart", ".div-swiper", function (event) {
+    handleTouchStart(event);
+});
+$(document).on("touchmove", ".div-swiper", function (event) {
+    let moveDirection = handleTouchMove(event);
+    if (moveDirection == 0) {
+        let trueId = getTrueId(event.target.id, false);
+        uncallAContainer(false, trueId);
+    }
+    else if (moveDirection == 1) {
+        let trueId = getTrueId(event.target.id);
+        if (trueId != "") {
+            callAContainer(false, trueId, false);
+        }
+    }
+
+    xDown = null;
+    yDown = null;
+});
 
 $(document).on("mouseenter", ".btn-tooltip", function () {
     $(this).tooltip("show");

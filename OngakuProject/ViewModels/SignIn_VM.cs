@@ -9,5 +9,7 @@ namespace OngakuProject.ViewModels
         [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
         public string? Password { get; set; }
+        [MaxLength(12, ErrorMessage = "Passcode length is restricted to 12 characters")]
+        public string? Passcode { get; set; }
     }
 }

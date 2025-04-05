@@ -63,6 +63,32 @@ namespace OngakuProject.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> UpdatePrivacySettings(PrivacySettings_VM Model)
+        {
+            string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
+            if (ModelState.IsValid)
+            {
+                bool Result = await _profile.UpdatePrivacySettingsAsync(Model);
+                if (Result) return Json(new { success = true, result = Model });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditPersonalInfo(PersonalInfo_VM Model)
+        {
+            string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
+            if(ModelState.IsValid)
+            {
+                bool Result = await _profile.UpdatePersonalInfoAsync(Model);
+                if (Result) return Json(new { success = true, result = Model });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
         public async Task<IActionResult> UpdateThePassword(UpdatePassword_VM Model)
         {
             string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -128,6 +154,22 @@ namespace OngakuProject.Controllers
             User? UserGuts = await _profile.GetUserGutsOnlyByIdAsync(UserId);
 
             if (UserGuts is not null) return Json(new { success = true, guts = UserGuts });
+            else return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAccountPersonalInformation(int Id)
+        {
+            User? PersonaInfo = await _profile.GetUserPersonalInformationAsync(Id);
+            if (PersonaInfo is not null) return Json(new { success = true, result = PersonaInfo });
+            else return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPrivacySettings(int Id)
+        {
+            User? PrivacySettingsInfo = await _profile.GetUserPrivacySettingsAsync(Id);
+            if (PrivacySettingsInfo is not null) return Json(new { success = true, result = PrivacySettingsInfo });
             else return Json(new { success = false });
         }
 

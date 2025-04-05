@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250402065921_02042025-0")]
+    partial class _020420250
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -211,12 +214,6 @@ namespace OngakuProject.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastSeenAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -248,10 +245,6 @@ namespace OngakuProject.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("RealName")
-                        .HasMaxLength(350)
-                        .HasColumnType("nvarchar(350)");
-
                     b.Property<string>("Searchname")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
@@ -265,19 +258,6 @@ namespace OngakuProject.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("Webpage")
-                        .HasMaxLength(230)
-                        .HasColumnType("nvarchar(230)");
-
-                    b.Property<byte>("WhoCanChat")
-                        .HasColumnType("tinyint");
-
-                    b.Property<byte>("WhoCanDownload")
-                        .HasColumnType("tinyint");
-
-                    b.Property<byte>("WhoCanSeeLastSeenInfo")
-                        .HasColumnType("tinyint");
 
                     b.HasKey("Id");
 

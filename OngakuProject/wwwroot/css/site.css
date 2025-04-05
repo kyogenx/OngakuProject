@@ -15,24 +15,54 @@ body {
   margin-bottom: 60px;
 }
 
+.country-flag-sm {
+    height: 15px;
+    width: 20px;
+    transition: all ease 0.24s;
+}
+
+.btn-link {
+    padding: 1px;
+    cursor: pointer;
+    border-radius: 10px;
+    color: black;
+    text-decoration: none;
+    transition: all ease 0.24s;
+}
+.btn-link:hover,
+.btn-link:active {
+    color: black;
+    background-color: #f0f0f0;
+}
+
 .box-sm-part {
     z-index: 9000;
     width: 37%;
     height: 100%;
     border: 0;
     border-right: 1px solid #f0f0f0;
+    overflow-y: auto;
+    overflow-x: hidden;
     background-color: white;
     position: fixed;
     bottom: 0;
     transition: all ease 0.3s;
 }
+.box-sm-part::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
 .box-lg-part {
-/*    padding: 6px 0 0 0;*/
     z-index: 9000;
     width: 63%;
+    max-height: 85%;
     min-height: 300px;
     border-radius: 10px 10px 1px 1px;
+    border-top: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0;
     background-color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
     bottom: -1200px;
     position: fixed;
     display: none;
@@ -161,6 +191,7 @@ body {
 .btn-standard {
     cursor: pointer;
     color: black;
+    text-align: start;
     background-color: transparent;
     border-radius: 10px;
     transition: all ease 0.3s;
@@ -185,6 +216,7 @@ body {
 
 .btn-standard-bordered {
     cursor: pointer;
+    text-align: start;
     color: black;
     border: 1px solid #f0f0f0;
     background-color: transparent;
@@ -194,6 +226,24 @@ body {
 .btn-standard-bordered:hover,
 .btn-standard-bordered:active {
     background-color: #f8f9fa;
+}
+
+.btn-standard-profile {
+    cursor: pointer;
+    text-decoration: none;
+    height: 45px;
+    width: 45px;
+    font-size: 28px;
+    border-radius: 99px;
+    object-fit: cover;
+    background-color: #f0f0f0;
+    color: black;
+    opacity: 1;
+    transition: all ease 0.3s;
+}
+.btn-standard-profile:hover,
+.btn-standard-profile:active {
+    opacity: 0.9;
 }
 
 .btn-classic-styled {
@@ -240,6 +290,206 @@ body {
     color: #fdfdfd;
     display: inline-block;
     transition: all ease 0.3s;
+}
+
+.ongaku-player-box {
+    z-index: 9500;
+    height: auto;
+    border: 1px solid #f0f0f0;
+    min-height: 75px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all ease 0.35s;
+    bottom: -1200px;
+    display: block;
+    position: fixed;
+}
+.ongaku-player-box-enlarged {
+    max-height: 75%;
+    min-height: 50%;
+    height: auto;
+    transition: all ease 0.35s;
+}
+.ongaku-player-bg-box {
+    padding: 6px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.ongaku-player-album-img {
+    border-radius: 10px;    
+    height: 65px;
+    width: 65px;
+    object-fit: contain;
+    transition: all ease 0.3s;
+}
+.ongaku-player-album-box {
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    height: 65px;
+    width: 65px;
+    font-size: 43px;
+    text-align: center;
+    color: #2b2b2b;
+    transition: all ease 0.3s;
+}
+
+.ongaku-player-bg-box-enlarged {
+    padding: 10px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+}
+.ongaku-player-album-img-enlarged {
+    border-radius: 10px;
+    height: 200px;
+    width: 200px;
+    object-fit: contain;
+    transition: all ease 0.3s;
+}
+.ongaku-player-album-box-enlarged {
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    height: 200px;
+    width: 200px;
+    font-size: 140px;
+    text-align: center;
+    color: #2b2b2b;
+    transition: all ease 0.3s;
+}
+
+.ongaku-track-name-lbl {
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0;
+    border-radius: 10px;
+    color: #2b2b2b;
+    transition: all ease 0.3s;
+}
+.ongaku-track-name-lbl:hover,
+.ongaku-track-name-lbl:active {
+    padding-left: 3px;
+    opacity: 0.9;
+}
+
+.ongaku-artist-name-lbl {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 0;
+    color: #f0f0f0;
+    transition: all ease 0.3s;
+}
+.ongaku-artist-name-lbl:hover,
+.ongaku-artist-name-lbl:active {
+    opacity: 0.9;
+    padding-left: 3px;
+}
+
+.ongaku-track-duration-line {
+    height: 5px;
+    width: 100%;
+    border-radius: 99px;
+    background-color: #e0e0e0;
+    transition: all ease 0.3s;
+}
+.ongaku-track-current-duration-line {
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background-color: black;
+    transition: all ease 0.3s;
+}
+
+.ongaku-track-duration-line-enlarged {
+    height: 8px;
+    width: 100%;
+    border-radius: 99px;
+    background-color: #e0e0e0;
+    transition: all ease 0.3s;
+}
+.ongaku-track-current-duration-line-enlarged {
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background-color: black;
+    transition: all ease 0.3s;
+}
+
+.btn-ongaku-player {
+    padding: 4px 8px 4px 8px;
+    cursor: pointer;
+    border-radius: 10px;
+    text-align: center;
+    color: #2b2b2b;
+    background-color: transparent;
+    transition: all ease 0.3s;
+}
+
+.btn-ongaku-player-enlarged {
+    width: 100%;
+    font-size: 1.5rem;
+}
+
+.btn-ongaku-player-rounded {
+    border-radius: 99px;
+}
+.btn-ongaku-player:hover,
+.btn-ongaku-player:active {
+    background-color: #f0f0f0;
+}
+
+.box-hidden-on-left {
+    margin-left: -1200px;
+    width: 100%;
+    display: none;
+    transition: all ease 0.3s;
+}
+
+.form-range-slider {
+    cursor: pointer;
+    -webkit-appearance: none; /* Remove default styling */
+    width: 100%;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 99px;
+    outline: none;
+    transition: all ease 0.3s;
+}
+.form-range-slider:hover,
+.form-range-slider:active {
+    background: #e0e0e0;
+}
+/* G Chrome, iOS */
+.form-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    background: #2b2b2b;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    /* Align thumb with track */
+}
+/* Moz Firefox */
+.form-range-slider::-moz-range-thumb {
+    height: 12px;
+    width: 12px;
+    background: #2b2b2b;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+/* Microsoft Edge */
+.form-range-slider::-ms-thumb {
+    height: 12px;
+    width: 12px;
+    background: #2b2b2b;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
 }
 
 .dropdown-menu {
@@ -386,6 +636,30 @@ body {
     background-color: #f8f9fa;
 }
 
+.form-control-search-container {
+    border-radius: 10px;
+    border: 1px solid #f0f0f0;
+    transition: all ease 0.3s;
+}
+.form-control-search-container i {
+    position: absolute;
+    margin-left: 9px;
+    margin-top: 11px;
+    color: gray;
+    pointer-events: none;
+}
+.form-control-search {
+    padding-left: 35px;
+    border: 0;
+    background-color: transparent;
+    width: 100%;
+    transition: all ease 0.3s;
+}
+.form-control-search:hover,
+.form-control-search:active {
+    background-color: #f0f0f0;
+}
+
 .form-status-span {
     cursor: pointer;
     padding: 4px;
@@ -473,6 +747,9 @@ body {
 
 .bg-chosen {
     background-color: #2b2b2b;
+}
+.bg-chosen-bright {
+    background-color: #f0f0f0;
 }
 
 .char-indicator-empty {
@@ -598,7 +875,7 @@ body {
 }
 
 .ongaku-alert {
-    z-index: 9000;
+    z-index: 10001;
     background-color: #2B2B2B;
     border-radius: 10px;
     bottom: -1200px;

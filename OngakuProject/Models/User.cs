@@ -14,6 +14,18 @@ namespace OngakuProject.Models
         public string? Description { get; set; }
         [MaxLength(12)]
         public string? Passcode { get; set; }
+        [MaxLength(350)]
+        public string? RealName { get; set; }
+        [MaxLength(230)]
+        public string? Webpage { get; set; }
+        public DateTime? LastSeenAt { get; set; }
+        public byte WhoCanChat { get; set; } //0 - everyone; 1 - only subscribers; 2 - chosen members; 3 - no one;
+        public byte WhoCanDownload { get; set; }
+        public byte WhoCanSeeLastSeenInfo { get; set; }
+        public bool IsVisible { get; set; } = true;
+        [ForeignKey("Country")]
+        public int? CountryId { get; set; }
+        public Country? Country { get; set; }
         public List<UserImage>? UserImages { get; set; }
         [NotMapped]
         public int ImgId { get; set; }

@@ -41,7 +41,7 @@
             </div>
         </div>
         <div class="p-2" id="RPS2_Box">
-            <form method="post" asp-controller="Account" asp-action="CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form">
+            <form method="post" href="/Account/CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form">
                 <div>
                     <input type="hidden" name="UserId" id="CPREC_Id_Val" />
                     <div>
@@ -167,6 +167,45 @@
         </div>
     </div>
     <div class="box-lg-part-body mt-5">
+
+       @*  <div class="box-lg-part-inner shadow-sm" style="display: block; bottom: 100px;">
+            <div class="box-lg-inner-part-header p-2">
+                <div class="div-swiper mx-auto"></div> 
+                <div class="hstack gap-1">
+                    <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl"></span> </div>
+                    <div class="ms-1">
+                        <span class="h5">Header</span>
+                    </div>
+                    <div>
+                        <form method="post" href="/Account/SendThePasscodeViaInbox" id="SendThePasscodeViaInbox_Form">
+                            <button type="submit" class="btn btn-standard btn-sm" id="SendThePasscodeViaInbox_SbmtBtn">Forgot Passcode</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-1 p-1">
+                <div class="box-bordered text-center p-2">
+                    <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3>
+                    <h4 class="h4">Passcode Secured</h4>
+                    <small class="card-text text-muted">This account is protected by a passcode. Please enter it to complete the sign-in process</small>
+                </div>
+                <div class="mt-2">
+                    <form method="post" href="/Account/PasscodeSignIn" id="PasscodeSignIn_Form">
+                        <div class="d-none">
+                            <input type="text" name="Password" id="PasscodeSignIn_Password_Val" />
+                            <input type="hidden" name="Username" id="PasscodeSignIn_Username_Val" />
+                        </div>
+                        <div>
+                            <input type="text" class="form-control form-textarea form-control-guard" name="Passcode" id="PasscodeSignIn_Passcode_Val" placeholder="Enter the passcode" data-min-length="1" data- data-target="PasscodeSignIn_SbmtBtn" />
+                        </div>
+                        <div class="mt-2">
+                            <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="PasscodeSignIn_SbmtBtn">Sign In</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div> *@
+
         <div class="box-standard mx-auto w-50-lg mt-2">
             <form method="post" asp-controller="Account" asp-action="SignIn" id="SignIn_Form">
                 <div>

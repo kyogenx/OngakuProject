@@ -16,6 +16,9 @@
         <form method="get" asp-controller="Profile" asp-action="GetImage" id="ProfileGetImage_Form">
             <input type="hidden" name="Skip" id="PGI_Skip_Val" value="0" />
         </form>
+        <form method="get" asp-controller="Country" asp-action="GetCountries" id="GetCountries_Form">
+            <input type="hidden" name="Keyword" id="GetCountries_Keyword_Val" />
+        </form>
     </div>
     <div class="profile-info-box text-center">
         <div class="standard-profile-bar">
@@ -95,6 +98,11 @@
             <span class="card-text ms-1">Appearance</span>
             <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
         </button>
+@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="ProfileSecurity_Container-Open">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fingerprint"></i> </div>
+            <span class="card-text ms-1">Security Settings</span>
+            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+        </button> *@
         <div>
             <form method="get" asp-controller="Profile" asp-action="GetAccountGuts" id="GetAccountGuts_Form">
                 <button type="submit" class="btn box-btn-group-member box-btn-group-mid-member hstack gap-1" id="GetAccountGuts_SbmtBtn">
@@ -104,20 +112,246 @@
                 </button>
             </form>
         </div>
-        <button type="button" class="btn box-btn-group-member box-btn-group-mid-member hstack gap-1">
-            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-id-card-clip"></i> </div>
+@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="ProfileSecurity_Container-OpenBtn">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fingerprint"></i> </div>
+            <span class="card-text ms-1">Security Settings</span>
+            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+        </button> *@
+        <div>
+            <form method="get" asp-controller="Profile" asp-action="GetAccountPersonalInformation" id="GetAccountPersonalInformation_Form">
+                <input type="hidden" name="Id" value="@UserInfo.Id" />
+                <button type="submit" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="GetAccountPersonalInformation_SbmtBtn">
+                    <div class="box-btn-group-member-icon"> <i class="fa-solid fa-user-pen"></i> </div>
+                    <span class="card-text ms-1">Personal Information</span>
+                    <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+                </button>
+            </form>
+        </div>
+@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="PersonalInfo_Container-Open">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-user-pen"></i> </div>
             <span class="card-text ms-1">Personal Information</span>
             <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
         </button>
-        <button type="button" class="btn box-btn-group-member box-btn-group-bot-member hstack gap-1">
-            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-shield-halved"></i> </div>
-            <span class="card-text ms-1">Privacy Settings</span>
+        <div class="d-none">
+            <form method="get" asp-controller="Profile" asp-action="GetAccountPersonalInformation" id="GetAccountPersonalInformation_Form">
+                <input type="hidden" name="Id" value="@UserInfo.Id" />
+            </form>
+        </div> *@
+        <div>
+            <form method="get" asp-controller="Profile" asp-action="GetPrivacySettings" id="GetPrivacySettings_Form">
+                <input type="hidden" name="Id" value="@UserInfo.Id" />
+                <button type="submit" class="btn box-btn-group-member box-btn-group-bot-member hstack gap-1" id="GetPrivacySettings_SbmtBtn">
+                    <div class="box-btn-group-member-icon"> <i class="fa-solid fa-shield-halved"></i> </div>
+                    <span class="card-text ms-1">Privacy Settings</span>
+                    <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+                </button>
+            </form>
+        </div>
+@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container text-start" id="ProfileSecurity_Container-Open"> <i class="fa-solid fa-fingerprint"></i> Security Settings <small class="card-text text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </small></button> *@
+    </div>
+    <div class="box-btn-group mt-2">
+        <button type="button" class="btn box-btn-group-member box-btn-group-top-member hstack gap-1">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-id-card"></i> </div>
+            <span class="card-text ms-1">Preview</span>
             <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
         </button>
-@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container text-start" id="ProfileSecurity_Container-Open"> <i class="fa-solid fa-fingerprint"></i> Security Settings <small class="card-text text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </small></button> *@
+        <button type="button" class="btn box-btn-group-member box-btn-group-bot-member hstack gap-1">
+            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-bell"></i> </div>
+            <span class="card-text ms-1">Notifications</span>
+            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+        </button>
     </div>
 </div>
 
+@* <div class="box-lg-part shadow-sm" id="PrivacySettings_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="PrivacySettings_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="PrivacySettings_Container-Header_Lbl">Privacy Settings</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="PrivacySettings_Box">
+        <div>
+            <form method="post" href="/Profile/UpdatePrivacySettings" id="ProfileUpdatePrivacySettings_Form">
+                <div>
+                    <label class="form-label fw-500">Who is able to send you messages?</label>
+                    <div class="box-switcher row ms-1 me-1">
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="0" data-description="Everyone can send you messages and receive your replies" id="WhoCanChat-0_Btn">Everyone</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="1" data-description="Only your subscribers can send you messages and receive your replies" id="WhoCanChat-1_Btn">Subscribers</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="2" data-description="Only individually by you chosen people will be able to send you messages and receive your replies" id="WhoCanChat-2_Btn">Individual</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="UPS_WhoCanChat_Val" data-value="3" data-description="Your direct messages will remain completely silent" id="WhoCanChat-3_Btn">No One</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="UPS_WhoCanChat_Val-Warn">Everyone can send you messages and receive your replies</small>
+                </div>
+                <div class="mt-3">
+                    <div>
+                        <label class="form-label fw-500">Who is able to download content from your page?</label>
+                        <div class="box-switcher row ms-1 me-1">
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="0" data-description="Everyone can save content from your page" id="WhoCanDownload-0_Btn">Everyone</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="1" data-description="Only subscribers can save your content" id="WhoCanDownload-1_Btn">Subscribers</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="2" data-description="Only individually chosen users can save your content" id="WhoCanDownload-2_Btn">Individual</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="1" data-target="UPS_WhoCanDownload_Val" data-value="3" data-description="No one can save your content" id="WhoCanDownload-3_Btn">No One</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted" id="UPS_WhoCanDownload_Val-Warn">Everyone can save content from your page</small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div>
+                        <label class="form-label fw-500">Who can see your last seen date and time?</label>
+                        <div class="box-switcher row ms-1 me-1">
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="2" data-target="UPS_WhoCanSeeLastSeenInfo_Val" data-value="0" data-description="Your last seen date and time are visible to everyone" id="WhoCanSeeLastSeen-0_Btn">Everyone</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="2" data-target="UPS_WhoCanSeeLastSeenInfo_Val" data-value="1" data-description="Only your subscribers can see your last seen date and time" id="WhoCanSeeLastSeen-1_Btn">Subscribers</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="2" data-target="UPS_WhoCanSeeLastSeenInfo_Val" data-value="2" data-description="No one can see your last seen date and time" id="WhoCanSeeLastSeen-2_Btn">No One</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted" id="UPS_WhoCanSeeLastSeenInfo_Val-Warn">Your last seen date and time are visible to everyone</small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div>
+                        <label class="form-label fw-500">Is your account visible?</label>
+                        <div class="box-switcher row ms-1 me-1">
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="3" data-target="UPS_IsVisible_Val" data-value="true" data-description="Your account can be found through a regular user search" id="IsVisible-0_Btn">Standard</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="3" data-target="UPS_IsVisible_Val" data-value="false" data-description="Your account cannot be found through regular search, but you can still gain new subscribers and users via your special link" id="IsVisible-1_Btn">Hidden</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted" id="UPS_IsVisible_Val-Warn">Your account can be found through a regular user search</small>
+                    </div>
+                </div>
+                <div class="d-none">
+                    <input type="number" name="WhoCanChat" id="UPS_WhoCanChat_Val" value="0" />
+                    <input type="number" name="WhoCanDownload" id="UPS_WhoCanDownload_Val" value="0" />
+                    <input type="number" name="WhoCanSeeLastSeenInfo" id="UPS_WhoCanSeeLastSeenInfo_Val" value="0" />
+                    <input type="text" name="IsVisible" id="UPS_IsVisible_Val" value="true" />
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled w-100" id="ProfileUpdatePrivacySettings_SbmtBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> *@
+<@*div class="box-lg-part shadow-sm" id="PersonalInfo_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="PersonalInfo_Container-Header_Lbl">Personal Information</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="PersonalInfo_Box">
+        <div class="box-vertical-switcher shadow-sm" id="PersonalInfo_VS_Box">
+            <div class="box-vertical-switcher-header hstack gap-1">
+                <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button>
+            </div>
+            <div class="mt-2" id="PersonalInfo_VSItems_Box">
+                <span class="h5" id="PersonalInfo_VMMembersQty_Lbl"></span>
+                <div></div>
+                <small class="card-text text-muted">Tap on each member to remove them</small>
+                <div class="mt-2" id="PersonalInfo_VMMembersListed_Box">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="box-bordered p-2">
+            <span class="h4" id="PersonaInfo_RealName_Lbl">Donald J. Trump</span>
+            <div class="hstack gap-1">
+                <small class="card-text me-1" id="PersonaInfo_CountryInfo_Lbl">
+                    <img src="https://flagcdn.com/16x12/jp.png"
+                         srcset="https://flagcdn.com/32x24/jp.png 2x,
+    https://flagcdn.com/48x36/jp.png 3x"
+                         width="20"
+                         height="15"
+                         alt="Japan"> Japan
+                </small>
+                <button type="button" class="btn btn-link btn-sm" id="PersonalInfo_WebpageLink_Btn"><span class="card-text text-muted"> <i class="fa-solid fa-link"></i> </span> <span id="WebpageLink_Span">DonaldJTrump.com</span></button>
+            </div>
+        </div>
+        <div class="mt-2">
+            <form method="post" href="/Profile/EditPersonalInfo" id="ProfileEditPersonal_Info">
+                <div>
+                    <span class="form-label fw-500 ms-1">Full Name</span>
+                    <div class="mt-1" id="EPI_Fullnames_Box">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" id="AddRealNameMember_Btn" data-prototype="EPI_RealName-0"> <i class="fa-solid fa-user-plus"></i> Add Member</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm" id="PersonalInfo_VS_Box-OpenBtn" data-prototype="EPI_RealName-0" style="display: none;"> <i class="fa-solid fa-user-minus"></i> Remove Member</button>
+                        <button type="button" class="btn btn-standard-bordered btn-sm ms-1" id="EPI_RealnamesCounter_Span">0/350</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="RealName" id="EPI_RealName-0" placeholder="Provide your full name" data-update="PersonaInfo_RealName_Lbl" data-base-value="Unknown" data-target="EditPersonalInfo_SbmtBtn" data-counter-display="EPI_RealnamesCounter_Span" data-counter-maxlength="350" data-index="0" />
+                        <input type="text" class="d-none" name="CountryId" id="EPI_CountryId_Val" value="0" />
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="EPI_RealName-Warn" data-list="false">If you're a band, add extra rows to list all band your names</small>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-500 ms-1">Webpage Link</label>
+                    <input type="text" class="form-control form-control-guard" name="WebpageLink" id="EPI_WebPage_Val" data-update="WebpageLink_Span" data-base-value="Not provided" placeholder="https://webpagelink.com/" />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Enter the link to your official webpage (if available). This field is optional</small>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500 ms-1">Country</span>
+                    <div class="mt-1" id="CountryBtn_Box">
+                        <button type="button" class="btn btn-standard-bordered btn-load-countries btn-sm" id="LoadCountries_Btn" data-is-loaded="false">
+                            <img src="https://flagcdn.com/20x15/de.png" srcset="https://flagcdn.com/40x30/jp.png 2x, https://flagcdn.com/60x45/jp.png 3x" width="20" height="15" alt="Japan" /> Japan
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Tap the button to choose your country</small>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditPersonalInfo_SbmtBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> *@
+
+@* <div class="box-standard p-2">
+    <input type="text" class="form-control form-control-search form-country-search" placeholder="Search" />
+    <div class="mt-2" id="CountriesListed_Box">
+
+    </div>
+</div>  *@
 @* <div class="box-lg-part shadow-sm" id="ProfileSecurity_Container">
     <div class="box-lg-part-header p-2">
         <div class="div-swiper mx-auto"></div>
@@ -154,16 +388,16 @@
                     </div>
                 </div>
                 <div class="box-switchable" id="ResetPasswordViaCurrentPassword_Box">
-                    <form method="get" asp-controller="Account" asp-action="CheckThePassword" id="CheckThePassword_Form">
+                    <form method="get" action="/Account/CheckThePassword" id="CheckThePassword_Form">
                         <div class="d-none">
-                            <input type="hidden" asp-for="Email" name="Email" id="CTP_Email_Val" value="@UserInfo.Email" />
+                            <input type="hidden" name="Email" id="CTP_Email_Val" value="@UserInfo.Email" />
                         </div>
                         <div class="mt-3">
                             <span class="form-label fw-500">Current Password</span>
                             <div>
                                 <small class="card-text text-muted" id="CTP_Email_Span">@UserInfo.Email</small>
                             </div>
-                            <input type="password" class="form-control form-control-guard mt-2" name="Password" id="CTP_Password_Val" data-min-length="8" data- data-target="CheckThePassword_SbmtBtn" placeholder="Your current password" maxlength="32" />
+                            <input type="password" class="form-control form-control-guard mt-2" name="Password" id="CTP_Password_Val" data-min-length="8" data-target="CheckThePassword_SbmtBtn" placeholder="Your current password" maxlength="32" />
                         </div>
                         <div class="mt-1 ms-1">
                             <small class="card-text text-muted">No verification is required, just enter your account password to confirm ownership</small>
@@ -173,11 +407,11 @@
                         </div>
                     </form>
                 </div>
-                <div class="box-switchable" id="ResetPasswordViaEmail_Box" style="display: none;">
-                    <div class="box-inside" id="SPRCStep1_Box">
+                <div class="box-switchable mt-2" id="ResetPasswordViaEmail_Box" style="display: none;">
+                    <div class="box-switchable" id="SPRCStep1_Box" style="display: block;">
                         <div class="mt-2">
                             <label class="form-label fw-500">Email</label>
-                            <input type="email" asp-for="Email" class="form-control super-disabled" placeholder="Your email address" maxlength="75" value="@UserInfo.Email" id="SPRCStep1_Email_Val" readonly disabled />
+                            <input type="email" name="Email" class="form-control super-disabled" placeholder="Your email address" maxlength="75" value="@UserInfo.Email" id="SPRCStep1_Email_Val" readonly />
                         </div>
                         <div class="mt-3">
                             <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="RPStep1_SbmtBtn">Send Code</button>
@@ -186,8 +420,8 @@
                             <small class="card-text text-muted">A one-time verification code will be sent to your email within <span class="fw-500">6</span> minutes after completing the verification process. Please check your inbox for further instructions</small>
                         </div>
                     </div>
-                    <div class="box-inside" id="SPRCStep2_Box" style="display: none;">
-                        <form method="post" asp-controller="Account" asp-action="CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form">
+                    <div class="box-switchable" id="SPRCStep2_Box" style="display: none;">
+                        <form method="post" action="/Account/CheckPasswordResetEmailCode" id="CheckPasswordResetEmailCode_Form">
                             <div>
                                 <input type="hidden" name="UserId" id="CPREC_Id_Val" />
                                 <input type="hidden" name="Type" id="CPREC_Type_Val" value="1" />
@@ -207,7 +441,7 @@
                         <div class="box-bordered text-center mt-1 p-2" id="CodeResendTime_Box">
                             <small class="card-text text-muted" id="CodeResendTimer_Lbl">You will be able to receive a new code shortly</small>
                             <div class="mt-1">
-                                <form method="post" asp-controller="Account" asp-action="SendPasswordResetCode" id="SendPasswordResetCode_Form">
+                                <form method="post" action="/Account/SendPasswordResetCode" id="SendPasswordResetCode_Form">
                                     <input type="hidden" name="Email" id="SPRC_Email_Val" value="@UserInfo.Email" />
                                     <button type="submit" class="btn btn-standard-bolded super-disabled w-100" id="SPRC_SbmtBtn"> <i class="fa-solid fa-arrow-rotate-right"></i> Resend Code</button>
                                 </form>
@@ -215,15 +449,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="box-switchable" id="SetNewPassword_Box" style="display: none;">
-                    <form method="post" asp-controller="Profile" asp-action="UpdateThePassword" id="UpdateThePassword_Form">
+                <div class="box-switchable mt-2" id="SetNewPassword_Box" style="display: none;">
+                    <form method="post" action="/Profile/UpdateThePassword" id="UpdateThePassword_Form">
                         <div class="d-none">
                             <input type="hidden" name="Type" id="UTP_Type_Val" value="0" />
                             <input type="hidden" name="AdditionalInfo" id="UTP_AdditionalInfo_Val" />
                         </div>
                         <div>
                             <label class="form-label fw-500">New Password</label>
-                            <input type="password" name="NewPassword" id="UTP_Password_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Your new password..." />
+                            <input type="password" name="NewPassword" id="UTP_Password_Val" class="form-control form-control-guard" data-min-length="8" data-target="UpdateThePassword_SbmtBtn" maxlength="32" placeholder="Your new password" />
                         </div>
                         <div class="mt-1 ms-1">
                             <small class="card-text text-muted">Your new password must be between <span class="fw-500">8</span> and <span class="fw-500">32</span> characters long and must not be the same as your current password</small>
@@ -240,20 +474,37 @@
             </div>
 
             <div class="big-box-switchable" id="PasscodeLockSettings_Box" style="display: none;">
-                <div class="box-bordered text-center p-2">
-                    <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3>
-                    <h4 class="h4">Passcode Lock</h4>
-                    <small class="card-text text-muted">When a passcode is set, an additional account verification step is required whenever someone attempts to access your account. Another passcode must be entered before the account can be used</small>
-                    <div class="mt-2">                        
-                        <small class="card-text text-muted"><span class="fw-500">Notice: </span>If you forget your passcode, you can disable it through email verification. For standard disabling, only your passcode is required.</small>
+                <div class="box-bordered p-2">
+                    <div class="dropdown float-end ms-1">
+                        <button class="btn btn-standard-bordered btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                        <ul class="dropdown-menu shadow-sm p-1">
+                            <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-clock"></i> Passcode timer</button></li>
+                        </ul>
+                    </div>
+                    <div class="hstack gap-1">
+                        <div>
+                            <small class="card-text"><span id="PasscodeLockIcon_Span"><i class="fa-solid fa-lock"></i></span> Passcode Status: <span class="fw-500" id="PasscodeLockStatus_Span">Unlocked</span></small>
+                            <div class="mt-1">
+                                <button type="button" class="btn btn-standard-bordered btn-show-inside-box btn-sm text-start me-1" id="PasscodeEdit_Box-OpenBtn"> <i class="fa-solid fa-pencil"></i> Edit</button>
+                                <button type="button" class="btn btn-standard-bordered btn-show-inside-box btn-sm text-start text-danger" id="PasscodeDrop_Box-OpenBtn"> <i class="fa-solid fa-xmark"></i> Disable</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-2">
-                    <div class="box-inside" id="PasscodeNotSet_Box">
-                        <form method="post" asp-controller="Account" asp-action="SetPasscodeLock" id="SetPasscodeLock_Form">
+                <div class="box-switchable mt-2" id="PasscodeNotSet_Box" style="display: none;">
+                    <div class="box-bordered text-center p-2">
+                        <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3>
+                        <h4 class="h4">Passcode Lock</h4>
+                        <small class="card-text text-muted">When a passcode is set, an additional account verification step is required whenever someone attempts to access your account. Another passcode must be entered before the account can be used</small>
+                        <div class="mt-2">
+                            <small class="card-text text-muted"><span class="fw-500">Notice: </span>If you forget your passcode, you can disable it through email verification. For standard disabling, only your passcode is required</small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <form method="post" action="/Account/SetPasscodeLock" id="SetPasscodeLock_Form">
                             <div>
                                 <label class="form-label fw-500">Passcode</label>
-                                <input type="text" class="form-control form-control-guard form-textarea" asp-for="Passcode" id="SPL_Passcode_Val" placeholder="Passcode value" data-min-length="1" data-target="SetPasscodeLock_SbmtBtn" maxlength="12" />
+                                <input type="text" class="form-control form-control-guard form-textarea" name="Passcode" id="SPL_Passcode_Val" placeholder="Passcode value" data-min-length="1" data-target="SetPasscodeLock_SbmtBtn" maxlength="12" />
                             </div>
                             <div class="mt-1 ms-1">
                                 <button type="button" class="btn btn-standard-bordered btn-sm float-end ms-1" id="SPL_Passcode_Val-Indicator_Span">0/12</button>
@@ -264,11 +515,61 @@
                             </div>
                         </form>
                     </div>
-                    <div class="box-inside" id="PasscodeSet_Box" style="display: none;">
-                        <div class="box-btn-group">
-                            <button type="button" class="btn box-btn-group-member box-btn-group-top-member text-start"> <span id="PasscodeLockIcon_Span"><i class="fa-solid fa-lock"></i></span> Passcode Status: <span class="fw-500" id="PasscodeLockStatus_Span">Unlocked</span> <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button>
-                            <button type="button" class="btn box-btn-group-member box-btn-group-mid-member text-start"> <i class="fa-solid fa-pencil"></i> Edit Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button>
-                            <button type="button" class="btn box-btn-group-member box-btn-group-bot-member text-start text-danger"> <i class="fa-solid fa-xmark"></i> Disable Passcode <span class="text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </span></button>
+                </div>
+                <div class="box-switchable mt-2" id="PasscodeEdit_Box" style="display: none;">
+                    <div class="box-bordered text-center p-2">
+                        <h3 class="h3"> <i class="fa-solid fa-pencil"></i> </h3>
+                        <h4 class="h4">Edit Passcode</h4>
+                        <small class="card-text text-muted">Modify your passcode without removing it</small>
+                    </div>
+                    <div class="mt-2">
+                        <form method="post" action="/Account/EditPasscodeLock" id="EditPasscodeLock_Form">
+                            <div>
+                                <label class="form-label fw-500">Current Passcode</label>
+                                <input type="text" name="CurrentPasscode" id="EPL_CurrentPasscode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="EditPasscodeLock_SbmtBtn" maxlength="12" placeholder="Current passcode" />
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label fw-500">New Passcode</label>
+                                <input type="text" name="Passcode" id="EPL_Passcode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="EditPasscodeLock_SbmtBtn" maxlength="12" placeholder="New passcode" />
+                            </div>
+                            <div class="mt-1 ms-1">
+                                <small class="card-text text-muted">The passcode can include any character, but its length is limited to <span class="fw-500">12</span> characters</small>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditPasscodeLock_SbmtBtn">Save Changes</button>
+                            </div>
+                        </form>
+                        <div class="box-bordered text-center p-2 mt-2">
+                            <small class="card-text text-muted">Forgot your current passcode?</small>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-standard-bordered btn-sm text-center w-100" id="SendPasscodeViaEmail_Btn">Send via Email</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-switchable" id="PasscodeDrop_Box" style="display: none;">
+                    <div class="box-bordered text-center p-2">
+                        <h3 class="h3"> <i class="fa-solid fa-lock-open"></i> </h3>
+                        <h4 class="h4">Passcode Disabling</h4>
+                        <small class="card-text text-muted">When a passcode is disabled, you will no longer need to enter an additional code to access or manage your account. To remove your passcode, simply enter it here.<br />If you forgot your passcode, you can reset it by receiving a special code in your inbox to verify ownership of the account</small>
+                    </div>
+                    <div class="mt-2">
+                        <form method="post" action="/Account/DisablePasscodeLock" id="DisablePasscodeLock_Form">
+                            <div>
+                                <label class="form-label fw-500">Passcode</label>
+                                <input type="text" name="CurrentPasscode" id="DPL_Passcode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="DisablePasscodeLock_SbmtBtn" maxlength="12" placeholder="Current passcode" />
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="DisablePasscodeLock_SbmtBtn">Turn Off</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="box-bordered text-center p-2 mt-2">
+                        <small class="card-text text-muted">Forgot your passcode?</small>
+                        <div class="mt-2">
+                            <form method="post" action="/Account/SendThePasscodeViaInbox" id="SendThePasscodeViaInbox_Form">
+                                <button type="submit" class="btn btn-standard btn-sm bg-light w-100" id="SendThePasscodeViaInbox_SbmtBtn">Send via Email</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -279,7 +580,7 @@
 
 <div class="box-lg-part shadow-sm" id="EditProfile_Container">
     <div class="box-lg-part-header p-2">
-        <div class="div-swiper mx-auto"></div>
+        <div class="div-swiper mx-auto" id="EditProfile_Container-Swiper"></div>
         <div class="hstack gap-1">
             <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
             <div class="ms-2">
@@ -291,7 +592,7 @@
         <div>
             <form method="post" asp-controller="Profile" asp-action="UpdateMainInfo" id="ProfileUpdateMainInfo_Form">
                 <div>
-                    <label class="form-label fw-500">Nickname</label>
+                    <label class="form-label fw-500">Nickname </label>
                     <input type="text" asp-for="Nickname" id="UMI_Nickname_Val" class="form-control form-control-guard" data-min-length="1" data-update="ProfileMainName_Lbl" data-base-value="@UserInfo.Nickname" data-target="UpdateMainInfo_SbmtBtn" placeholder="Your nickname" maxlength="75" value="@UserInfo.Nickname" />
                 </div>
                 <div class="ms-1 mt-1">

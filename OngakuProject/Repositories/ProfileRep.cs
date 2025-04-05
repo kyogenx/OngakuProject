@@ -40,6 +40,23 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
+        public async Task<User?> GetUserPersonalInformationAsync(int Id)
+        {
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { Webpage = u.Webpage, RealName = u.RealName, CountryId = u.CountryId, Country = u.Country != null ? new Country { Name = u.Country.Name, Shortname = u.Country.Shortname } : null }).FirstOrDefaultAsync();
+            else return null;
+        }
+
+        public async Task<User?> GetUserPrivacySettingsAsync(int Id)
+        {
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { WhoCanChat = u.WhoCanChat, WhoCanDownload = u.WhoCanDownload, WhoCanSeeLastSeenInfo = u.WhoCanSeeLastSeenInfo, IsVisible = u.IsVisible, Id = Id }).FirstOrDefaultAsync();
+            else return null;
+        }
+
+        public async Task<Country?> GetUserLocationInformationAsync(int Id)
+        {
+            return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => u.Country != null ? new Country { Id = u.Country.Id, Name = u.Country.Name, Shortname = u.Country.Shortname } : null).FirstOrDefaultAsync();
+        }
+
         public int ParseCurrentUserId(string? UserId)
         {
             if(!String.IsNullOrWhiteSpace(UserId))
@@ -69,6 +86,35 @@ namespace OngakuProject.Repositories
             if(Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.Nickname))
             {
                 int Result = await _context.Users.AsNoTracking().Where(u => u.Id == Model.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.Nickname, Model.Nickname).SetProperty(u => u.Description, Model.Description));
+                if (Result > 0) return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> UpdatePersonalInfoAsync(PersonalInfo_VM Model)
+        {
+            if(Model.Id > 0)
+            {
+                string? RealName = null;
+                if(Model.RealName?.Length > 0)
+                {
+                    for(int i = 0; i < Model.RealName.Length; i++)
+                    {
+                        if (i == 0) RealName = Model.RealName[i];
+                        else RealName += ", " + Model.RealName[i];
+                    }
+                }
+                int Result = await _context.Users.AsNoTracking().Where(u => u.Id == Model.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.CountryId, Model.CountryId).SetProperty(u => u.Webpage, Model.WebpageLink).SetProperty(u => u.RealName, RealName));
+                if (Result > 0) return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> UpdatePrivacySettingsAsync(PrivacySettings_VM Model)
+        {
+            if(Model.Id > 0)
+            {
+                int Result = await _context.Users.AsNoTracking().Where(u => u.Id == Model.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.WhoCanDownload, Model.WhoCanDownload).SetProperty(u => u.WhoCanChat, Model.WhoCanChat).SetProperty(u => u.WhoCanSeeLastSeenInfo, Model.WhoCanSeeLastSeenInfo).SetProperty(u => u.IsVisible, Model.IsVisible));
                 if (Result > 0) return true;
             }
             return false;
@@ -171,6 +217,12 @@ namespace OngakuProject.Repositories
         {
             if (Id > 0) return await _context.UserImages.AsNoTracking().CountAsync(u => u.UserId == Id && !u.IsDeleted);
             else return 0;
+        }
+
+        public async Task<string?> GetUserEmailAddressAsync(int Id)
+        {
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => u.Email).FirstOrDefaultAsync();
+            else return null;
         }
     }
 }

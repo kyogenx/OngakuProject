@@ -1,8 +1,125 @@
-﻿@{
+﻿@model User
+@{
     ViewData["Title"] = "Home Page";
+
+    User? UserInfo = ViewBag.UserInfo;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="box-sm-part shadow-sm">
+</div>
+<div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
+    <div class="ongaku-player-bg-box" id="OngakuPlayerBackground_Box">
+        <div class="box-hidden-on-left" id="OngakuPlayerNotMainPart_Box">
+            <div class="hstack gap-1">
+                <div>
+                    <span class="ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Lbl">Track Name</span>
+                    <div>
+                        <small class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistsDublicate_Span">Artists</small>
+                    </div>
+                </div>
+                <div class="box-standard text-center ms-auto">
+                    <div>
+                        <button type="button" class="btn btn-ongaku-player btn-sm fw-500 me-3" id="OngakuPlayer_VolumeMute_Btn">40</button>
+                        <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-repeat"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-sm"> <i class="fa-solid fa-shuffle"></i> </button>
+                    </div>
+                    <div class="mt-1 ps-1 pe-1">
+                        <input type="range" class="form-range-slider volume-range-slider" id="OngakuPlayer_Volume_Val" max="100" value="40" step="1" data-value-label="OngakuPlayer_VolumeMute_Btn" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hstack gap-1" id="OngakuPlayerMainPart_Box">
+            <div class="box-standard" id="ImgPart_Box">
+                <div class="ongaku-player-album-box mx-auto" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div>
+                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" />
+            </div>
+            <div class="box-standard ms-1" id="TrackDetailsPart_Box">
+                <span class="h6 ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackName_Lbl">Track Name</span>
+                <div>
+                    <small class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_Artists_Span">Artists</small>
+                </div>
+            </div>
+            <div class="box-standard ms-auto" id="TrackButtons_Box">
+                <div>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-sm me-1"> <i class="fa-solid fa-star"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-backward"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-play"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-sm"> <i class="fa-solid fa-forward"></i> </button>
+                </div>
+                <div class="hstack gap-1 mt-1">
+                    <small class="card-text text-muted ongaku-track-duration-current">0:00</small>
+                    <div class="ongaku-track-duration-line">
+                        <div class="ongaku-track-current-duration-line"></div>
+                    </div>
+                    <small class="card-text text-muted ongaku-track-duration-left">0:00</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ongaku-player-bg-box-enlarged" id="OngakuPlayerBackground_Enlarged_Box">
+        <div class="hstack gap-1">
+            <div class="box-standard" id="ImgPart_Enlarged_Box">
+                <div class="ongaku-player-album-box-enlarged" id="OngakuPlayer_NoImg_Enlarged_Box"> <i class="fa-solid fa-music"></i> </div>
+                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Enlarged_Img" style="display: none;" />
+            </div>
+            <div class="box-standard w-100 ms-2">
+                <div>
+                    <span class="h2 ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Enlarged_Lbl">Track Name</span>
+                    <div>
+                        <span class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistNameDublicate_Enlarged_Lbl">Artist Name</span>
+                        <br />
+                        <span class="ongaku-album-name-lbl text-muted text-truncate" id="OngakuPlayer_AlbumName_Enlarged_Lbl">Album Name</span>
+                    </div>
+                </div>
+                <div class="hstack gap-1 mt-3 w-100">
+                    <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
+                    <div class="ongaku-track-duration-line-enlarged">
+                        <div class="ongaku-track-current-duration-line-enlarged"></div>
+                    </div>
+                    <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
+                </div>
+                <div class="row box-standard text-center mt-3" id="TrackButtons_Enlarged_Box">
+                    <div class="col">
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged"> <i class="fa-solid fa-star"></i> </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-backward"></i> </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-play"></i> </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-forward"></i> </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="box-lg-part shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="hstack gap-1">
+            <div class="dropdown">
+                <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                <ul class="dropdown-menu shadow-sm p-1">
+                    <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-feather"></i> New post</button></li>
+                    <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-square-poll-vertical"></i> New poll</button></li>
+                </ul>
+            </div>
+            @if(UserInfo.ImgUrl != null)
+            {
+                <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" />
+            }
+            else
+            {
+                <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto">@UserInfo.Nickname![0]</a>
+            }
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="Primary_Box">
+
+    </div>
 </div>

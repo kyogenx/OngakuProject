@@ -49,17 +49,65 @@ namespace OngakuProject.Repositories
             return false;
         }
 
+        public async Task<bool> CheckPasscodeAsync(int Id, string? Passcode)
+        {
+            if (Id > 0 && !String.IsNullOrWhiteSpace(Passcode))
+            {
+                bool PasscodeResult = await _context.Users.AsNoTracking().AnyAsync(u => u.Id == Id && u.Passcode == Passcode);
+                return PasscodeResult;
+            }
+            else return false;
+        }
+
+        public async Task<bool> CheckPasscodeByEmailAsync(string? Email, string? Passcode)
+        {
+            if (!String.IsNullOrWhiteSpace(Email) && !String.IsNullOrWhiteSpace(Passcode))
+            {
+                bool PasscodeResult = await _context.Users.AsNoTracking().AnyAsync(u => u.Email == Email && u.Passcode == Passcode);
+                return PasscodeResult;
+            }
+            else return false;
+        }
+
         public Task<int> AutoSignInAsync()
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> SignInAsync(SignIn_VM Model)
+        public async Task<int> SignInAsync(SignIn_VM Model)
         {
             if(!String.IsNullOrWhiteSpace(Model.Username) && !String.IsNullOrWhiteSpace(Model.Password))
             {
-                SignInResult? Result = await _signInManager.PasswordSignInAsync(Model.Username, Model.Password, true, true);
-                if (Result.Succeeded) return true;
+                SignInResult? Result = null;
+                bool CheckPasscodeAvailability = await _context.Users.AsNoTracking().AnyAsync(u => u.Email == Model.Username && u.Passcode != null);
+                if(CheckPasscodeAvailability)
+                {
+                    User? UserInfo = await _userManager.FindByEmailAsync(Model.Username);
+                    if(UserInfo is not null)
+                    {
+                        Result = await _signInManager.CheckPasswordSignInAsync(UserInfo, Model.Password, false);
+                        if (Result.Succeeded) return 2;
+                    }
+                }
+                else
+                {
+                    Result = await _signInManager.PasswordSignInAsync(Model.Username, Model.Password, true, true);
+                    if (Result.Succeeded) return 1;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<bool> PasscodeSignInAsync(SignIn_VM Model)
+        {
+            if (!String.IsNullOrWhiteSpace(Model.Username) && !String.IsNullOrWhiteSpace(Model.Password) && !String.IsNullOrWhiteSpace(Model.Passcode))
+            {
+                bool CheckPasscode = await CheckPasscodeByEmailAsync(Model.Username, Model.Passcode);
+                if(CheckPasscode)
+                {
+                    SignInResult? Result = await _signInManager.PasswordSignInAsync(Model.Username, Model.Password, true, true);
+                    if (Result.Succeeded) return true;
+                }
             }
             return false;
         }
@@ -192,7 +240,7 @@ namespace OngakuProject.Repositories
         {
             if(Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.CurrentPasscode))
             {
-                bool CheckCurrentUsersPasscode = await _context.Users.AsNoTracking().AnyAsync(u => u.Id == Model.Id && u.Passcode != Model.CurrentPasscode);
+                bool CheckCurrentUsersPasscode = await _context.Users.AsNoTracking().AnyAsync(u => u.Id == Model.Id && u.Passcode == Model.CurrentPasscode);
                 if (CheckCurrentUsersPasscode)
                 {
                     string? NullPasscode = null;

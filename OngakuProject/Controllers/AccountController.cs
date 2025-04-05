@@ -14,13 +14,15 @@ namespace OngakuProject.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IAccount _account;
         private readonly IProfile _profile;
+        private readonly IMail _mail;
         private readonly Context _context;
 
-        public AccountController(UserManager<User> userManager, IAccount account, IProfile profile, Context context)
+        public AccountController(UserManager<User> userManager, IAccount account, IProfile profile, IMail mail, Context context)
         {
             _userManager = userManager;
             _account = account;
             _profile = profile;
+            _mail = mail;
             _context = context;
         }
 
@@ -48,10 +50,21 @@ namespace OngakuProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                bool Result = await _account.SignInAsync(Model);
-                return Json(new { success = Result });
+                int Result = await _account.SignInAsync(Model);
+                if(Result > 0) return Json(new { success = true, result = Result, model = Model });
             }
-            else return Json(new { success = false });
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PasscodeSignIn(SignIn_VM Model)
+        {
+            if(ModelState.IsValid)
+            {
+                bool Result = await _account.PasscodeSignInAsync(Model);
+                if (Result) return Json(new { success = true });
+            }
+            return Json(new { success = false });
         }
 
         [HttpPost]
@@ -106,6 +119,55 @@ namespace OngakuProject.Controllers
                 string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
                 bool Result = await _account.TurnPasscodeLockOnAsync(Model);
+                if (Result) return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditPasscodeLock(PasscodeLock_VM Model)
+        {
+            if(ModelState.IsValid)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
+                bool Result = await _account.EditPasscodeLockAsync(Model);
+
+                if (Result) return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DisablePasscodeLock(PasscodeLock_VM Model)
+        {
+            if(ModelState.IsValid)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
+                bool Result = await _account.TurnPasscodeLockOffAsync(Model);
+
+                if (Result) return Json(new { success = true });            
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendThePasscodeViaInbox()
+        {
+            string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+            User? UserGuts = await _profile.GetUserGutsOnlyByIdAsync(UserId);
+            if(UserGuts is not null)
+            {
+                MailMessage_VM Model = new MailMessage_VM()
+                {
+                    Subject = "Passcode Lock",
+                    Title = "Passcode Lock Code",
+                    To = UserGuts.Email,
+                    Body = "<div style='border-radius: 10px; border: 1px solid #f0f0f0; padding: 4px;'><h1 style='text-align: center;'> <span style='color: #000000; font-family: Trebuchet MS;'>" + UserGuts.Passcode + "</span> </h1> <p style='text-align: center; font-family: Trebuchet MS;' data-start='160' data-end='289'> Please enter this code in the designated field within our app to verify your identity and proceed for further actions.</p> <div style='border: 0; border-top: 1px solid #f0f0f0;'>&nbsp;</div> <h1 style='text-align: center; font-family: Trebuchet MS;' data-start='160' data-end='289'> <span style='color: #ff0000;'>Important</span> </h1> <p style='text-align: center; font-family: Trebuchet MS;' data-start='160' data-end='289'> If you did not request this password reset, please disregard this message. No action is required on your part</p> </div>"
+                };
+                bool Result = await _mail.SendEmailMessageAsync(new MailKit_VM(), Model);
                 if (Result) return Json(new { success = true });
             }
             return Json(new { success = false });
