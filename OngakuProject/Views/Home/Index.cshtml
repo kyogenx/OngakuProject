@@ -7,6 +7,21 @@
 
 <div class="box-sm-part shadow-sm">
 </div>
+
+<div class="box-lg-part shadow-sm" id="AddMusic_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="AddMusic_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="AddMusic_Container-Header_Lbl">Add New Music</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="AddMusic_Box">
+
+    </div>
+</div>
 <div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
     <div class="ongaku-player-bg-box" id="OngakuPlayerBackground_Box">
         <div class="box-hidden-on-left" id="OngakuPlayerNotMainPart_Box">
@@ -19,6 +34,7 @@
                 </div>
                 <div class="box-standard text-center ms-auto">
                     <div>
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend btn-sm me-1"> <i class="fa-solid fa-outdent"></i> </button>
                         <button type="button" class="btn btn-ongaku-player btn-sm fw-500 me-3" id="OngakuPlayer_VolumeMute_Btn">40</button>
                         <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-repeat"></i> </button>
                         <button type="button" class="btn btn-ongaku-player btn-sm"> <i class="fa-solid fa-shuffle"></i> </button>
@@ -42,6 +58,7 @@
             </div>
             <div class="box-standard ms-auto" id="TrackButtons_Box">
                 <div>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend btn-sm d-touch-none me-1"> <i class="fa-solid fa-indent"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-sm me-1"> <i class="fa-solid fa-star"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-backward"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-play"></i> </button>
@@ -59,8 +76,9 @@
     </div>
 
     <div class="ongaku-player-bg-box-enlarged" id="OngakuPlayerBackground_Enlarged_Box">
-        <div class="hstack gap-1">
-            <div class="box-standard" id="ImgPart_Enlarged_Box">
+        <div class="ongaku-div-swiper mx-auto"></div>
+        <div class="hstack gap-1 mt-2 d-none d-md-flex">
+            <div class="box-standard ongaku-img-box" id="ImgPart_Enlarged_Box">
                 <div class="ongaku-player-album-box-enlarged" id="OngakuPlayer_NoImg_Enlarged_Box"> <i class="fa-solid fa-music"></i> </div>
                 <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Enlarged_Img" style="display: none;" />
             </div>
@@ -96,6 +114,86 @@
                 </div>
             </div>
         </div>
+        <div class="mt-2 d-block d-sm-none">
+            <div class="box-standard ongaku-img-box" id="ImgPart_EnlargedX_Box">
+                <div class="ongaku-player-album-box-enlarged" id="OngakuPlayer_NoImg_EnlargedX_Box"> <i class="fa-solid fa-music"></i> </div>
+                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_EnlargedX_Img" style="display: none;" />
+            </div>
+            <div class="box-standard text-center mt-2">
+                <span class="h2 ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Enlarged_Lbl">Track Name</span>
+                <div>
+                    <span class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistNameDublicate_Enlarged_Lbl">Artist Name</span>
+                    <br />
+                    <span class="ongaku-album-name-lbl text-muted text-truncate" id="OngakuPlayer_AlbumName_Enlarged_Lbl">Album Name</span>
+                </div>
+            </div>
+            <div class="hstack gap-1 text-center mt-3 w-100">
+                <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
+                <div class="ongaku-track-duration-line-enlarged">
+                    <div class="ongaku-track-current-duration-line-enlarged"></div>
+                </div>
+                <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
+            </div>
+            <div class="box-standard text-center row mt-3" id="TrackButtons_Enlarged_Box">
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged"> <i class="fa-solid fa-star"></i> </button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-backward"></i> </button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-play"></i> </button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-forward"></i> </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="box-standard mt-3 mt-sm-2">
+            <span class="h5">Continue Playing</span>
+            <div>
+                <small class="card-text text-muted">from <span id="OngakuPlayer_CurrentPlaylist_Span">undefined playlist</span></small>
+            </div>
+            <div class="ongaku-queue-box mt-3 mt-sm-2" id="OngakuPlayer_CurrentPlaylist_Box">
+                <div class="text-center">
+                    <h3 class="h3"> <i class="fa-solid fa-list"></i> </h3>
+                    <h5 class="h5">Nothing to Play</h5>
+                    <small class="card-text text-muted">no songs is queue to play</small>
+                </div>
+            </div>
+        </div>
+        <div class="box-standard text-center mt-2">
+            <div class="hstack gap-1">
+                <button type="button" class="btn btn-ongaku-player"> <i class="fa-solid fa-volume-off"></i> </button>
+                <div class="w-100 ms-1 me-1">
+                    <input type="range" class="form-range-slider form-range-slider-xl volume-form-range-slider" min="0" max="100" value="40" />
+                </div>
+                <button type="button" class="btn btn-ongaku-player"> <i class="fa-solid fa-volume-high"></i> </button>
+                <div class="dropdown">
+                    <button class="btn btn-ongaku-player" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm p-1">
+                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-folder-plus"></i> Add to a Playlist</button></li>
+                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-record-vinyl"></i> Go to Album</button></li>
+                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-headphones"></i> Create Queue</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="box-standard row mt-2">
+            <div class="col">
+                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-repeat"></i> </button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-shuffle"></i> </button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-quote-right"></i> </button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-circle-info"></i> </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -107,15 +205,23 @@
                 <ul class="dropdown-menu shadow-sm p-1">
                     <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-feather"></i> New post</button></li>
                     <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-square-poll-vertical"></i> New poll</button></li>
+                    <li><button type="button" class="dropdown-item btn-open-container btn-sm" id="AddMusic_Container-Open"> <i class="fa-solid fa-file-circle-plus"></i> Add Music</button></li>
                 </ul>
             </div>
-            @if(UserInfo.ImgUrl != null)
+            @if (UserInfo is not null)
             {
-                <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" />
+                @if (UserInfo.ImgUrl != null)
+                {
+                    <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" />
+                }
+                else
+                {
+                    <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto">@UserInfo.Nickname![0]</a>
+                }
             }
             else
             {
-                <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto">@UserInfo.Nickname![0]</a>
+
             }
         </div>
     </div>

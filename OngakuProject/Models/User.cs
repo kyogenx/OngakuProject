@@ -18,6 +18,7 @@ namespace OngakuProject.Models
         public string? RealName { get; set; }
         [MaxLength(230)]
         public string? Webpage { get; set; }
+        public int MonthlyListeners { get; set; }
         public DateTime? LastSeenAt { get; set; }
         public byte WhoCanChat { get; set; } //0 - everyone; 1 - only subscribers; 2 - chosen members; 3 - no one;
         public byte WhoCanDownload { get; set; }
@@ -27,6 +28,8 @@ namespace OngakuProject.Models
         public int? CountryId { get; set; }
         public Country? Country { get; set; }
         public List<UserImage>? UserImages { get; set; }
+        public List<TrackArtist>? TrackArtists { get; set; }
+        public List<TrackCredit>? TrackCredits { get; set; }
         [NotMapped]
         public int ImgId { get; set; }
         [NotMapped]

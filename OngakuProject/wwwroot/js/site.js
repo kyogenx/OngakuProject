@@ -2567,9 +2567,16 @@ $(document).on("change", ".form-range-slider", function () {
     }
 });
 
-$(document).on("dblclick", ".ongaku-player-box", function () {
+$(document).on("mousedown", ".btn-ongaku-player-extend", function () {
     if ($("#OngakuPlayerMainPart_Box").css("display") != "none") showBySlidingToRight(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
     else hideBySlidingToLeft(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
+});
+
+$(document).on("dblclick", ".ongaku-player-box", function () {
+    if (!$(this).hasClass("ongaku-player-box-enlarged")) enlargeMusicIsland(currentWindowSize);
+});
+$(document).on("mousedown", ".ongaku-div-swiper", function () {
+    dwindleMusicIsland(currentWindowSize);
 });
 
 $(document).on("touchstart", ".ongaku-player-box", function (event) {
@@ -2577,7 +2584,8 @@ $(document).on("touchstart", ".ongaku-player-box", function (event) {
 });
 $(document).on("touchmove", ".ongaku-player-box", function (event) {
     let moveDirection = handleTouchMove(event);
-    if (moveDirection == 2) {
+    if (moveDirection == 1) enlargeMusicIsland(currentWindowSize);
+   else if (moveDirection == 2) {
         if ($("#OngakuPlayerMainPart_Box").css("display") != "none") showBySlidingToRight(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
         else hideBySlidingToLeft(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
     }
@@ -2589,16 +2597,26 @@ $(document).on("touchmove", ".ongaku-player-box", function (event) {
     yDown = null;
 });
 
-$(document).on("mousedown", ".ongaku-player-box", function () {
-    if ($(this).hasClass("ongaku-player-box-enlarged")) {
-        dwindleMusicIsland(currentWindowSize);
-    }
-    else enlargeMusicIsland(currentWindowSize);
-});
-
 function dwindleMusicIsland(currentWidth) {
     if (currentWidth < 1024) {
+        let botNavbarH = bottomNavbarH - 8;
+        $(".ongaku-player-box").css("bottom", botNavbarH);
+        $(".ongaku-player-box").css("left", "0.75%");
+        $(".ongaku-player-box").css("width", "98.25%");
+        $(".ongaku-player-box").removeClass("ongaku-player-box-enlarged");
+        $(".ongaku-player-bg-box-enlarged").fadeOut(0);
+        setTimeout(function () {
+            $(".ongaku-player-bg-box").fadeIn(300);
+        }, 300);
 
+        setTimeout(function () {
+            botNavbarH += 32;
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 400);
+        setTimeout(function () {
+            botNavbarH -= 14;
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 800);
     }
     else {
         let botNavbarH = 0;
@@ -2625,7 +2643,24 @@ function dwindleMusicIsland(currentWidth) {
 
 function enlargeMusicIsland(currentWidth) {
     if (currentWidth < 1024) {
+        let botNavbarH = bottomNavbarH + 36;
+        $(".ongaku-player-box").css("bottom", botNavbarH);
+        $(".ongaku-player-box").css("left", "0.75%");
+        $(".ongaku-player-box").css("width", "98.25%");
+        $(".ongaku-player-box").addClass("ongaku-player-box-enlarged");
 
+        $(".ongaku-player-bg-box").fadeOut(300);
+        setTimeout(function () {
+            $(".ongaku-player-bg-box-enlarged").fadeIn(300);
+        }, 300);
+        setTimeout(function () {
+            botNavbarH -= 28;
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 400);
+        setTimeout(function () {
+            botNavbarH += 4;
+            $(".ongaku-player-box").css("bottom", botNavbarH);
+        }, 800);
     }
     else {
         let botNavbarH = bottomNavbarH + 36;

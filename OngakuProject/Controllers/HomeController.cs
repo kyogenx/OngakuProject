@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OngakuProject.Data;
 using OngakuProject.Interfaces;
@@ -22,21 +23,15 @@ namespace OngakuProject.Controllers
 
         public async Task<IActionResult> Index()
         {
+            User? UserInfo = null;
             if(User.Identity.IsAuthenticated)
             {
                 string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 int UserId = _profile.ParseCurrentUserId(Id);
 
-                User? UserInfo = await _profile.GetUserByIdAsync(UserId);
-                if(UserInfo is not null)
-                {
-                    ViewBag.UserInfo = UserInfo;
-                }
+                UserInfo = await _profile.GetUserByIdAsync(UserId);
             }
-            else
-            {
-                ViewBag.UserInfo = null;
-            }
+            ViewBag.UserInfo = UserInfo;
             return View();
         }
 
