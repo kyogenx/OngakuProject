@@ -8,7 +8,7 @@
     <div class="d-none">
         <input type="hidden" id="CurrentEmail_Val" value="@UserInfo.Email" />
         <form method="post" asp-controller="Profile" asp-action="EditImages" id="EditProfileImages_Form" enctype="multipart/form-data">
-            <input asp-for="ImgUrl" type="file" name="Files" id="EditImage_Files_Val" accept="image/png, image/gif, image/jpeg" multiple />
+            <input asp-for="ImgUrl" type="file" name="Files" id="EditImage_Files_Val" data-trigger="EditProfileImages_Form" data-order-target="EditImage_Files_Val" accept="image/png, image/gif, image/jpeg" multiple />
         </form>
         <form method="get" asp-controller="Profile" asp-action="GetImagesQty" id="GetImagesQty_Form">
             <input type="hidden" name="Id" value="@UserInfo.Id" />

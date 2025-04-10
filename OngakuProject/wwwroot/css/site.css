@@ -364,6 +364,23 @@ body {
     transition: all ease 0.3s;
 }
 
+.ongaku-player-album-img-sm {
+    border-radius: 10px;
+    height: 55px;
+    width: 55px;
+    object-fit: contain;
+    transition: all ease 0.3s;
+}
+.ongaku-player-album-box-sm {
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    height: 55px;
+    width: 55px;
+    font-size: 34px;
+    text-align: center;
+    color: #2b2b2b;
+    transition: all ease 0.3s;
+}
 .ongaku-track-name-lbl {
     cursor: pointer;
     font-weight: 500;
@@ -717,6 +734,25 @@ body {
     background-color: #f8f9fa;
 }
 
+.track-preview-box {
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    transition: all ease 0.24s;
+}
+
+.badge-standard {
+    padding: 3px 10px 3px 10px;
+    font-weight: normal;
+    border-radius: 6px;
+    background-color: #e0e0e0;
+    color: #2b2b2b;
+    transition: all ease 0.24s;
+}
+
 .x-row-sliding-only-box {
     overflow: hidden;
     overflow-x: auto;
@@ -724,7 +760,7 @@ body {
 
 .super-disabled {
     pointer-events: none;
-    opacity: 0.9;
+    opacity: 0.55;
 }
 
 .w-50-lg {
@@ -745,13 +781,33 @@ body {
     font-size: 55px;
     background-color: white;
     color: #2b2b2b;
+    text-align: center;
     content: '<i class="fa-solid fa-face-smile"></i>';
     border-radius: 99px;
     transition: all ease 1s;
 }
+.profile-avatar-sm {
+    height: 28px;
+    width: 28px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    background-color: #f8f9fa;
+    color: #2b2b2b;
+    border-radius: 99px;
+    transition: all ease 1s;
+}
+
 .profile-avatar-img {
     height: 85px;
     width: 85px;
+    border-radius: 99px;
+    object-fit: cover;
+    transition: all ease 0.4s;
+}
+.profile-avatar-img-sm {
+    height: 28px;
+    width: 28px;
     border-radius: 99px;
     object-fit: cover;
     transition: all ease 0.4s;
@@ -787,6 +843,77 @@ body {
     border-radius: 4px;
     background-color: #f0f0f0;
     transition: all ease 0.3s;
+}
+
+.btn-profile-tag {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 10px;
+    background-color: transparent;
+    width: auto;
+    border: 1px solid #f0f0f0;
+    transition: all ease 0.3s;
+}
+.profile-tag:hover,
+.profile-tag:active {
+    border: 1px solid #e0e0e0;
+    background-color: #e0e0e0;
+}
+
+.date-box {
+    width: 100%;
+    min-height: 240px;
+    max-height: 370px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 10px;
+    transition: all ease 0.24s;
+}
+.date-box::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
+}
+
+.form-check-input {
+    transition: all ease 0.3s;
+}
+.form-check-input:focus {
+    border-color: #2b2b2b; /* Adjust border color on focus */
+    box-shadow: 0 0 0 0.125rem rgba(43, 43, 43, 0.25); /* Adjust focus shadow */
+}
+.form-check-input:checked {
+    background-color: #2b2b2b;
+    border-color: #2b2b2b;
+}
+
+.separator-standard {
+    border-top: 1px solid #e0e0e0;
+    border-radius: 0;
+}
+.separator-bright {
+    border-top: 1px solid #f0f0f0;
+    border-radius: 0;
+}
+
+.explicit-span {
+    padding: 2px 9px 2px 9px;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    color: black;
+    font-weight: 500;
+    transition: all ease 0.24s;
+}
+
+.artist-name-span {
+    padding: 0;
+    cursor: pointer;
+    opacity: 1;
+    transition: all ease 0.24s;
+}
+.artist-name-span:hover,
+.artist-name-span:active {
+    opacity: 0.925;
+    padding-left: 2px;
 }
 
 .bg-chosen {
@@ -847,10 +974,12 @@ body {
 .box-vertical-switcher {
     z-index: 1000;
     padding: 4px;
+    max-height: 80%;
+    overflow-y: auto;
+    overflow-x: hidden;
     border-radius: 10px 10px 0 0;
     background-color: #fdfdfd;
     border: 1px solid #f0f0f0;
-    border-bottom: 0;
     width: auto;
     border-radius: 10px;
     bottom: -1200px;

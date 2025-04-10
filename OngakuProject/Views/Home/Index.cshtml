@@ -6,6 +6,269 @@
 }
 
 <div class="box-sm-part shadow-sm">
+    <div class="d-none">
+        <form method="get" asp-controller="User" asp-action="Search" id="SearchForUsers_Form">
+            <input type="hidden" name="Type" id="SearchForUsers_Type_Val" value="1" />
+            <input type="hidden" name="Keyword" id="SearchForUsers_Keyword_Val" />
+        </form>
+        <form method="get" asp-controller="Genre" asp-action="Search" id="SearchForGenres_Form">
+            <input type="hidden" name="Type" id="SearchForGenres_Type_Val" value="1" />
+            <input type="hidden" name="Keyword" id="SearchForGenres_Keyword_Val" />
+        </form>
+        <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
+    </div>
+</div>
+
+<div class="box-lg-part shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="AddSingle_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="AddSingle_Container-Header_Lbl">Add Single</span>
+            </div>
+        </div>
+        <div class="box-bordered mt-1 p-1" id="SinglePreviewCredits_Box">
+            <div class="hstack gap-1">
+                <div>
+                    <div class="ongaku-player-album-box-sm" id="SPC_Img_Box"> <i class="fa-solid fa-music"></i> </div>
+                    <img src="#" class="ongaku-player-album-box-sm" alt="This image cannot be displayed" id="SPC_Img" style="display: none;" />
+                </div>
+                <div class="ms-1">
+                    <span class="h6" id="SPC_Title_Span">Title Name</span>
+                    <div>
+                        <small class="explicit-span" id="SPC_Explicit_Span" style="display: none;">E</small>
+                        <small class="card-text">@UserInfo.Nickname<span id="SPC_Artists_Span"></span></small>
+                        <small class="card-text text-muted"> ∙ <span id="SPC_Genres_Span">Genre</span></small><small class="card-text text-muted" id="SPC_ReleaseYear_Span">, @DateTime.Now.Year</small>
+                    </div>
+                </div>
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li><button type="button" class="dropdown-item">View Credits <span class="float-end"> <i class="fa-solid fa-circle-info"></i> </span></button></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><span class="dropdown-item-text" id="SPC_Duration_Span">0:00 <span class="float-end"> <i class="fa-solid fa-clock"></i> </span></span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="AddSingle_Box">
+        <div class="box-vertical-switcher p-1" id="TrackTitleRestrictions_Box">
+            <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm float-end ms-1" id="TrackTitleRestrictions_Box-Close_Btn">Done</button>
+            <div class="box-standard mt-2">
+                <h5 class="h5">Title Tips</h5>
+                <p class="card-text">Here are some tips about title restrictions. Tracks with these kinds of names can be deleted or muted repeatedly until you update them</p>
+                <h6 class="h6">Track title <span class="fw-500">should not contain</span>:</h6>
+                <div>
+                    <ol>
+                        <li class="card-text">
+                            <span><span class="fw-500">Unnecessary Descriptors</span><br/>Any type of text like:</span>
+                            <div class="box-bordered p-2 mt-1 mb-1">
+                                <span class="card-text">Official Audio<br/></span>
+                                <span class="card-text"><span class="fw-500">HD</span>/<span class="fw-500">HQ</span>/<span class="fw-500">4K</span> and etc.<br /></span>
+                                <span class="card-text"><span class="fw-500">Track 01</span>/<span class="fw-500">Song 5</span> and etc. (unless it is part of the actual title)<br/></span>
+                                <span class="card-text">File extensions (<span class="fw-500">.wav</span>, <span class="fw-500">.mp3</span> and others)<br /></span>
+                            </div>
+                            <span>Keep it clean like <span class="fw-500">Stay With Me</span> and not like <span class="fw-500">Stay With Me (Official Audio)</span></span>
+                        </li>
+                        <li class="card-text mt-2">
+                            <span class="fw-500">Misleading or Promotional Text</span>
+                            <div class="box-bordered p-2 mt-1 mb-1">
+                                <span class="card-text"><span class="fw-500">#1 Hit</span>/<span class="fw-500">Best Song of the Year</span> and etc.<br/></span>
+                                <span class="card-text"><span class="fw-500">Listen Now!</span>/<span class="fw-500">Free Download!</span> and etc. <br/></span>
+                                <span class="card-text">Clickbait-like titles</span>
+                            </div>
+                        </li>
+                        <li class="card-text mt-2">
+                            <span class="fw-500">Incorrect Use of Featurings</span>
+                            <div class="box-bordered p-2 mt-1 mb-1">
+                                <span class="card-text">Do not write like <span class="fw-500">My Song feat./ft. Artist</span><br/></span>
+                                <span class="card-text">Avoid writing titles like this: <span class='fw-500'>My Song (feat. Artist)</span> — don’t use parentheses to list featured artists. Use this option if the artist doesn’t have an account and can’t be added as a featured artist in the main field</span>
+                            </div>
+                            <span>Instead, use the original field to find and add them. This way, they will appear properly with their account links</span>
+                        </li>
+                        <li class="card-text mt-2">
+                            <span class="fw-500">Emojis or Special Characters</span>
+                            <div class="box-bordered p-2 mt-1 mb-1">
+                                <span class="card-text">Emojis and excessive punctuation like: <span class="fw-500">🔥My Song!!🔥</span></span>
+                            </div>
+                            <span>Instead, use multiple languages to add creative flair to your title (if it makes sense)</span>
+                        </li>
+                        <li class="card-text mt-2">
+                            <span class="fw-500">Repetition of Artist Name</span>
+                            <div class="box-bordered p-2 mt-1 mb-1">
+                                <span class="card-text">Do not name your track like: <span class="fw-500">My Song by Me</span> and etc.<br/></span>
+                            </div>
+                            <span>Remember, your name is automatically added in the artist field, along with any featured artists you have included</span>
+                        </li>
+                        <li class="card-text mt-2">
+                            <span class="fw-500">Illegal and Offensive Content</span>
+                            <div class="box-bordered p-2 mt-1 mb-1">
+                                <span class="card-text">Avoid illegal or offensive content in your track title, even if it appears in the lyrics. You can blur it with symbols (for example: <span class="fw-500">*</span>)<br/></span>
+                                <span class="card-text">Unflagged explicit tracks will be muted until flagged or automatically marked as explicit</span>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 pt-sm-3 pt-4">
+            @* <div class="box-standard">
+                <div class="row">
+                    <div class="col date-box calendar-days-box" id="CalendarDays_Box">
+                    </div>
+                    <div class="col date-box calendar-hrs-box" id="CalendarHours_Box">
+                    </div>
+                    <div class="col date-box calendar-mins-box" id="CalendarMinutes_Box">
+                    </div>
+                    <div class="col date-box calendar-hrformat-box" id="CalendarDateTimeFormat_Box">
+                        <button type="button" class="btn btn-standard btn-dtformat-type bg-chosen-bright w-100" data-val="AM">AM</button>
+                        <button type="button" class="btn btn-standard btn-dtformat-type w-100" data-val="PM">PM</button>
+                    </div>
+                </div>
+                <div class="box-standard row mt-2">
+                    <div class="col col-3">
+                        <button type="button" class="btn btn-standard-bordered btn-decrease-the-value w-100" id="CalendarYearValueLowerer_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-minus"></i></button>
+                    </div>
+                    <div class="col col-6">
+                        <input type="number" class="d-none" id="CalendarDay_Val" value="1" />
+                        <input type="number" class="d-none" id="CalendarMonth_Val" value="1" />
+                        <input type="number" class="d-none" id="CalendarYear_Val" value="0" />
+                        <input type="number" class="d-none" id="CalendarHr_Val" value="0" />
+                        <input type="number" class="d-none" id="CalendarMin_Val" value="0" />
+                        <input type="number" class="form-control form-control-date-year" id="CalendarYear_Val" placeholder="Enter year value here" min="1750" max="2025" step="1" value="2025" />
+                    </div>
+                    <div class="col col-3">
+                        <button type="button" class="btn btn-standard-bordered btn-increase-the-value w-100" id="CalendarYearValueIncreaser_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-plus"></i> </button>
+                    </div>
+                </div>
+                <div class="box-standard mt-2">
+                    <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-calendar-submit w-100" id="CalendarSubmit_Btn">Set for <span class="calendar-chosen-dt-span" id="ChosenDateTime_Span">today, at 23:00</span></button>
+                </div>
+            </div> *@
+
+            @* <div class="box-standard mt-1">
+                <div class="box-bordered p-2">
+                    <div>
+                        <span class="h4 ongaku-track-name-lbl">Not Playing</span>
+                        <div>
+                            <small class="card-text ongaku-artist-name-lbl text-muted">no file chosen</small>
+                        </div>
+                    </div>
+                    <div class="hstack gap-1 mt-1">
+                        <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
+                        <div class="ongaku-track-duration-line-enlarged">
+                            <div class="ongaku-track-current-duration-line-enlarged"></div>
+                        </div>
+                        <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
+                    </div>
+                    <div class="row w-100 mt-1">
+                        <div class="col">
+                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-backward"></i> </button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-play"></i> </button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-forward"></i> </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-standard row mt-2" id="AddedTracks_Box">
+                </div>
+            </div> *@
+
+@*             <div class="col">
+                <div class="track-preview-box">
+                    <h5 class="h5">Track Name</h5>
+                    <span class="badge badge-standard">.mp3</span>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-standard-bordered btn-play-track me-1"> <i class="fa-solid fa-play"></i> Play</button>
+                        <button type="button" class="btn btn-standard-bordered me-1"> <i class="fa-solid fa-scissors"></i> Snippet</button>
+                    </div>
+                </div>
+            </div> *@
+
+            <form method="post" action="/Track/ReleaseSingle" id="ReleaseASingle_Form">
+                <div class="d-none" id="FeaturingArtistInputs_Box"></div>
+                <div class="d-none" id="ChosenGenreInputs_Box"></div>
+                <input type="text" class="d-none" name="ReleaseDate" id="RAS_ReleaseDate_Val" />
+                <input type="file" class="d-none" name="TrackFileUrl" id="RAS_TrackFileUrl_Val" accept="audio/mp3, audio/wav, audio/ogg, audio/aac, audio/flac, audio/m4a" />
+                <input type="file" class="d-none" name="CoverImageUrl" id="RAS_CoverImg_Url" accept="image/png, image/webp, image/jpeg" />
+                <div>
+                    <button type="button" class="btn btn-standard btn-open-vertical-switcher btn-sm float-end ms-1" id="TrackTitleRestrictions_Box-OpenBtn"> <i class="fa-solid fa-circle-info"></i></button>
+                    <label class="form-label fw-500 ms-1">Track Title</label>
+                    <input type="text" class="form-control form-control-guard" name="Title" id="RAS_Title_Val" placeholder="Title of your track" data-min-length="1" data-update="SPC_Title_Span" data-base-value="Track Title" data-target="ReleaseASingle_SbmtBtn" />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">There are a few restrictions on track titles. If you're not familiar with them, please <span> <i class="fa-solid fa-circle-info"></i> </span> tap to read the guidelines</small>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500 ms-1">Featuring Artist(s)</span>
+                    <small class="card-text text-muted" id="SearchForUsers_SbmtBtn"></small>
+                    <div id="ArtistSearch_Box" style="display: none;">
+                        <small class="card-text text-muted ms-1">Found: <span id="FoundArtistsQty_Span">0</span></small>
+                        <div class="mt-1" id="ArtistsSearchResult_Box"></div>
+                    </div>
+                    <div id="AlreadyAddedArtists_Box" style="display: none;">
+                        <small class="card-text text-muted ms-1">Added Artists:</small>
+                        <div class="mt-1" id="ArtistsAddedResult_Box"></div>
+                    </div>
+                    <input type="text" class="form-control form-control-trigger mt-2" id="FeaturingArtistsSearch_Val" placeholder="Enter artist names to search" data-trigger="SearchForUsers_Keyword_Val" data-trigger-interval="0.5" data-idle-label="SearchForUsers_SbmtBtn" data-idle-text="Searching..." />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="FeaturingArtistsSearch_Val-Warn">Enter artist names to search. Tap a name from the list to add them as a featuring artist. If not found, include them in the title like: <span class='fw-500'>My Song (feat. My Frnd)</span></small>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-500 ms-1">Release Date</label>
+                    <div>
+                        <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="For past releases, select the correct date below. For future releases, set a date to mark it as a premiere with a banner and extra features"> <i class="fa-solid fa-circle-info"></i> </button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-the-clock btn-sm me-1" data-type="2" data-target="RAS_ReleaseDate_Val" data-date-display="RAS_ReleaseDateTrigger_Val" data-min-year="2000" data-max-year="2025"> <i class="fa-solid fa-calendar-day"></i> Set Date</button>
+                        <button type="button" class="btn btn-standard-bordered btn-clock-dt-reset btn-sm super-disabled" data-target="RAS_ReleaseDate_Val" data-date-display="RAS_ReleaseDateTrigger_Val"> <i class="fa-solid fa-arrow-rotate-right"></i> Reset for Today</button>
+                    </div>
+                    <input type="text" class="form-control date-and-time-display mt-1" id="RAS_ReleaseDateTrigger_Val" value="Set for Today" placeholder="Today, by default" />
+                </div>
+                <div class="ms-1 mt-1">
+                    <small class="card-text text-muted" id="RAS_ReleaseDateTrigger_Val-Warn">Keep default to release immediately after submission</small>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500 ms-1">Genres</span>
+                    <small class="card-text text-muted" id="RAS_LoadGenres_Span"></small>
+                    <div class="mt-1" id="GenresInfo_Box">
+                        <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="At least one genre is required"> <i class="fa-solid fa-circle-info"></i> </button>
+                        <button type="button" class="btn btn-standard-bordered btn-sm" id="RAS_LoadAllGenres_Btn"> <i class="fa-solid fa-rectangle-list"></i> All Genres</button>
+                        <div class="mt-1" id="ChosenGenres_Box" style="display: none;"></div>
+                    </div>
+                    <input type="text" class="form-control form-control-trigger mt-1" placeholder="Type to search genres..." id="RAS_GenreSearch_Val" data-trigger="SearchForGenres_Keyword_Val" data-trigger-interval="0.75" data-idle-label="RAS_LoadGenres_Span" data-idle-text="Searching..." />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="RAS_LoadGenres_Btn-Warn">To view all genres, simply tap the field and leave it blank. Select up to <span class="fw-500">3</span> genres. Required for recommendations</small>
+                </div>
+                <div class="box-bordered mt-3 p-2">
+                    <button type="button" class="btn btn-standard-bordered btn-trigger btn-sm float-end ms-1" id="RAS_AddTrackFile_Btn" data-trigger="RAS_TrackFileUrl_Val"> <i class="fa-solid fa-file-audio"></i> Upload Track</button>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="HasExplicit" id="RAS_HasExplicit_Val" data-checked="SPC_Explicit_Span" value="false" />
+                        <label class="form-check-label fw-500" for="RAS_HasExplicit_Val">Explicit Content <small class="explicit-span">E</small></label>
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted" id="RAS_HasExplicit_Val-Warn">Mark if your song contains explicit content</small>
+                    </div>
+                    <div class="box-standard separator-bright mt-2 pt-2">
+                        <button type="button" class="btn btn-standard-bordered btn-trigger btn-sm me-1" id="RAS_AddCoverImg_Btn" data-trigger="RAS_CoverImg_Url"> <i class="fa-solid fa-image"></i> Upload Cover</button>
+                        <button type="button" class="btn btn-standard-bordered btn-sm super-disabled me-1" id="RAS_RemoveCoverImg_Btn"> <i class="fa-solid fa-xmark"></i> Remove Image</button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="ReleaseASingle_SbmtBtn">Continue to Submitting</button>
+                </div>
+                <div class="box-bordered text-center mt-2 p-1">
+                    <small class="card-text text-muted">Add lyrics, label info, and credits next — or later. Your track stays <span class='fw-500'>muted</span> until manual submission.<br />Lyrics and label info are optional</small>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <div class="box-lg-part shadow-sm" id="AddMusic_Container">
@@ -14,15 +277,37 @@
         <div class="hstack gap-1">
             <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
             <div class="ms-2">
-                <span class="h5" id="AddMusic_Container-Header_Lbl">Add New Music</span>
+                <span class="h5" id="AddMusic_Container-Header_Lbl">Add New Release</span>
             </div>
         </div>
     </div>
     <div class="box-lg-part-body mt-5" id="AddMusic_Box">
-
+        <div class="box-standard text-center p-2">
+            <h3 class="h3">Choose the Way</h3>
+            <small class="card-text text-muted">Select what you would like to add</small>
+            <div class="row mt-3">
+                <div class="col">
+                    <button type="button" class="btn btn-standard-bordered btn-lg btn-open-container text-center w-100" id="AddSingle_Container-Open"> <i class="fa-solid fa-music"></i> <br/>Single</button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-standard-bordered btn-lg text-center w-100"> <i class="fa-solid fa-record-vinyl"></i> <br />Album, EP</button>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col">
+                    <button type="button" class="btn btn-standard-bordered btn-lg text-center w-100"> <i class="fa-solid fa-podcast"></i> <br/>Podcast</button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-standard-bordered btn-lg text-center w-100"> <i class="fa-solid fa-book"></i> <br/>Book</button>
+                </div>
+            </div>
+            <div class="box-bordered mt-2 p-2">
+                <small class="card-text text-muted">Keep in mind that the distinction between albums and EPs is based on total runtime — not the number of tracks. So, even if your release includes more than <span class="fw-500">six</span> tracks, it will still be classified as an EP if the total duration is under <span class="fw-500">30</span> minutes</small>
+            </div>
+        </div>
     </div>
 </div>
-<div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
+@* <div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
     <div class="ongaku-player-bg-box" id="OngakuPlayerBackground_Box">
         <div class="box-hidden-on-left" id="OngakuPlayerNotMainPart_Box">
             <div class="hstack gap-1">
@@ -196,8 +481,8 @@
         </div>
     </div>
 </div>
-
-<div class="box-lg-part shadow-sm" id="Primary_Container">
+ *@
+<div class="box-lg-part shadow-sm" id="">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">
             <div class="dropdown">

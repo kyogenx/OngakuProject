@@ -6,8 +6,14 @@ let timeoutValue;
 let sentRequest = null;
 let openedContainers = [];
 let openedCards = [];
+const userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+let dayOfWeekShortArr = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+let dayOfWeekArr = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+let monthsShortArr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+let monthsArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-//showSwitchableBox
+//imagePreviewer() type='file'
+//SearchForUsers_Form
 window.onload = function () {
     displayCorrector(currentWindowSize, true);
     $(".ongaku-alert").fadeOut(0);
@@ -137,7 +143,7 @@ $("#SignIn_Form").on("submit", function (event) {
                 document.location = "/Home/Index";
             }
             else if (parseInt(response.result) == 2) {
-                createInsideLgCard("PasscodeSignIn", "Passcode Required", '<div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3> <h4 class="h4">Passcode Secured</h4> <small class="card-text text-muted">This account is protected by a passcode. Please enter it to complete the sign-in process</small> </div> <div class="mt-2"> <form method="post" href="/Account/PasscodeSignIn" id="PasscodeSignIn_Form"> <div class="d-none"> <input type="text" name="Password" id="PasscodeSignIn_Password_Val" /> <input type="text" name="Username" id="PasscodeSignIn_Username_Val" /> </div> <div> <input type="text" class="form-control form-textarea form-control-guard" name="Passcode" id="PasscodeSignIn_Passcode_Val" placeholder="Enter the passcode" data-min-length="1" data- data-target="PasscodeSignIn_SbmtBtn" /> </div> <div class="mt-2"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="PasscodeSignIn_SbmtBtn">Sign In</button> </div> </form> </div>', '<form method="post" href="/Account/SendThePasscodeViaInbox" id="SendThePasscodeViaInbox_Form"> <button type="submit" class="btn btn-standard btn-sm" id="SendThePasscodeViaInbox_SbmtBtn">Forgot Passcode</button> </form>', null);
+                createInsideLgCard("PasscodeSignIn", "Passcode Required", '<div class="box-bordered text-center p-2"> <h3 class="h3"> <i class="fa-solid fa-lock"></i> </h3> <h4 class="h4">Passcode Secured</h4> <small class="card-text text-muted">This account is protected by a passcode. Please enter it to complete the sign-in process</small> </div> <div class="mt-2"> <form method="post" action="/Account/PasscodeSignIn" id="PasscodeSignIn_Form"> <div class="d-none"> <input type="text" name="Password" id="PasscodeSignIn_Password_Val" /> <input type="text" name="Username" id="PasscodeSignIn_Username_Val" /> </div> <div> <input type="text" class="form-control form-textarea form-control-guard" name="Passcode" id="PasscodeSignIn_Passcode_Val" placeholder="Enter the passcode" data-min-length="1" data- data-target="PasscodeSignIn_SbmtBtn" /> </div> <div class="mt-2"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="PasscodeSignIn_SbmtBtn">Sign In</button> </div> </form> </div>', '<form method="post" href="/Account/SendThePasscodeViaInbox" id="SendThePasscodeViaInbox_Form"> <button type="submit" class="btn btn-standard btn-sm" id="SendThePasscodeViaInbox_SbmtBtn">Forgot Passcode</button> </form>', null);
                 setTimeout(function () {
                     $("#PasscodeSignIn_Password_Val").val(response.model.password);
                     $("#PasscodeSignIn_Username_Val").val(response.model.username);
@@ -1177,13 +1183,40 @@ $("#UpdateSearchname_Status_Span").on("mousedown", function () {
     }
 });
 
+$(document).on("change", "#RAS_CoverImg_Url", function () {
+    let firstImg = $(this).get(0).files[0];
+    if (firstImg != null || firstImg != undefined) {
+        $("#SPC_Img").attr("src", window.URL.createObjectURL(firstImg));
+        $("#SPC_Img_Box").fadeOut(0);
+        $("#SPC_Img").fadeIn(0);
+        $("#RAS_AddCoverImg_Btn").addClass("super-disabled");
+        $("#RAS_RemoveCoverImg_Btn").removeClass("super-disabled");
+        $("#RAS_AddCoverImg_Btn").html(' <i class="fa-solid fa-check-double"></i> Thumbnail is Set');
+    }
+    else {
+        $("#SPC_Img").fadeOut(0);
+        $("#SPC_Img_Box").fadeIn(0);
+        $("#SPC_Img").attr("src", "#");
+        $("#RAS_AddCoverImg_Btn").removeClass("super-disabled");
+        $("#RAS_RemoveCoverImg_Btn").addClass("super-disabled");
+        $("#RAS_AddCoverImg_Btn").html(' <i class="fa-solid fa-image"></i> Upload Cover');
+        fileRenewer("RAS_CoverImg_Url", null, 6, true);
+    }
+});
+
+$(document).on("mousedown", "#RAS_RemoveCoverImg_Btn", function () {
+    fileRenewer("RAS_CoverImg_Url", new DataTransfer(), 6, true);
+    $("#RAS_CoverImg_Url").change();
+});
+
 $(document).on("mousedown", ".btn-reorder", function () {
     let postIdValue = getTrueId($(this).attr("id"), true);
     let reorderTarget = $(this).attr("data-reorder-target");
     let currentOrder = parseInt(getTrueId($(this).attr("id")));
     let maxOrder = parseInt($(this).attr("data-max-order"));
+    let triggerTarget = $(this).attr("data-trigger");
 
-    if (postIdValue != undefined && reorderTarget != undefined) {
+    if (postIdValue != undefined && reorderTarget != undefined && triggerTarget != undefined) {
         let files = $("#" + reorderTarget).get(0).files;
         if (currentOrder < maxOrder) {
             let tempOrder = currentOrder + 1;
@@ -1203,7 +1236,7 @@ $(document).on("mousedown", ".btn-reorder", function () {
                 }
                 else dataTransfer.items.add(files[i]);
             }
-            imagePreviewer(dataTransfer.files, false);
+            imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
             fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
         }
         else {
@@ -1223,9 +1256,9 @@ $(document).on("mousedown", ".btn-reorder", function () {
                 }
                 else dataTransfer.items.add(files[i]);
             }
+            imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
+            fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
         }
-        imagePreviewer(dataTransfer.files, false);
-        fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
     }
 /*    else {*/
         //let currentFileIndex = getTrueId($(this).attr("id"));
@@ -1248,17 +1281,18 @@ $(document).on("mousedown", ".btn-reorder", function () {
 $(document).on("mousedown", ".btn-delete-from-order", function () {
     let currentFileIndex = getTrueId($(this).attr('id'));
     let reorderTarget = $(this).attr("data-reorder-target");
-    if (currentFileIndex != undefined && reorderTarget != undefined) {
+    let triggerTarget = $(this).attr("data-trigger");
+    if (currentFileIndex != undefined && reorderTarget != undefined && triggerTarget) {
         let currentFiles = $("#" + reorderTarget).get(0).files;
         let dataTransfer = new DataTransfer();
         if (parseInt(currentFiles.length) > 1) {
             for (let i = 0; i < currentFiles.length; i++) {
                 if (i != currentFileIndex) dataTransfer.items.add(currentFiles[i]);
             }
-            imagePreviewer(dataTransfer.files, false);
+            imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
             fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
         }
-        else imagePreviewer(null, false);
+        else imagePreviewer(null, triggerTarget, reorderTarget, true, false);
     }
 });
 
@@ -1273,11 +1307,66 @@ $(document).on("mousedown", "input[type='file']", function () {
     let thisId = $(this).attr("id");
     if (thisId != undefined) $("#" + thisId).click();
 });
-$(document).on("change", "input[type='file']", function () {
+$(document).on("input", "input[type='file']", function () {
     let thisId = $(this).attr("id");
-    let imgs = $("#" + thisId).get(0).files;
-    if (imgs != undefined) {
-        imagePreviewer(imgs, true);
+    let files = $("#" + thisId).get(0).files;
+    let trigger = $(this).attr("data-trigger");
+    let areAudio = false;
+
+    if (files != undefined) {
+        for (let i = 0; i < files.length; i++) {
+            let fileType = getFileExtension(files[i].name);
+            if (fileType == ".mp3" || fileType == ".ogg" || fileType == ".wav" || fileType == ".aac" || fileType == ".flac" || fileType == ".m4a") {
+                areAudio = true;
+                break;
+            }          
+        }
+
+        let isMultiple = $(this).attr("multiple");
+        let orderTarget = $(this).attr("data-order-target");
+        if (isMultiple != undefined) {
+            if (!areAudio) imagePreviewer(files, trigger != undefined ? trigger : null, orderTarget, true, true);
+            else audioPreviewer(files, trigger != undefined ? trigger : null, orderTarget, true, true);
+        }
+        else {
+            if (!areAudio) imagePreviewer(files, trigger != undefined ? trigger : null, orderTarget, false, true);
+            else audioPreviewer(files, trigger != undefined ? trigger : null, orderTarget, false, true);
+        }
+    }
+});
+
+function getFileExtension(fileUrl) {
+    if (fileUrl != null) {
+        fileUrl = fileUrl.substring(fileUrl.lastIndexOf("."), fileUrl.length);
+        return fileUrl;
+    }
+    else return null;
+}
+
+$(document).on("mousedown", ".btn-trigger", function () {
+    let triggerElement = $(this).attr("data-trigger");
+    if (triggerElement != undefined) {
+        $("#" + triggerElement).mousedown();
+    }
+});
+
+$(document).on("change", ".form-control-trigger", function () {
+    let triggeringElement = $(this).attr("data-trigger");
+    if (triggeringElement != undefined) {
+        let triggerActivationInterval = $(this).attr("data-trigger-interval");
+        let idleLabel = $(this).attr("data-idle-label");
+        if (idleLabel != undefined) {
+            let idleText = $(this).attr("data-idle-text");
+            if (idleText != undefined) $("#" + idleLabel).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> ' + idleText);
+            else $("#" + idleLabel).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Pending...');
+        }
+
+        clearTimeout(timeoutValue);
+        triggerActivationInterval = triggerActivationInterval != undefined ? parseFloat(triggerActivationInterval) : 1.75;
+        $("#" + triggeringElement).val($(this).val());
+        timeoutValue = setTimeout(function () {
+            $("#" + triggeringElement).change();
+        }, triggerActivationInterval * 1000);
     }
 });
 
@@ -1364,29 +1453,30 @@ async function timer(durationInSec, display, updateEvery_N_Seconds, displayInSec
 }
 
 function fileRenewer(targetId, newFilesArr, acceptableFilesLength, updateTheWidget = null) {
-    if (newFilesArr != null && newFilesArr.files.length > 0) {
-        let dataTransfer = new DataTransfer();
-        let maxFilesLength = newFilesArr.files.length > acceptableFilesLength ? acceptableFilesLength : newFilesArr.files.length;
-        for (let i = 0; i < maxFilesLength; i++) {
-            dataTransfer.items.add(newFilesArr.files[i]);
-        }
-        let newInput = document.createElement("input");
-        let inputElement = document.getElementById(targetId);
-
-        newInput.type = "file";
-        newInput.multiple = inputElement.multiple;
-        newInput.accept = inputElement.accept;
-        newInput.name = inputElement.name;
-        newInput.id = inputElement.id;
-        newInput.className = inputElement.className;
-        newInput.files = dataTransfer.files;
-
-        document.getElementById(targetId).parentNode.replaceChild(newInput, inputElement);
-        if (updateTheWidget == null) $("#" + targetId).change();
+    newFilesArr = newFilesArr != null ? newFilesArr : new DataTransfer();
+    let dataTransfer = new DataTransfer();
+    let maxFilesLength = newFilesArr.files.length > acceptableFilesLength ? acceptableFilesLength : newFilesArr.files.length;
+    for (let i = 0; i < maxFilesLength; i++) {
+        dataTransfer.items.add(newFilesArr.files[i]);
     }
+    let newInput = document.createElement("input");
+    let inputElement = document.getElementById(targetId);
+
+    newInput.type = "file";
+    newInput.multiple = inputElement.multiple;
+    newInput.accept = inputElement.accept;
+    newInput.name = inputElement.name;
+    newInput.id = inputElement.id;
+    newInput.className = inputElement.className;
+
+    if (dataTransfer.files.length > 0) newInput.files = dataTransfer.files;
+    else newInput.files = null;
+
+    document.getElementById(targetId).parentNode.replaceChild(newInput, inputElement);
+    if (updateTheWidget == null) $("#" + targetId).change();
 }
 
-function imagePreviewer(images, openPreviewBox = true) {
+function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = true, openPreviewBox = true) {
     let isArray = Array.isArray(images) ? true : false;
     let imagesLength = 0;
     let imagesCodeLength = 0;
@@ -1426,21 +1516,27 @@ function imagePreviewer(images, openPreviewBox = true) {
                 elementCol.attr("id", i + "-ImgElement_Col");
                 imgElement.attr("src", window.URL.createObjectURL(images[0][i]));
                 imagePreviewBox.attr("id", i + "-ImgPreview_Box");
-                reorderBtn.attr("id", i + "-ReorderTheImg_Btn");
-                reorderBtn.attr("data-max-order", imagesCodeLength);
-                reorderBtn.attr("data-reorder-target", "EditImage_Files_Val");
-                deleteBtn.attr("id", i + "-DeleteImgFromTheOrder_Btn");
-                deleteBtn.attr("data-reorder-target", "EditImage_Files_Val");
-                reorderBtn.html(++orderIndex);
-
-                imagePreviewBox.append(deleteBtn);
-                imagePreviewBox.append(reorderBtn);
+                if (orderTargetId != null || orderTargetId != undefined) {
+                    reorderBtn.attr("id", i + "-ReorderTheImg_Btn");
+                    reorderBtn.attr("data-max-order", imagesCodeLength);
+                    reorderBtn.attr("data-reorder-target", orderTargetId);
+                    reorderBtn.attr("data-trigger", saveTargetFormId);
+                    deleteBtn.attr("id", i + "-DeleteImgFromTheOrder_Btn");
+                    deleteBtn.attr("data-reorder-target", orderTargetId);
+                    deleteBtn.attr("data-trigger", saveTargetFormId);
+                    reorderBtn.html(++orderIndex);
+                    imagePreviewBox.append(reorderBtn);
+                    imagePreviewBox.append(deleteBtn);
+                }
                 imagePreviewBox.append(imgElement);
                 elementCol.append(imagePreviewBox);
                 $("#" + rowsQty + "-Row_Box").append(elementCol);
             }
             $("#LoadedImagesQty_Span").html(imagesLength);
-            if (openPreviewBox) callAContainer(false, "ImagePreview_Container");
+            if (openPreviewBox) {
+                displayCorrector(currentWindowSize, false);
+                callAContainer(false, "ImagePreview_Container");
+            }
         }
         else {
             $('.btn-save-images').addClass("super-disabled");
@@ -1448,12 +1544,115 @@ function imagePreviewer(images, openPreviewBox = true) {
             $('.btn-delete-all-images').addClass("super-disabled");
             uncallAContainer(false, "ImagePreview_Container");
         }
+
+        if (saveTargetFormId != null) {
+            $(".btn-save-images").attr("id", saveTargetFormId + "-SaveImages_Btn");
+            $(".btn-save-images").removeClass("super-disabled");
+            $(".btn-save-images").text('Save');
+        }
+        else {
+            $(".btn-save-images").attr("id", null);
+            $(".btn-save-images").addClass("super-disabled");
+            $(".btn-save-images").html(' <i class="fa-solid fa-check"></i> Saved');
+        }
+
+        if (isMultiple) {
+            $(".btn-add-more-images").removeClass("super-disabled");
+            $(".btn-add-more-images").html(' <i class="fa-solid fa-plus"></i> Add More');
+        }
+        else {
+            $(".btn-add-more-images").addClass("super-disabled");
+            $(".btn-add-more-images").html(' <i class="fa-solid fa-1"></i> Single-imaged');
+        }
     }
     else {
         $('.btn-save-images').addClass("super-disabled");
         $('.btn-add-more-images').addClass("super-disabled");
         $('.btn-delete-all-images').addClass("super-disabled");
         uncallAContainer(false, "ImagePreview_Container");
+    }
+}
+
+function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = true, openPreviewBox = true) {
+    let rowsQty = 0;
+    createInsideLgCard("AudioPreview", "Audio Preview ∙ <span id='AudioFilesQty_Span'>0</span>", '<div class="mt-1 p-1 pt-0"> <div class="box-bordered p-2"> <div> <span class="h4 ongaku-track-name-lbl">Not Playing</span> <div> <small class="card-text ongaku-artist-name-lbl text-muted">no file chosen</small> </div> </div> <div class="hstack gap-1 mt-1"> <span class="card-text text-muted ongaku-track-duration-current">0:00</span> <div class="ongaku-track-duration-line-enlarged"> <div class="ongaku-track-current-duration-line-enlarged"></div> </div> <span class="card-text text-muted ongaku-track-duration-left">0:00</span> </div> <div class="row w-100 mt-1"> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-forward"></i> </button> </div> </div> </div> <div class="row w-100 mt-2" id="AddedTracks_Box"> </div> </div>', null, null);
+    if (files.length > 0) {
+        $("#AudioFilesQty_Span").text(files.length);
+        for (let i = 0; i < files.length; i++) {
+            if (i % 3 == 0) {
+                rowsQty++;
+                let newRow = $("<div class='row'></div>");
+                newRow.attr("id", rowsQty + "-AudioPreviewRow_Box");
+                $("#AddedTracks_Box").append(newRow);
+            }
+
+            let col = $("<div class='col'></div>");
+            let trackBox = $("<div class='track-preview-box'></div>");
+            let trackFileNameLbl = $("<h5 class='h5 text-truncate'></h5>");
+            let trackExtensionBadge = $("<span class='badge badge-standard'></span>");
+            let trackPreviewBtnsBox = $('<div class="mt-2"></div>');
+            let trackPreviewPlayBtn = $("<button type='button' class='btn btn-standard-bordered btn-pre-play-track me-1'> <i class='fa-solid fa-play'></i> Play</button>");
+
+            trackFileNameLbl.html(files[i].name);
+            trackExtensionBadge.html(getFileExtension(files[i].name));
+            trackPreviewBtnsBox.append(trackPreviewPlayBtn);
+            trackPreviewPlayBtn.attr("data-src", window.URL.createObjectURL(files[i]));
+            trackBox.append(trackFileNameLbl);
+            trackBox.append(trackExtensionBadge);
+            trackBox.append(trackPreviewBtnsBox);
+            col.append(trackBox);
+            $("#" + rowsQty + "-AudioPreviewRow_Box").append(col);
+        }
+    }
+
+    displayCorrector(currentWindowSize, false);
+    setTimeout(function () {
+        callAContainer(false, "AudioPreview_Container", false);
+    }, 150);
+}
+
+$(document).on("mousedown", ".btn-pre-play-track", function () {
+    let objectSrc = $(this).attr("data-src");
+    if (objectSrc != undefined) {
+        audioPlay("OngakuPlayer_Audio", objectSrc);
+        audioEdit("OngakuPlayer_Audio", 15, 1, false, 0);
+    }
+});
+
+$("audio").on("timeupdate", function () {
+    let thisId = $(this).attr("id");
+
+});
+
+function audioPlay(element, fileSrc) {
+    if (element != null && fileSrc != null) {
+        let audioPlayer = document.getElementById(element);
+        audioPlayer.src = fileSrc;
+        audioPlayer.play();
+    } 
+}
+
+function audioPause(element) {
+    if (element != null) {
+        let audioPlayer = document.getElementById(element);
+        audioPlayer.pause();
+    }
+}
+
+function audioStats(title, artistsList = []) {
+
+}
+
+function audioEdit(element, volume, playbackSpeed, loop = false, currentTime) {
+    if (element != null) {
+        let audioElement = document.getElementById(element);
+        volume = parseInt(volume);
+        volume /= 100;
+        playbackSpeed = parseFloat(playbackSpeed);
+
+        audioElement.volume = volume;
+        audioElement.playbackRate = playbackSpeed;
+        audioElement.loop = loop;
     }
 }
 
@@ -2541,6 +2740,657 @@ function uncallAlert() {
     clearInterval(intervalValue);
     clearTimeout(timeoutValue);
 }
+
+$("#SearchForUsers_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    buttonDisabler(false, "SearchForUsers_SbmtBtn", "Searching...");
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.result != null) {
+                $("#ArtistsSearchResult_Box").empty();
+                $.each(response.result, function (index) {
+                    let imgTag;
+                    let stackDiv = $("<div class='hstack gap-1'></div>");
+                    let nameSpan = $("<span class='listed-artist-name-span ms-1'></span>");
+                    let resultBtn = $("<button type='button' class='btn btn-profile-tag btn-add-as-artist btn-sm me-1'></button>");
+                    if (response.result[index].imgUrl != null) {
+                        imgTag = $("<img class='profile-avatar-img-sm' alt='This image cannot be displayed' />");
+                        imgTag.attr("src", "/ProfileImages/" + response.result[index].imgUrl);
+                    }
+                    else {
+                        imgTag = $("<div class='profile-avatar-sm'></div>");
+                        imgTag.html(response.result[index].nickname[0]);
+                    }
+                    nameSpan.html(response.result[index].nickname);
+                    imgTag.attr("id", response.result[index].id + "-AddedArtistImg_Tag");
+                    nameSpan.attr("id", response.result[index].id + "-AddedArtistName_Span");
+                    resultBtn.attr("id", response.result[index].id + "-AddedArtist_Btn");
+                    stackDiv.append(imgTag);
+                    stackDiv.append(nameSpan);
+                    resultBtn.append(stackDiv);
+
+                    $("#ArtistsSearchResult_Box").append(resultBtn);
+                });
+                $("#FoundArtistsQty_Span").text(response.result.length);
+                slideBoxes(false, "AlreadyAddedArtists_Box", "ArtistSearch_Box");
+            }
+            else {
+                $("#ArtistsSearchResult_Box").empty();
+                let alert = $("<small class='card-text'>No artists found</small>");
+                $("#ArtistsSearchResult_Box").append(alert);
+                slideBoxes(false, "AlreadyAddedArtists_Box", "ArtistSearch_Box");
+            }
+        }
+        else {
+            console.log(response);
+        }
+        buttonUndisabler(false, "SearchForUsers_SbmtBtn", "");
+    });
+});
+
+$("#SearchForGenres_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.type == 1) {
+                createInsideLgCard("ChooseGenres", "Choose Genres ∙ " + response.count, "<div class='box-standard mt-1'><h6 class='h6' id='GenreSearchKeyword_Lbl'></h6><div class='box-standard mt-1' id='FoundGenres_Box'></div></div>", null, null);
+                $("#FoundGenres_Box").empty();
+                if (response.keyword == null) $("#GenreSearchKeyword_Lbl").html("All available genres are listed");
+                else $("#GenreSearchKeyword_Lbl").html("Matching genres for <span class='fw-500'>" + response.keyword + "</span>");
+
+                $.each(response.result, function (index) {
+                    let genreBtn = $("<button type='button' class='btn btn-standard-bordered btn-add-as-genre w-100 mt-1'></button>");
+                    genreBtn.html(response.result[index].name);
+                    genreBtn.attr("id", response.result[index].id + "-AddAsGenre_Btn");
+                    $("#FoundGenres_Box").append(genreBtn);
+                });
+                displayCorrector(currentWindowSize, false);
+                setTimeout(function () {
+                    callAContainer(false, "ChooseGenres_Container", false);
+                });
+            }
+        }
+        else {
+            textAlert("RAS_LoadGenres_Btn-Warn", 0, "No matching genres found", 3.5);
+        }
+        buttonUndisabler(false, "RAS_LoadGenres_Span", null);
+    });
+});
+
+$(document).on("mousedown", ".btn-add-as-genre", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        if (!$(this).hasClass("bg-chosen-bright")) {
+            let isCurrentGenreAvailable = true;
+            let currentGenresQty = document.getElementsByClassName("included-genres");
+            if (currentGenresQty.length < 3) {
+                for (let i = 0; i < currentGenresQty.length; i++) {
+                    if (trueId == getTrueId(currentGenresQty[i].id)) {
+                        uncallAContainer(false, "ChooseGenres_Container");
+                        textAlert("RAS_LoadGenres_Btn-Warn", 0, "This genre is on your list already", 3.5);
+                        isCurrentGenreAvailable = false;
+                        break;
+                    }
+                    else isCurrentGenreAvailable = true;
+                }
+
+                if (isCurrentGenreAvailable) {
+                    let genreInput = $("<input type='text' name='Genres' class='included-genres d-none' />");
+                    let genreBtn = $("<button type='button' class='btn btn-profile-tag btn-remove-as-genre me-1 mb-1'></button>");
+                    genreBtn.attr("id", trueId + "-RemoveAsGenre_Btn");
+                    genreBtn.html($(this).html());
+                    genreInput.attr("id", trueId + "-AddedGenre_Val");
+                    genreInput.val(trueId);
+                    $(this).addClass("bg-chosen-bright");
+
+                    $("#ChosenGenres_Box").append(genreBtn);
+                    $("#ChosenGenreInputs_Box").append(genreInput);
+                    $("#ChosenGenres_Box").fadeIn(300);
+                }
+            }
+            else {
+                uncallAContainer(false, "ChooseGenres_Container");
+                textAlert("RAS_LoadGenres_Btn-Warn", 0, "You've already selected <span class='fw-500'>3</span> genres for your track — just enough for us to recommend and showcase it", 3.75);
+            }
+        }
+        else $("#" + trueId + "-RemoveAsGenre_Btn").mousedown();
+    }
+});
+
+$(document).on("change", ".form-check-input", function () {
+    let isChecked = $(this).prop("checked");
+    let onCheckChangeItem = $(this).attr("data-checked");
+    if (isChecked) {
+        if (onCheckChangeItem != undefined) {
+            let onCheckChangeText = $(this).attr("data-checked-text");
+            if (onCheckChangeText != undefined) $("#" + onCheckChangeItem).html(onCheckChangeText);
+            $("#" + onCheckChangeItem).fadeIn(300);
+        }
+        $(this).val(true);
+    }
+    else {
+        $(this).val(false);
+        if (onCheckChangeItem != undefined) {
+            let onUncheckChangeText = $(this).attr("data-unchecked-text");
+            if (onUncheckChangeText != undefined) $("#" + onCheckChangeItem).html(onUncheckChangeText);
+            else $("#" + onCheckChangeItem).fadeOut(300);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-remove-as-genre", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        let currentGenresQty = document.getElementsByClassName("included-genres");
+        if (currentGenresQty.length > 0) {
+            $(this).fadeOut(300);
+            $("#" + trueId + "-AddedGenre_Val").remove();
+            $("#" + trueId + "-AddAsGenre_Btn").removeClass("bg-chosen-bright");
+            setTimeout(function () {
+                $(this).remove();
+            }, 350);
+
+            if (currentGenresQty == 1) {
+                $("#ChosenGenres_Box").fadeOut(300);
+                uncallAContainer(false, "ChooseGenres_Container");
+            }
+        }
+        else {
+            $("#SPC_Genres_Span").text("No Genre");
+        }
+    }
+});
+
+$(document).on("mousedown", "#RAS_LoadAllGenres_Btn", function () {
+    $("#RAS_GenreSearch_Val").val(null);
+    $("#RAS_GenreSearch_Val").change();
+});
+$(document).on("change", "#SearchForGenres_Keyword_Val", function () {
+    $("#SearchForGenres_Form").submit();
+});
+
+$(document).on("change", ".form-control-date-year", function () {
+    let value = $(this).val();
+    if (value > 0 && value != undefined) {
+        let formatType = $(this).attr("data-format-type");
+        let yearDays = calendarRefresh(value, ++value);
+        if (yearDays.length > 0) {
+            hideTimeBar();
+            $(".calendar-days-box").empty();
+            for (let i = 0; i < yearDays.length; i++) {
+                let dayInfo = new Date(yearDays[i]);
+                let week = dayOfWeekShortArr[dayInfo.getDay()];
+                let month = monthsShortArr[dayInfo.getMonth()];
+
+                let yearDayBtn = $("<button type='button' class='btn btn-standard btn-year-day-update w-100'></button>");
+                yearDayBtn.attr("data-format-type", formatType);
+                yearDayBtn.attr("data-val", dayInfo.getMonth() + 1 + "/" + dayInfo.getDate() + "/" + dayInfo.getFullYear());
+                yearDayBtn.html(week + ", " + dayInfo.getDate() + " " + month);
+                $(".calendar-days-box").append(yearDayBtn);
+            }
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-decrease-the-value", function () {
+    let target = $(this).attr("data-target");
+    if (target != undefined) {
+        let step = $(this).attr("data-step");
+        let minValue = $("#" + target).attr("min");
+        minValue = minValue != undefined ? minValue : 0;
+
+        if (parseFloat(step) != undefined) step = parseFloat(step);
+        else step = 1;
+
+        if ($("#" + target).val() - step > minValue) $("#" + target).val(parseFloat($("#" + target).val()) - step);
+        else $("#" + target).val(minValue);
+        $("#" + target).change();
+    }
+});
+$(document).on("mousedown", ".btn-increase-the-value", function () {
+    let target = $(this).attr("data-target");
+    if (target != undefined) {
+        let step = $(this).attr("data-step");
+        let maxValue = $("#" + target).attr("max");
+        maxValue = maxValue != undefined ? maxValue : 999999;
+        if (parseFloat(step) != undefined) step = parseFloat(step);
+        else step = 1;
+
+        if ($("#" + target).val() + step < maxValue) $("#" + target).val(parseFloat($("#" + target).val()) + step);
+        else $("#" + target).val(maxValue);
+        $("#" + target).change();
+    }
+});
+
+$(document).on("mousedown", ".btn-year-day-update", function () {
+    let dayValue = $(this).attr("data-val");
+    if (dayValue != undefined) {
+        let formatType = $(this).attr("data-format-type");
+        let newDayValue = new Date(dayValue);
+        newDayValue = dateAndTimeFormation(formatType, newDayValue);
+        $(".btn-year-day-update").removeClass("bg-chosen-bright");
+        $(this).addClass("bg-chosen-bright");
+
+        if (newDayValue != null) $(".calendar-chosen-dt-span").html(newDayValue);
+        else $(".calendar-chosen-dt-span").text("today");
+    }
+    else $(".calendar-chosen-dt-span").text("today");
+});
+
+$(document).on("mousedown", ".btn-dtformat-update", function () {
+    let value = $(this).attr("data-val");
+    if (value != undefined) {
+        let formatType = $(this).attr("data-format-type");
+        let newDayValue = new Date(dayValue);
+        newDayValue = dateAndTimeFormation(formatType, newDayValue);
+        $(".btn-dtformat-update").removeClass("bg-chosen-bright");
+        $(this).addClass("bg-chosen-bright");
+
+        if (newDayValue != null) $(".calendar-chosen-dt-span").html(newDayValue);
+        else $(".calendar-chosen-dt-span").text("today");
+    }
+    else $(".calendar-chosen-dt-span").text("today");
+});
+
+$(document).on("mousedown", ".btn-show-the-clock", function () {
+    let type = $(this).attr('data-type');
+    let targetValue = $(this).attr("data-target");
+    if (targetValue != undefined) {
+        let dateResultDisplay = $(this).attr("data-date-display");
+        let minYear = $(this).attr("data-min-year");
+        let maxYear = $(this).attr("data-max-year");
+        minYear = minYear != undefined ? minYear : 1750;
+        maxYear = maxYear != undefined ? maxYear : new Date().getFullYear();
+        let minDate = new Date(minYear);
+        let maxDate = new Date(maxYear);
+
+        switch (parseInt(type)) {
+            case 0:
+                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, true, true, true);
+                break;
+            case 1:
+                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, true, true, false);
+                break;
+            case 2:
+                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, false, false, true);
+                break;
+            case 3:
+                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, false, false, false, true);
+                break;
+            default:
+                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, true, true, true);
+                break;
+        }
+    }
+});
+
+$(document).on("change", "#RAS_ReleaseDateTrigger_Val", function () {
+    let result = $(this).val();
+    result = dateAndTimeDeparser(result);
+
+    if (result != null) $("#SPC_ReleaseYear_Span").html(", " + new Date(result).getFullYear());
+    else $("#SPC_ReleaseYear_Span").html(", " + new Date().getFullYear());
+});
+
+$(document).on("mousedown", ".btn-clock-dt-reset", function () {
+    let target = $(this).attr("data-target");
+    if (target != undefined) {
+        let newDate = new Date();
+        let display = $(this).attr("data-date-display");
+        newDate = dateAndTimeParser(newDate.getDate(), newDate.getMonth(), newDate.getFullYear, newDate.getHours(), newDate.getMinutes());
+        newDate.setMonth(newDate.getMonth() + 1);
+        $("#" + target).val(newDate);
+        if (display != undefined && display != null) {
+            $("#" + display).val("Set for Today");
+            $("#" + display).html("Set for Today");
+            $(".date-and-time-display").change();
+        }
+        $(".btn-clock-dt-reset").addClass("super-disabled");
+    }
+});
+
+$(document).on("mousedown", ".btn-calendar-submit", function () {
+    let target = $(this).attr("data-target");
+    if (target != undefined) {
+        let formatType = $("#CalendarYear_Val").attr("data-format-type");
+        let dateResultDisplay = $(this).attr("data-date-display");
+        let dayValue = $("#CalendarDay_Val").val();
+        let monthValue = $("#CalendarMonth_Val").val();
+        let yearValue = $("#CalendarYear_Val").val();
+        let hrValue = $("#CalendarHr_Val").val();
+        let minValue = $("#CalendarMin_Val").val();
+
+        let newDayValue = dateAndTimeFormation(formatType, new Date(yearValue, monthValue, dayValue, hrValue, minValue));
+        let newDate = dateAndTimeParser(dayValue, monthValue, yearValue, hrValue, minValue);
+        if (newDate != null) {
+            newDate.setMonth(newDate.getMonth() + 1); 
+            $("#" + target).val(newDate);
+        }
+        else $("#" + target).val(null);
+
+        if (newDayValue != null && dateResultDisplay != undefined) {
+            $("#" + dateResultDisplay).val("Set for " + newDayValue);
+            $("#" + dateResultDisplay).html("Set for " + newDayValue);
+        }
+        $(".btn-clock-dt-reset").removeClass("super-disabled");
+        $(".date-and-time-display").change();
+        uncallAContainer(false, "DateAndTime_Container");
+    }
+    uncallAContainer(false, "DateAndTime_Container");
+});
+
+function dateAndTimeParser(day, month, year, hr, min) {
+    let newDate = new Date(year, month, day, hr, min);
+    if (newDate != null || newDate != undefined) return newDate;
+    else return null;
+}
+
+function dateAndTimeDeparser(dateAndTimeValue) {
+    let newDate = new Date(dateAndTimeValue);
+    if (newDate != undefined || newDate != null) {
+        if (!isNaN(newDate)) return newDate;
+        else return null;
+    }
+    else return null;
+}
+
+function callDateAndTimeContainer(targetValueElemenetId, dateResultDisplay, startDate, endDate, showDays, showTime, showMinutes, twentyforHoursFormat = true) {
+    let divExists = document.getElementById("DateAndTime_Container");
+    if (!divExists) createInsideLgCard("DateAndTime", "Set Date and Time", '<div class="box-standard"> <div class="row"> <div class="col date-box calendar-days-box" id="CalendarDays_Box"> </div> <div class="col date-box calendar-hrs-box" id="CalendarHours_Box"> </div> <div class="col date-box calendar-mins-box" id="CalendarMinutes_Box"> </div> <div class="col date-box calendar-hrformat-box" id="CalendarDateTimeFormat_Box"> <button type="button" class="btn btn-standard btn-dtformat-type bg-chosen-bright w-100" data-val="AM">AM</button> <button type="button" class="btn btn-standard btn-dtformat-type w-100" data-val="PM">PM</button> </div> </div> <div class="box-standard row mt-2"> <div class="col col-3"> <button type="button" class="btn btn-standard-bordered btn-decrease-the-value w-100" id="CalendarYearValueLowerer_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-minus"></i></button> </div> <div class="col col-6"> <input type="number" class="d-none" id="CalendarDay_Val" value="1" /> <input type="number" class="d-none" id="CalendarMonth_Val" value="1" /> <input type="number" class="d-none" id="CalendarYear_Val" value="0" /> <input type="number" class="d-none" id="CalendarHr_Val" value="0" /> <input type="number" class="d-none" id="CalendarMin_Val" value="0" /> <input type="number" class="form-control form-control-date-year" id="CalendarYear_Val" placeholder="Enter year value here" min="1750" max="2025" step="1" value="2025" /> </div> <div class="col col-3"> <button type="button" class="btn btn-standard-bordered btn-increase-the-value w-100" id="CalendarYearValueIncreaser_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-plus"></i> </button> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-calendar-submit w-100" id="CalendarSubmit_Btn">Set for <span class="calendar-chosen-dt-span" id="ChosenDateTime_Span">today, at 23:00</span></button> </div> </div>', null, null);
+    $(".calendar-days-box").empty();
+    $(".calendar-hrs-box").empty();
+    $(".calendar-mins-box").empty();
+
+    let startDt = new Date(startDate);
+    let endTimeDt = new Date(endDate);
+
+    let calendarResult = calendarRefresh(startDt.getFullYear(), endTimeDt.getFullYear(), startDt.getMonth(), startDt.getDate(), endTimeDt.getMonth(), endTimeDt.getDate(), false);
+    let timesResult = timeBarRefresh(showMinutes, twentyforHoursFormat);
+    if (calendarResult != null) {
+        let currentYear = 0;
+        for (let i = 0; i < calendarResult.length; i++) {
+            let dayInfo = new Date(calendarResult[i]);
+            let week = dayOfWeekShortArr[dayInfo.getDay()];
+            let month = monthsShortArr[dayInfo.getMonth()];
+
+            if (currentYear != dayInfo.getFullYear()) {
+                let yearChangeDiv = $("<div class='box-standard mt-1 p-1'></div>");
+                let yearChangeSpan = $("<h6 class='h6'></h6>");
+                yearChangeDiv.append(yearChangeSpan);
+                yearChangeSpan.text(dayInfo.getFullYear());
+                $(".calendar-days-box").append(yearChangeDiv);
+            }
+            currentYear = dayInfo.getFullYear();
+
+            let yearDayBtn = $("<button type='button' class='btn btn-standard btn-year-day-update w-100'></button>");
+            yearDayBtn.attr("data-format-type", 0);
+            yearDayBtn.attr("data-val", dayInfo.getMonth() + 1 + "/" + dayInfo.getDate() + "/" + dayInfo.getFullYear());
+            yearDayBtn.html(week + ", " + dayInfo.getDate() + " " + month);
+            $(".calendar-days-box").append(yearDayBtn);
+        }
+    }
+
+    if (timesResult != null) {
+        for (let i = 0; i < timesResult[0].length; i++) {
+            let hoursBtn = $("<button type='button' class='btn btn-standard btn-hour-day-update w-100'></button>");
+            if (i == 0) hoursBtn.addClass("bg-chosen-bright");
+            hoursBtn.html(timesResult[0][i] < 10 ? "0" + timesResult[0][i] : timesResult[0][i]);
+            hoursBtn.attr("data-val", timesResult[0][i]);
+            $(".calendar-hrs-box").append(hoursBtn);
+        }
+        if (timesResult.length > 1) {
+            for (let i = 0; i < timesResult[1].length; i++) {
+                let minsBtn = $("<button type='button' class='btn btn-standard btn-hour-day-update w-100'></button>");
+                if (i == 0) minsBtn.addClass("bg-chosen-bright");
+                minsBtn.html(timesResult[1][i] < 10 ? "0" + timesResult[1][i] : timesResult[1][i]);
+                minsBtn.attr("data-val", timesResult[1][i]);
+                $(".calendar-mins-box").append(minsBtn);
+            }
+        } 
+    }
+
+    if (dateResultDisplay != undefined || dateResultDisplay != null) $(".btn-calendar-submit").attr("data-date-display", dateResultDisplay);
+    else $(".btn-calendar-submit").removeAttr("data-date-display");
+
+    $(".btn-calendar-submit").attr("data-target", targetValueElemenetId);
+    if (showDays) $(".calendar-days-box").fadeIn(300);
+    else $(".calendar-days-box").fadeOut(300);
+    if (showTime) {
+        if (showMinutes) showTimeBar(true, twentyforHoursFormat);
+        else showTimeBar(false, twentyforHoursFormat);
+    }
+    else hideTimeBar();
+
+    displayCorrector(currentWindowSize, false);
+    setTimeout(function () {
+        callAContainer(false, "DateAndTime_Container", false);
+    }, 150);
+}
+
+function dateAndTimeFormation(formatType, dateAndTime) {
+    let newDayValue = new Date(dateAndTime);
+    if (newDayValue != undefined && newDayValue != null) {
+        $("#CalendarDay_Val").val(newDayValue.getDate());
+        $("#CalendarMonth_Val").val(newDayValue.getMonth());
+        $("#CalendarYear_Val").val(newDayValue.getFullYear());
+        $("#CalendarHr_Val").val(newDayValue.getHours());
+        $("#CalendarMin_Val").val(newDayValue.getMinutes());
+
+        switch (parseInt(formatType)) {
+            case 0:
+                newDayValue = dateAndTimeCompiller(userLocale, newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), false, true);
+                break;
+            case 1:
+                newDayValue = dateAndTimeCompiller(userLocale, newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), false, false);
+                break;
+            case 2:
+                newDayValue = dateAndTimeCompiller(newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), true, true);
+                break;
+            case 4:
+                newDayValue = dateAndTimeCompiller(newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), true, false);
+                break;
+            default:
+                newDayValue = dateAndTimeCompiller(userLocale, newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), false, true);
+                break;
+        }
+        return newDayValue;
+    }
+    else return null;
+}
+
+function dateAndTimeCompiller(countryISO2, day, weekday, month, year, hour, min, showTime = true, longFormatted = false) {
+    let dateResult = new Date(year, month, day, hour, min);
+    if (dateResult != undefined) {
+        let result;
+        let yearAddition = "";
+        let currentDt = new Date();
+        const locales = ['en-US', 'en-CA', 'ja-JP', 'zh-CN', 'ru-RU', 'de-DE', 'it-IT', 'en-GB'];
+
+        if (countryISO2 != null || countryISO2 != undefined) {
+            for (let i = 0; i < locales.length; i++) {
+                if (locales[i].toLowerCase().includes(countryISO2.toLowerCase())) {
+                    countryISO2 = locales[i];
+                    break;
+                }
+            }
+        }
+        else countryISO2 = "en-US";
+
+        if (currentDt.getFullYear() != year) yearAddition = ", " + year;
+        if (longFormatted) result = dayOfWeekShortArr[weekday] + ", " + dateResult.getDate() + " " + monthsShortArr[month] + " " + yearAddition;
+        else result = dateResult.toLocaleDateString(countryISO2);
+
+        if (showTime) result += ", at " + dateResult.toLocaleTimeString(countryISO2);
+        else result = dayOfWeekShortArr[weekday] + ", " + dateResult.getDate() + " " + monthsShortArr[month] + yearAddition;
+        return result;
+    }
+    else return null;
+}
+
+function calendarRefresh(currentYear, endYear, startMonth = 0, startDay = 1, endMonth = 0, endDay = 1, restrictPrevDaysForCurrentYear = false) {
+    endYear = currentYear > endYear ? ++currentYear : endYear;
+    let yearDays = [];
+    let startDate = new Date(currentYear, startMonth, startDay);
+    let endDate = new Date(endYear, endMonth, endDay);
+    if (currentYear == endYear && restrictPrevDaysForCurrentYear) endDate = startDate > endDate ? new Date(currentYear, 11, 31) : endDate;
+
+    for (let i = new Date(startDate); i < endDate; i.setDate(i.getDate() + 1)) {
+        yearDays.push(new Date(i));
+    }
+    if (yearDays.length > 0) return yearDays;
+    else return null;
+}
+
+function hideTimeBar() {
+    $(".calendar-hrs-box").fadeOut(300);
+    $(".calendar-mins-box").fadeOut(300);
+    $(".calendar-hrformat-box").fadeOut(300);
+}
+
+function showTimeBar(showMinuteBar = true, twentyforHrFormat = true) {
+    $(".calendar-hrs-box").fadeIn(300);
+    if (twentyforHrFormat) $(".calendar-hrformat-box").fadeIn(300);
+    else $(".calendar-hrformat-box").fadeOut(300);
+    if (showMinuteBar) $(".calendar-mins-box").fadeIn(300);
+    else $(".calendar-mins-box").fadeOut(300);
+}
+
+function timeBarRefresh(includeMinutes = true, twentyforHrsFormat = true) {
+    let mins = [];
+    let hours = [];
+    if (twentyforHrsFormat) {
+        for (let i = 0; i < 25; i++) {
+            hours.push(i);
+        }
+    }
+    else {
+        for (let i = 0; i < 13; i++) {
+            hours.push(i);
+        }
+    }
+
+    if (hours.length > 0) {
+        if (includeMinutes) {
+            for (let i = 0; i < 60; i++) mins.push(i);
+            return [hours, mins];
+        }
+        else return [hours];
+    }
+    else return null;
+}
+
+function listToText(artistsArray = [], hasInitialValue = true) {
+    if (artistsArray.length != null && artistsArray.length > 0) {
+        let finalizedText;
+        if (!hasInitialValue) {
+            for (let i = 0; i < artistsArray.length; i++) {
+                if (i == 0) finalizedText = artistsArray[i];
+                else finalizedText += ", " + artistsArray;
+            }
+        }
+        else {
+            finalizedText = "";
+            for (let i = 0; i < artistsArray.length; i++) {
+                finalizedText += ", " + artistsArray[i];
+            }
+        }
+        return finalizedText;
+    }
+    else return null;
+}
+
+function textToList(artistsListedInText) {
+    if (artistsListedInText != null && artistsListedInText.length > 0) {
+        let values = getCommaSeparatedValues(artistsListedInText);
+        if (values.length > 0) return values;
+        else return null;
+    }
+    else return null;
+}
+
+$(document).on("mousedown", ".btn-add-as-artist", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        if (document.getElementById(trueId + "-ReadyArtist_Btn") == null) {
+            let imgTag = $("#" + trueId + "-AddedArtistImg_Tag");
+            let stackDiv = $("<div class='hstack gap-1'></div>");
+            let nameSpan = $("<span class='listed-artist-name-span ms-1'></span>");
+            let resultBtn = $("<button type='button' class='btn btn-profile-tag btn-remove-as-artist btn-sm me-1'></button>");
+            let artistInput = $("<input type='text' name='FeaturingArtist' class='listed-artist-name-val d-none' />");
+
+            nameSpan.html($("#" + trueId + "-AddedArtistName_Span").html());
+            nameSpan.attr("id", trueId + "-ReadyArtistName_Span");
+            resultBtn.attr("id", trueId + "-ReadyArtist_Btn");
+            imgTag.attr("id", trueId + "-ReadyArtistImg_Tag");
+            artistInput.val(trueId);
+            artistInput.attr("data-name", nameSpan.html());
+            artistInput.attr("id", trueId + "-FeaturingArtist_Id_Val");
+
+            stackDiv.append(imgTag);
+            stackDiv.append(nameSpan);
+            resultBtn.append(stackDiv);
+
+            $("#ArtistsAddedResult_Box").append(resultBtn);
+            $("#FeaturingArtistInputs_Box").append(artistInput);
+            slideBoxes(false, "ArtistSearch_Box", "AlreadyAddedArtists_Box");
+            $("#ArtistsSearchResult_Box").empty();
+
+            let artists = document.getElementsByClassName("listed-artist-name-val");
+            if (artists.length > 0) {
+                thisBtnCopy = [];
+                for (let i = 0; i < artists.length; i++) {
+                    thisBtnCopy.push($("#" + artists[i].id).attr("data-name"));
+                }
+                artists = listToText(thisBtnCopy, true);
+                if (artists != null) $("#SPC_Artists_Span").html(artists);
+            }
+        }
+        else {
+            let artistName = $("#" + trueId + "-AddedArtistName_Span").html();
+            textAlert("FeaturingArtistsSearch_Val-Warn", 0, "<span class='fw-500'>" + artistName + "</span> is already listed as a featured artist", 3);
+        }
+        $("#FeaturingArtistsSearch_Val").val(null);
+    }
+});
+
+$(document).on("mousedown", ".btn-remove-as-artist", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        $(this).fadeOut(300);
+        setTimeout(function () {
+            let artists = document.getElementsByClassName("listed-artist-name-val");
+            if (artists.length > 0) {
+                let thisBtnCopy = [];
+                for (let i = 0; i < artists.length; i++) {
+                    if (getTrueId(artists[i].id) != trueId) thisBtnCopy.push($("#" + artists[i].id).attr("data-name"));
+                }
+                artists = listToText(thisBtnCopy, true);
+                if (artists != null) {
+                    $("#SPC_Artists_Span").html(artists);
+                    $("#AlreadyAddedArtists_Box").fadeIn(300);
+                }
+                else {
+                    $("#SPC_Artists_Span").text(null);
+                    $("#FeaturingArtistsSearch_Val").val(null);
+                    $("#ArtistsAddedResult_Box").empty();
+                    $("#AlreadyAddedArtists_Box").fadeOut(300);
+                }
+                $(this).remove();
+                $("#" + trueId + "-FeaturingArtist_Id_Val").remove();
+            }
+        }, 350);
+    }
+});
+
+$(document).on("change", "#SearchForUsers_Keyword_Val", function () {
+    $("#SearchForUsers_Form").submit();
+});
 
 $(document).on("input", ".volume-range-slider", function () {
     let currentValue = parseFloat($(this).val());

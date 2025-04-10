@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250407150248_07042025-re")]
+    partial class _07042025re
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -397,10 +400,6 @@ namespace OngakuProject.Migrations
                     b.Property<string>("CoverImageUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int?>("GenreId")
                         .HasColumnType("int");
 
@@ -434,9 +433,6 @@ namespace OngakuProject.Migrations
 
                     b.Property<DateTime?>("ReleasedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
 
                     b.Property<int>("StreamsQty")
                         .HasColumnType("int");
