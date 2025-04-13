@@ -435,8 +435,8 @@ namespace OngakuProject.Migrations
                     b.Property<DateTime?>("ReleasedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
 
                     b.Property<int>("StreamsQty")
                         .HasColumnType("int");

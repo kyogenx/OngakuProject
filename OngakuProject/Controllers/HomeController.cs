@@ -34,6 +34,7 @@ namespace OngakuProject.Controllers
                 UserInfo = await _profile.GetUserByIdAsync(UserId);
             }
             ViewBag.UserInfo = UserInfo;
+
             return View();
         }
 

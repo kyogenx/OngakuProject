@@ -20,7 +20,7 @@ namespace OngakuProject.Models
         public bool Mode { get; set; } //0 - minor; 1 - major
         public int Key { get; set; } //Stats for recommendations
         public int StreamsQty { get; set; }
-        public bool Status { get; set; }
+        public byte Status { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ReleasedAt { get; set; }
         public DateTime? LastUpdatedAt { get; set; }

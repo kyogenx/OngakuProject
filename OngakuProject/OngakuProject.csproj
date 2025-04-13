@@ -19,9 +19,12 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\TrackCovers\" />
+    <Folder Include="wwwroot\Tracks\" />
     <Folder Include="wwwroot\ProfileImages\" />
   </ItemGroup>
 

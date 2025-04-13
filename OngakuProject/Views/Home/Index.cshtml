@@ -1,7 +1,6 @@
 ﻿@model User
 @{
     ViewData["Title"] = "Home Page";
-
     User? UserInfo = ViewBag.UserInfo;
 }
 
@@ -15,7 +14,24 @@
             <input type="hidden" name="Type" id="SearchForGenres_Type_Val" value="1" />
             <input type="hidden" name="Keyword" id="SearchForGenres_Keyword_Val" />
         </form>
-        <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
+        <div class="d-none">
+            <input type="hidden" id="OngakuPlayer_TrackId_Val" value="0" />
+            <input type="hidden" id="OngakuPlayer_PlaylistId_Val" value="0" />
+            <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
+        </div>
+    </div>
+    <div class="box-standard p-1">
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-folder-plus"></i> <br /> Add Playlist</button>
+            </div>
+        </div>
+    </div>
+    <div class="box-standard p-1 mt-2" id="SelfMusic_Box" style="display: none;">
+
     </div>
 </div>
 
@@ -166,13 +182,13 @@
                     </div>
                     <div class="row w-100 mt-1">
                         <div class="col">
-                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-backward"></i> </button>
+                            <button type="button" class="btn btn-ongaku-player btn-reverse-track btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-backward"></i> </button>
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-play"></i> </button>
+                            <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-play"></i> </button>
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-forward"></i> </button>
+                            <button type="button" class="btn btn-ongaku-player btn-forward-track btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-forward"></i> </button>
                         </div>
                     </div>
                 </div>
@@ -191,10 +207,39 @@
                 </div>
             </div> *@
 
-            <form method="post" action="/Track/ReleaseSingle" id="ReleaseASingle_Form">
+            @* <div class="x-row-sliding-only-box">
+                <div class="release-box">
+                    <img src="#" class="release-img" />
+                    <div class="release-img-box"> <i class="fa-solid fa-music"></i> </div>
+                    <div class="box-standard text-truncate mt-1">
+                        <div class="dropdown">
+                            <button class="btn btn-standard btn-sm float-end ms-1" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                            <ul class="dropdown-menu shadow-sm p-1">
+                                <li><button type="button" class="dropdown-item btn-sm">Edit Credits<span class="float-end"> <i class="fa-solid fa-pencil"></i> </span></button></li>
+                                <li><button type="button" class="dropdown-item btn-sm">Edit Cover <span class="float-end"> <i class="fa-solid fa-images"></i> </span></button></li>
+                                <li><button type="button" class="dropdown-item btn-sm">Submit <span class="float-end"> <i class="fa-solid fa-check-double"></i> </span></button></li>
+                                <li><button type="button" class="dropdown-item btn-sm text-danger">Delete <span class="float-end"> <i class="fa-solid fa-xmark"></i> </span></button></li>
+                            </ul>
+                        </div>
+                        <span class="h6 text-truncate">Release Name</span>
+                        <div>
+                            <span class="badge-sm btn-tooltip" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-placement="bottom" data-bs-title="The track will be released as soon as we get your submission"> <i class="fa-solid fa-spinner fa-spin-pulse"></i> Pending</span>
+                            <br />
+                            <small class="card-text text-muted">Genre(s) ∙ 2025</small>
+                        </div>
+                    </div>
+                </div>
+            </div> *@
+
+            <form method="post" action="/Track/Release" id="ReleaseASingle_Form">
                 <div class="d-none" id="FeaturingArtistInputs_Box"></div>
                 <div class="d-none" id="ChosenGenreInputs_Box"></div>
-                <input type="text" class="d-none" name="ReleaseDate" id="RAS_ReleaseDate_Val" />
+                <div class="d-none" id="ChosenGenreNameInputs_Box"></div>
+                <input type="number" class="d-none" name="ReleaseDateDay" id="RAS_ReleaseDate_Val-Day" />
+                <input type="number" class="d-none" name="ReleaseDateMonth" id="RAS_ReleaseDate_Val-Month" />
+                <input type="number" class="d-none" name="ReleaseDateYear" id="RAS_ReleaseDate_Val-Year" />
+@*                 <input type="text" class="d-none" name="ReleaseDate" id="RAS_ReleaseDate_Val" /> *@
+@*                 <input type="file" class="d-none" name="TrackFileUrl" id="RAS_TrackFileUrl_Val" data-trigger="ReleaseASingle_Form" data-order-target="RAS_TrackFileUrl_Val" accept="audio/mp3, audio/wav, audio/ogg, audio/aac, audio/flac, audio/m4a" multiple /> *@
                 <input type="file" class="d-none" name="TrackFileUrl" id="RAS_TrackFileUrl_Val" accept="audio/mp3, audio/wav, audio/ogg, audio/aac, audio/flac, audio/m4a" />
                 <input type="file" class="d-none" name="CoverImageUrl" id="RAS_CoverImg_Url" accept="image/png, image/webp, image/jpeg" />
                 <div>
@@ -225,7 +270,7 @@
                     <label class="form-label fw-500 ms-1">Release Date</label>
                     <div>
                         <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="For past releases, select the correct date below. For future releases, set a date to mark it as a premiere with a banner and extra features"> <i class="fa-solid fa-circle-info"></i> </button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-the-clock btn-sm me-1" data-type="2" data-target="RAS_ReleaseDate_Val" data-date-display="RAS_ReleaseDateTrigger_Val" data-min-year="2000" data-max-year="2025"> <i class="fa-solid fa-calendar-day"></i> Set Date</button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-the-clock btn-sm me-1" data-type="2" data-target="RAS_ReleaseDate_Val" data-date-display="RAS_ReleaseDateTrigger_Val" data-current-year="2025"> <i class="fa-solid fa-calendar-day"></i> Set Date</button>
                         <button type="button" class="btn btn-standard-bordered btn-clock-dt-reset btn-sm super-disabled" data-target="RAS_ReleaseDate_Val" data-date-display="RAS_ReleaseDateTrigger_Val"> <i class="fa-solid fa-arrow-rotate-right"></i> Reset for Today</button>
                     </div>
                     <input type="text" class="form-control date-and-time-display mt-1" id="RAS_ReleaseDateTrigger_Val" value="Set for Today" placeholder="Today, by default" />
@@ -482,6 +527,7 @@
     </div>
 </div>
  *@
+
 <div class="box-lg-part shadow-sm" id="">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">

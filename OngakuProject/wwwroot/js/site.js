@@ -12,8 +12,10 @@ let dayOfWeekArr = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sat
 let monthsShortArr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 let monthsArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+//localItemFilter(); SearchForGenres_Form Update
 //imagePreviewer() type='file'
-//SearchForUsers_Form
+//SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form
+
 window.onload = function () {
     displayCorrector(currentWindowSize, true);
     $(".ongaku-alert").fadeOut(0);
@@ -558,6 +560,7 @@ $(document).on("submit", "#ProfileEditPersonal_Info", function (event) {
                 $("#PersonaInfo_RealName_Lbl").html(fullRealName);
             }
             else $("#PersonaInfo_RealName_Lbl").html("Not Provided");
+            console.log(response.result);
             if (response.reuslt.countryId > 0) $("#PersonaInfo_CountryInfo_Lbl").html($("#LoadCountries_Btn").html());
             else $("PersonaInfo_CountryInfo_Lbl").html(' <i class="fa-solid fa-flag-checkered"></i> ' + "Country not provided");
             if (response.result.webpageLink != null) $("#WebpageLink_Span").html(response.result.webpageLink);
@@ -727,7 +730,7 @@ $("#GetAccountPersonalInformation_Form").on("submit", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
-            createAContainer("PersonalInfo", "Personal Info", '<div class="box-vertical-switcher shadow-sm" id="PersonalInfo_VS_Box"> <div class="box-vertical-switcher-header hstack gap-1"> <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button> </div> <div class="mt-2" id="PersonalInfo_VSItems_Box"> <span class="h5" id="PersonalInfo_VMMembersQty_Lbl"></span> <div></div> <small class="card-text text-muted">Tap on each member to remove them</small> <div class="mt-2" id="PersonalInfo_VMMembersListed_Box"> </div> </div> </div> <div class="box-bordered p-2"> <span class="h4" id="PersonaInfo_RealName_Lbl">Donald J. Trump</span> <div class="hstack gap-1"> <small class="card-text me-1" id="PersonaInfo_CountryInfo_Lbl"> <img src="https://flagcdn.com/16x12/jp.png" srcset="https://flagcdn.com/32x24/jp.png 2x, https://flagcdn.com/48x36/jp.png 3x" width="20" height="15" alt="Japan"> Japan </small> <button type="button" class="btn btn-link btn-sm" id="PersonalInfo_WebpageLink_Btn"><span class="card-text text-muted"> <i class="fa-solid fa-link"></i> </span> <span id="WebpageLink_Span">DonaldJTrump.com</span></button> </div> </div> <div class="mt-2"> <form method="post" asp-controller="Profile" asp-action="EditPersonalInfo" id="ProfileEditPersonal_Info"> <div> <span class="form-label fw-500 ms-1">Full Name</span> <div class="mt-1" id="EPI_Fullnames_Box"> <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" id="AddRealNameMember_Btn" data-prototype="EPI_RealName-0"> <i class="fa-solid fa-user-plus"></i> Add Member</button> <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm" id="PersonalInfo_VS_Box-OpenBtn" data-prototype="EPI_RealName-0" style="display: none;"> <i class="fa-solid fa-user-minus"></i> Remove Member</button> <button type="button" class="btn btn-standard-bordered btn-sm ms-1" id="EPI_RealnamesCounter_Span">0/350</button> <input type="text" class="form-control form-control-juxtaposed mt-1" name="RealName" id="EPI_RealName-0" placeholder="Provide your full name" data-update="PersonaInfo_RealName_Lbl" data-base-value="Unknown" data-target="EditPersonalInfo_SbmtBtn" data-counter-display="EPI_RealnamesCounter_Span" data-counter-maxlength="350" data-index="0" /> <input type="text" class="d-none" name="CountryId" id="EPI_CountryId_Val" value="0" /> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="EPI_RealName-Warn" data-list="false">If you are a band, add extra rows to list all band your names</small > </div > <div class="mt-3"> <label class="form-label fw-500 ms-1">Webpage Link</label> <input type="text" class="form-control form-control-guard" name="WebpageLink" id="EPI_WebPage_Val" data-update="WebpageLink_Span" data-base-value="Not provided" placeholder="https://webpagelink.com/" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Enter the link to your official webpage (if available). This field is optional</small> </div> <div class="mt-3"> <span class="form-label fw-500 ms-1">Country</span> <div class="mt-1" id="CountryBtn_Box"> <button type="button" class="btn btn-standard-bordered btn-load-countries btn-sm" id="LoadCountries_Btn" data-is-loaded="false"> <img src="https://flagcdn.com/20x15/de.png" srcset="https://flagcdn.com/40x30/jp.png 2x, https://flagcdn.com/60x45/jp.png 3x" width="20" height="15" alt="Japan" /> Japan </button> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Tap the button to choose your country</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled w-100" id="EditPersonalInfo_SbmtBtn">Save Changes</button> </div> </form> </div>', null, null);
+            createAContainer("PersonalInfo", "Personal Info", '<div class="box-vertical-switcher shadow-sm" id="PersonalInfo_VS_Box"> <div class="box-vertical-switcher-header hstack gap-1"> <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button> </div> <div class="mt-2" id="PersonalInfo_VSItems_Box"> <span class="h5" id="PersonalInfo_VMMembersQty_Lbl"></span> <div></div> <small class="card-text text-muted">Tap on each member to remove them</small> <div class="mt-2" id="PersonalInfo_VMMembersListed_Box"> </div> </div> </div> <div class="box-bordered p-2"> <span class="h4" id="PersonaInfo_RealName_Lbl">Donald J. Trump</span> <div class="hstack gap-1"> <small class="card-text me-1" id="PersonaInfo_CountryInfo_Lbl"> <img src="https://flagcdn.com/16x12/jp.png" srcset="https://flagcdn.com/32x24/jp.png 2x, https://flagcdn.com/48x36/jp.png 3x" width="20" height="15" alt="Japan"> Japan </small> <button type="button" class="btn btn-link btn-sm" id="PersonalInfo_WebpageLink_Btn"><span class="card-text text-muted"> <i class="fa-solid fa-link"></i> </span> <span id="WebpageLink_Span">DonaldJTrump.com</span></button> </div> </div> <div class="mt-2"> <form method="post" action="/Profile/EditPersonalInfo" id="ProfileEditPersonal_Info"> <div> <span class="form-label fw-500 ms-1">Full Name</span> <div class="mt-1" id="EPI_Fullnames_Box"> <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" id="AddRealNameMember_Btn" data-prototype="EPI_RealName-0"> <i class="fa-solid fa-user-plus"></i> Add Member</button> <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm" id="PersonalInfo_VS_Box-OpenBtn" data-prototype="EPI_RealName-0" style="display: none;"> <i class="fa-solid fa-user-minus"></i> Remove Member</button> <button type="button" class="btn btn-standard-bordered btn-sm ms-1" id="EPI_RealnamesCounter_Span">0/350</button> <input type="text" class="form-control form-control-juxtaposed mt-1" name="RealName" id="EPI_RealName-0" placeholder="Provide your full name" data-update="PersonaInfo_RealName_Lbl" data-base-value="Unknown" data-target="EditPersonalInfo_SbmtBtn" data-counter-display="EPI_RealnamesCounter_Span" data-counter-maxlength="350" data-index="0" /> <input type="text" class="d-none" name="CountryId" id="EPI_CountryId_Val" value="0" /> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted" id="EPI_RealName-Warn" data-list="false">If you are a band, add extra rows to list all band your names</small > </div > <div class="mt-3"> <label class="form-label fw-500 ms-1">Webpage Link</label> <input type="text" class="form-control form-control-guard" name="WebpageLink" id="EPI_WebPage_Val" data-update="WebpageLink_Span" data-base-value="Not provided" placeholder="https://webpagelink.com/" /> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Enter the link to your official webpage (if available). This field is optional</small> </div> <div class="mt-3"> <span class="form-label fw-500 ms-1">Country</span> <div class="mt-1" id="CountryBtn_Box"> <button type="button" class="btn btn-standard-bordered btn-load-countries btn-sm" id="LoadCountries_Btn" data-is-loaded="false"> <img src="https://flagcdn.com/20x15/de.png" srcset="https://flagcdn.com/40x30/jp.png 2x, https://flagcdn.com/60x45/jp.png 3x" width="20" height="15" alt="Japan" /> Japan </button> </div> </div> <div class="mt-1 ms-1"> <small class="card-text text-muted">Tap the button to choose your country</small> </div> <div class="mt-3"> <button type="submit" class="btn btn-standard-bolded btn-classic-styled w-100" id="EditPersonalInfo_SbmtBtn">Save Changes</button> </div> </form> </div>', null, null);
             if (response.result.realName != null) {
                 $("#PersonaInfo_RealName_Lbl").html(response.result.realName);
                 let realNames = getCommaSeparatedValues(response.result.realName);
@@ -775,6 +778,161 @@ $("#GetAccountPersonalInformation_Form").on("submit", function (event) {
         setTimeout(function () {
             slideContainers(null, "PersonalInfo_Container");
         }, 150);
+    });
+});
+
+$(document).on("submit", "#ReleaseASingle_Form", function (event) {
+    event.preventDefault();
+    let data = new FormData();
+    const url = $(this).attr("action");
+    let baseHtml = $("#ReleaseASingle_SbmtBtn").html();
+
+    const trackFile = $("#RAS_TrackFileUrl_Val").get(0).files[0];
+    const coverImg = $("#RAS_CoverImg_Url").get(0).files[0];
+    const title = $("#RAS_Title_Val").val();
+    const releaseDate = $("#RAS_ReleaseDate_Val").val();
+    const hasExplicit = $("#RAS_HasExplicit_Val").val();
+    const releaseDateDay = parseInt($("#RAS_ReleaseDate_Val-Day").val());
+    const releaseDateMonth = parseInt($("#RAS_ReleaseDate_Val-Month").val());
+    const releaseDateYear = parseInt($("#RAS_ReleaseDate_Val-Year").val());
+    const genres = document.getElementsByClassName("included-genres");//add-as-genre;
+    const artists = document.getElementsByClassName("listed-artist-name-val"); //add-as-artist;
+    const genreNames = document.getElementsByClassName("included-genre-names-val"); //add-as-genre;
+
+    data.append("title", title);
+    data.append("hasExplicit", hasExplicit);
+    data.append("trackFileUrl", trackFile);
+    data.append("coverImageUrl", coverImg);
+    data.append("releaseDateDay", releaseDateDay);
+    data.append("releaseDateMonth", releaseDateMonth);
+    data.append("releaseDateYear", releaseDateYear);
+    if (genres.length > 0) {
+        for (let i = 0; i < genres.length; i++) {
+            data.append("genres", $("#" + genres[i].id).val());
+            data.append("genreNames", $("#" + genreNames[i].id).val());
+        }
+    }
+    if (artists.length > 0) {
+        for (let i = 0; i < artists.length; i++) {
+            data.append("featuringArtists", $("#" + artists[i].id).val());
+        }
+    }
+    buttonDisabler(false, "ReleaseASingle_SbmtBtn", "Uploading and Saving...");
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: data,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            if (response.success) {
+                if (response.result != null) {
+                    let releaseBox = $('<div class="release-box me-1"></div>');
+                    let releaseImg = $("<img src='#' class='release-img' />");
+                    let releaseImgBox = $("<div class='release-img-box'></div>");
+                    let releaseInfoBox = $('<div class="box-standard text-truncate mt-1"></div>');
+                    let releaseName = $('<span class="h6 text-truncate"></span>');
+                    let releaseStatsBox = $('<div></div>');
+                    let releaseStatsBadge = $('<span class="badge-sm btn-tooltip" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-placement="bottom" data-bs-title="The track will be released as soon as we get your submission"></span>');
+                    let releaseStatsSeparator = $("<br/>");
+                    let releaseGenre = $("<small class='card-text text-muted'></small>");
+                    let releaseDateTime = $("<span class='card-text text-muted'></span>");
+                    let genresListed;
+
+                    releaseDateTime.html(" ∙ " + new Date(response.result.releasedAtDt).getFullYear());
+                    if (response.result.title != null) releaseName.html(response.result.title);
+                    else releaseName.html("No Title");
+
+                    if (response.result.genreNames != null) {
+                        for (let i = 0; i < response.result.genreNames.length; i++) {
+                            if (i == 0) genresListed = response.result.genreNames[i];
+                            else genresListed += ", " + response.result.genreNames[i];
+                        }
+                        releaseGenre.html(genresListed);
+                    }
+                    else releaseGenre.html("No Genre");
+                    //0 - inactive; 1 - pending for submission; 2 - muted; 3 - active ([0-2] - inactive)
+                    switch (parseInt(response.result.status)) {
+                        case 0:
+                            releaseStatsBadge.html(' <i class="fa-solid fa-volume-xmark"></i> ');
+                            releaseStatsBadge.attr("data-bs-title", "This track was disabled manually by you");
+                            break;
+                        case 1:
+                            releaseStatsBadge.html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> ');
+                            releaseStatsBadge.attr("data-bs-title", "The track will be released as soon as we get your submission");
+                            break;
+                        case 2:
+                            releaseStatsBadge.html(' <i class="fa-solid fa-volume-off"></i> ');
+                            releaseStatsBadge.attr("data-bs-title", "This track has been muted. Refer to your notifications for more information");
+                            break;
+                        case 3:
+                            releaseStatsBadge.html(' <i class="fa-solid fa-check-double"></i> ');
+                            releaseStatsBadge.attr("data-bs-title", "The track is currently active and accessible to all");
+                            break;
+                        default:
+                            releaseStatsBadge.html(' <i class="fa-solid fa-check-double"></i> ');
+                            releaseStatsBadge.attr("data-bs-title", "The track is currently active and accessible to all");
+                            break;
+                    }
+
+                    if (response.result.coverImageUrl != null) {
+                        releaseImg.attr("src", "/TrackCovers/" + response.result.coverImageUrl);
+                        releaseImg.fadeIn(0);
+                        releaseImgBox.fadeOut(0);
+                    }
+                    else {
+                        releaseImgBox.html(' <i class="fa-solid fa-music"></i> ');
+                        releaseImg.fadeOut(0);
+                        releaseImgBox.fadeIn(0);
+                    }
+
+                    let dropdownBox = $(' <div class="dropdown"></div>');
+                    let dropdownBtn = $("<button type='button' class='btn btn-standard btn-sm float-end ms-1'> <i class='fa-solid fa-ellipsis'></i> </button>");
+                    let dropdownItemsUl = $("<ul class='dropdown-menu shadow-sm p-1'></ul>");
+                    let dropdownLi0 = $("<li></li>");
+                    let dropdownLi1 = $("<li></li>");
+                    let dropdownLi2 = $("<li></li>");
+                    let dropdownLi3 = $("<li></li>");
+                    let dropdownBtn0 = $("<button type='button' class='dropdown-item btn-sm'>Edit Credits <span class='float-end'> <i class='fa-solid fa-pencil'></i> </span></button>");
+                    let dropdownBtn1 = $("<button type='button' class='dropdown-item btn-sm'>Edit Cover <span class='float-end'> <i class='fa-solid fa-images'></i> </span></button>");
+                    let dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Submit <span class='float-end'> <i class='fa-solid fa-check-double'></i> </span></button>");
+                    let dropdownBtn3 = $("<button type='button' class='dropdown-item btn-sm'>Delete <span class='float-end'> <i class='fa-solid fa-xmark'></i> </span></button>");
+
+                    dropdownLi0.append(dropdownBtn0);
+                    dropdownLi1.append(dropdownBtn1);
+                    dropdownLi2.append(dropdownBtn2);
+                    dropdownLi3.append(dropdownBtn3);
+                    dropdownItemsUl.append(dropdownLi0);
+                    dropdownItemsUl.append(dropdownLi1);
+                    dropdownItemsUl.append(dropdownLi2);
+                    dropdownItemsUl.append(dropdownLi3);
+                    dropdownBox.append(dropdownBtn);
+                    dropdownBox.append(dropdownItemsUl);
+
+                    releaseInfoBox.append(releaseStatsBadge);
+                    releaseInfoBox.append(releaseStatsSeparator);
+                    releaseInfoBox.append(releaseGenre);
+                    releaseInfoBox.append(releaseDate);
+
+                    releaseStatsBox.append(dropdownBox);
+                    releaseStatsBox.append(releaseName);
+                    releaseStatsBox.append(releaseInfoBox);
+                    releaseBox.append(releaseImg);
+                    releaseBox.append(releaseImgBox);
+                    releaseBox.append(releaseStatsBox);
+
+                    $("#SelfMusic_Box").append(releaseStatsBox);
+                    $("#SelfMusic_Box").fadeIn(300);
+                }
+                callAlert(' <i class="fa-solid fa-forward-step"></i> ', null, null, "Track saved successfully. To make it visible to everyone, please submit it and add credits and lyrics (optional)", 4, "Close", -1, null);
+                //buttonUndisabler(false, "ReleaseASingle_SbmtBtn", baseHtml);
+            }
+            else {
+                callAlert('<i class="fa-solid fa-circle-exclamation fa-shake" --fa-animation-duration: 0.8s; --fa-animation-iteration-count: 3; --fa-animation-delay: 0.3s;></i>', null, null, response.alert, 4, "Close", -1, null);
+            }
+            buttonUndisabler(false, "ReleaseASingle_SbmtBtn", baseHtml);
+        }
     });
 });
 
@@ -935,9 +1093,9 @@ $(document).on("mousedown", ".btn-load-countries", function () {
 $(document).on("keyup", ".form-control-search", function () {
     let trueId = $(this).attr("id");
     if (trueId != undefined) {
+        let itemsArr = [];
         let currentLength = $(this).val().length;
         let filterMembersClassname = $(this).attr("data-search-in");
-        let itemsArr = [];
         let items = document.getElementsByClassName(filterMembersClassname);
 
         if (currentLength > 0) $("#" + trueId + "-Icon_Span").html('<i class="fa-solid fa-ellipsis fa-fade"></i>');
@@ -994,7 +1152,6 @@ $(document).on("mousedown", ".btn-show-inside-box", function () {
     let trueId = getTrueId($(this).attr("id"), false);
     if (trueId != undefined) {
         let isBigBox = $(this).attr("data-big-switcher");
-        console.log(isBigBox);
         if (isBigBox == "true") showSwitchableBox(true, trueId);
         else showSwitchableBox(false, trueId);
     }
@@ -1215,9 +1372,9 @@ $(document).on("mousedown", ".btn-reorder", function () {
     let currentOrder = parseInt(getTrueId($(this).attr("id")));
     let maxOrder = parseInt($(this).attr("data-max-order"));
     let triggerTarget = $(this).attr("data-trigger");
-
     if (postIdValue != undefined && reorderTarget != undefined && triggerTarget != undefined) {
         let files = $("#" + reorderTarget).get(0).files;
+        let isAudio = $(this).attr("data-is-audio");
         if (currentOrder < maxOrder) {
             let tempOrder = currentOrder + 1;
             maxOrder = currentOrder + 2;
@@ -1236,7 +1393,8 @@ $(document).on("mousedown", ".btn-reorder", function () {
                 }
                 else dataTransfer.items.add(files[i]);
             }
-            imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
+            if (isAudio != undefined) audioPreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
+            else imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
             fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
         }
         else {
@@ -1256,7 +1414,8 @@ $(document).on("mousedown", ".btn-reorder", function () {
                 }
                 else dataTransfer.items.add(files[i]);
             }
-            imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
+            if (isAudio != undefined) audioPreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
+            else imagePreviewer(dataTransfer.files, triggerTarget, reorderTarget, true, false);
             fileRenewer(reorderTarget, dataTransfer, 6, "ImagePreview_Container");
         }
     }
@@ -1575,9 +1734,22 @@ function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = tr
 
 function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = true, openPreviewBox = true) {
     let rowsQty = 0;
-    createInsideLgCard("AudioPreview", "Audio Preview ∙ <span id='AudioFilesQty_Span'>0</span>", '<div class="mt-1 p-1 pt-0"> <div class="box-bordered p-2"> <div> <span class="h4 ongaku-track-name-lbl">Not Playing</span> <div> <small class="card-text ongaku-artist-name-lbl text-muted">no file chosen</small> </div> </div> <div class="hstack gap-1 mt-1"> <span class="card-text text-muted ongaku-track-duration-current">0:00</span> <div class="ongaku-track-duration-line-enlarged"> <div class="ongaku-track-current-duration-line-enlarged"></div> </div> <span class="card-text text-muted ongaku-track-duration-left">0:00</span> </div> <div class="row w-100 mt-1"> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged w-100"> <i class="fa-solid fa-forward"></i> </button> </div> </div> </div> <div class="row w-100 mt-2" id="AddedTracks_Box"> </div> </div>', null, null);
+    let divExists = document.getElementById("AudioPreview_Container");
+    if (!divExists) createInsideLgCard("AudioPreview", "Audio Preview ∙ <span id='AudioFilesQty_Span'>0</span>", '<div class="mt-1 p-1 pt-0"> <div class="box-bordered p-2"> <div> <span class="h4 ongaku-track-name-lbl">Not Playing</span> <div> <small class="card-text ongaku-artist-name-lbl text-muted">no file chosen</small> </div> </div> <div class="hstack gap-1 mt-1"> <span class="card-text text-muted ongaku-track-duration-current">0:00</span> <div class="ongaku-track-duration-line-enlarged" id="TrackPreviewDurationLine_Box"> <div class="ongaku-track-current-duration-line-enlarged"></div> </div> <span class="card-text text-muted ongaku-track-duration-left">0:00</span> </div> <div class="row w-100 mt-1"> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward w-100"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-audio-start-stop btn-ongaku-player-enlarged w-100" id="TrackPreviewPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward w-100"> <i class="fa-solid fa-forward"></i> </button> </div> </div> </div><div class="row w-100 mt-2" id="AddedTracks_Box"> </div> </div>', null, null);
+    else {
+        $("#AddedTracks_Box").empty();
+    }
+
     if (files.length > 0) {
+        let imagesCodeLength = files.length - 1;
         $("#AudioFilesQty_Span").text(files.length);
+        if (isMultiple) {
+            $(".btn-ongaku-player-forward").removeClass("super-disabled");
+        }
+        else {
+            $(".btn-ongaku-player-forward").addClass("super-disabled");
+        }
+
         for (let i = 0; i < files.length; i++) {
             if (i % 3 == 0) {
                 rowsQty++;
@@ -1591,12 +1763,39 @@ function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = tru
             let trackFileNameLbl = $("<h5 class='h5 text-truncate'></h5>");
             let trackExtensionBadge = $("<span class='badge badge-standard'></span>");
             let trackPreviewBtnsBox = $('<div class="mt-2"></div>');
-            let trackPreviewPlayBtn = $("<button type='button' class='btn btn-standard-bordered btn-pre-play-track me-1'> <i class='fa-solid fa-play'></i> Play</button>");
+            let trackPreviewPlayBtn = $("<button type='button' class='btn btn-standard-bordered btn-pre-play-pause-track btn-play-pause-track me-1' data-preview='true'> <i class='fa-solid fa-play'></i> Play</button>");
+            if (isMultiple) {
+                let orderIndex = i;
+                let trackSettingsBox = $("<div class='box-standard hstack gap-1 mb-1'></div>")
+                let trackReorderBtn = $("<button type='button' class='btn btn-reorder btn-reorder-style btn-sm'></button>");
+                let trackDeleteBtn = $("<button type='button' class='btn btn-reorder-style btn-delete-from-order btn-sm ms-auto'> <i class='fa-solid fa-xmark'></i> </button>");
+                trackReorderBtn.text(++orderIndex);
+                trackReorderBtn.attr("id", i + "-ReorderTheTrack_Btn");
+                trackReorderBtn.attr("data-max-order", imagesCodeLength);
+                trackReorderBtn.attr("data-reorder-target", orderTargetId);
+                trackReorderBtn.attr("data-trigger", saveTargetFormId);
+                trackReorderBtn.attr("data-is-audio", true);
+                trackDeleteBtn.attr("id", i + "-DeleteTheTrack_Btn");
+                trackDeleteBtn.attr("data-reorder-target", orderTargetId);
+                trackDeleteBtn.attr("data-trigger", saveTargetFormId);
+                trackReorderBtn.attr("data-is-audio", true);
+                trackSettingsBox.append(trackReorderBtn);
+                trackSettingsBox.append(trackDeleteBtn);
+                trackBox.append(trackSettingsBox);
+            }
+            else {
+                $(".btn-pre-play-pause-track").attr("data-title", files[i].name);
+                $(".btn-pre-play-pause-track").attr("data-src", window.URL.createObjectURL(files[i]));
+            }
 
             trackFileNameLbl.html(files[i].name);
             trackExtensionBadge.html(getFileExtension(files[i].name));
             trackPreviewBtnsBox.append(trackPreviewPlayBtn);
             trackPreviewPlayBtn.attr("data-src", window.URL.createObjectURL(files[i]));
+            trackPreviewPlayBtn.attr("data-title", files[i].name);
+            trackPreviewPlayBtn.attr("data-order-index", i);
+            trackPreviewPlayBtn.attr("id", i + "-TrackPrePlay_Btn");
+
             trackBox.append(trackFileNameLbl);
             trackBox.append(trackExtensionBadge);
             trackBox.append(trackPreviewBtnsBox);
@@ -1605,30 +1804,204 @@ function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = tru
         }
     }
 
-    displayCorrector(currentWindowSize, false);
-    setTimeout(function () {
-        callAContainer(false, "AudioPreview_Container", false);
-    }, 150);
+    if (openPreviewBox) {
+        displayCorrector(currentWindowSize, false);
+        setTimeout(function () {
+            callAContainer(false, "AudioPreview_Container", false);
+        }, 150);
+    }
 }
 
-$(document).on("mousedown", ".btn-pre-play-track", function () {
-    let objectSrc = $(this).attr("data-src");
-    if (objectSrc != undefined) {
-        audioPlay("OngakuPlayer_Audio", objectSrc);
-        audioEdit("OngakuPlayer_Audio", 15, 1, false, 0);
+$(document).on("mousedown", ".btn-audio-start-stop", function () {
+    let thisId = $(this).attr("id");
+    if (thisId != undefined) {
+        let element = document.getElementById("OngakuPlayer_Audio");
+        if (element != null) {
+            let objectSrc = element.src;
+            if (element.paused) {
+                if (objectSrc != undefined) {
+                    let trackId = $("#OngakuPlayer_TrackId_Val").val();
+                    let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
+                    let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
+                    audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, null, null, null);
+                }
+            }
+            else audioPause("OngakuPlayer_Audio");
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-play-pause-track", function () {
+    let thisId = $(this).attr("id");
+    if (thisId != undefined) {
+        let isForPreview = $(this).attr("data-preview");
+        let trackId = null;
+        let playlistId = null;
+        let objectSrc = null;
+        let objectTitle = null;
+        let currentSrc = document.getElementById("OngakuPlayer_Audio").src;
+        if (isForPreview) {
+            objectSrc = $(this).attr("data-src");
+            objectTitle = $(this).attr("data-title");
+            trackId = $(this).attr("data-order-index");
+        }
+        else {
+            trackId = $("#OngakuPlayer_TrackId_Val").val();
+            playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
+        }
+
+        if ((objectSrc != undefined) && (currentSrc == objectSrc)) {
+            let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
+            audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, objectTitle, "Track Preview", null);
+        }
+        else audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, 0, objectTitle, "Track Preview", null);
+    }
+});
+
+$(document).on("mousedown", ".btn-ongaku-player-backward", function () {
+    let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
+    let trackId = $("#OngakuPlayer_TrackId_Val").val();
+    if (playlistId != undefined && trackId != undefined) {
+        let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
+        if (currentTime <= 3.5) audioChange("OngakuPlayer_Audio", true, true, trackId);
+        else audioEdit("OngakuPlayer_Audio", 100, 1, false, 0);
+    }
+});
+
+$(document).on("mousedown", ".btn-ongaku-player-forward", function () {
+    let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
+    let trackId = $("#OngakuPlayer_TrackId_Val").val();
+    if (playlistId != undefined && trackId != undefined) {
+        audioChange("OngakuPlayer_Audio", true, false, trackId);
+    }
+});
+
+$(document).on("mousedown", ".ongaku-track-duration-line, .ongaku-track-duration-line-enlarged", function (event) {
+    let thisId = $(this).attr("id");
+    if (thisId != undefined) {
+        let currentRect = document.getElementById(thisId).getBoundingClientRect();
+        let totalDuration = document.getElementById("OngakuPlayer_Audio").duration;
+        if (totalDuration != undefined) {
+            const tapX = ((event.clientX - currentRect.x) / currentRect.width * 100);
+            totalDuration = totalDuration * tapX / 100;
+            audioEdit("OngakuPlayer_Audio", 100, 1, false, totalDuration);
+        }
     }
 });
 
 $("audio").on("timeupdate", function () {
     let thisId = $(this).attr("id");
-
+    if (thisId != undefined) {
+        let durationArr = audioDuration(thisId, false);
+        let durationArrInSec = audioDuration(thisId, true);
+        if (durationArr != null && durationArrInSec != null) {
+            $(".ongaku-track-duration-current").text(durationArr[1][0] + ":" + durationArr[1][1]);
+            $(".ongaku-track-duration-left").text("-" + durationArr[2][0] + ":" + durationArr[2][1]);
+            $(".ongaku-track-current-duration-line").css("width", (durationArrInSec[1] / durationArrInSec[0] * 100) + "%");
+            $(".ongaku-track-current-duration-line-enlarged").css("width", (durationArrInSec[1] / durationArrInSec[0] * 100) + "%");
+        }
+        else {
+            //$(".ongaku-track-duration-current").text("--:--");
+            //$(".ongaku-track-duration-left").text("--:--");
+            //$(".ongaku-track-current-duration-line").css("width", 0);
+            //$(".ongaku-track-current-duration-line-enlarged").css("width", 0);
+        }
+    }
+    else {
+        //$(".ongaku-track-duration-left").text("--:--");
+        //$(".ongaku-track-duration-current").text("--:--");
+        //$(".ongaku-track-current-duration-line").css("width", 0);
+        //$(".ongaku-track-current-duration-line-enlarged").css("width", 0);
+    }
 });
 
-function audioPlay(element, fileSrc) {
+function audioDuration(element, parseToSeconds = false) {
+    if (element != null || element != undefined) {
+        let audioElement = document.getElementById(element);
+        let totalDuraiton = audioElement.duration;
+        let currentTime = audioElement.currentTime;
+        if (!isNaN(totalDuraiton) && !isNaN(currentTime)) {
+            if (totalDuraiton != undefined && currentTime != undefined) {
+                if (!parseToSeconds) {
+                    let totalMin = Math.floor(totalDuraiton / 60);
+                    let totalSec = Math.floor(totalDuraiton - (totalMin * 60));
+                    let currentMin = Math.floor(currentTime / 60);
+                    let currentSec = Math.floor(currentTime - (currentMin * 60));
+                    let totalTimeLeft = Math.floor(totalDuraiton - currentTime);
+                    let timeLeftMin = Math.floor(totalTimeLeft / 60);
+                    let timeLeftSec = Math.floor(totalTimeLeft - (timeLeftMin * 60));
+
+                    totalMin = totalMin < 10 ? "0" + totalMin : totalMin;
+                    totalSec = totalSec < 10 ? "0" + totalSec : totalSec;
+                    currentMin = currentMin < 10 ? "0" + currentMin : currentMin;
+                    currentSec = currentSec < 10 ? "0" + currentSec : currentSec;
+                    timeLeftMin = timeLeftMin < 10 ? "0" + timeLeftMin : timeLeftMin;
+                    timeLeftSec = timeLeftSec < 10 ? "0" + timeLeftSec : timeLeftSec;
+
+                    return [[totalMin, totalSec], [currentMin, currentSec], [timeLeftMin, timeLeftSec]];
+                }
+                else return [totalDuraiton, currentTime];
+            }
+            else return null;
+        }
+        else return null;
+    }
+    else return null;
+}
+
+function audioChange(element, isForPreview = false, backward = true, currentOrderIndex = 0, manualOrderIndex = -1) {
+    if (element != undefined) {
+        if (manualOrderIndex >= 0) currentOrderIndex = manualOrderIndex;
+        else {
+            if (backward) currentOrderIndex = --currentOrderIndex >= 0 ? currentOrderIndex : 0;
+            else currentOrderIndex += 1;
+        }
+
+        if (isForPreview) {
+            let audioSrc = $("#" + currentOrderIndex + "-TrackPrePlay_Btn").attr("data-src");
+            if (audioSrc != undefined) {
+                let audioTitle = $("#" + currentOrderIndex + "-TrackPrePlay_Btn").attr("data-title");
+                audioPlay(element, audioSrc, null, currentOrderIndex, 0, audioTitle, null, null);
+            }
+            else audioEdit(element, 100, 1, false, 0);
+        }
+    }
+}
+
+function audioPlay(element, fileSrc, playlistId, trackId, startingTimeInSec, title, mainArtist, featuringArtists = []) {
     if (element != null && fileSrc != null) {
-        let audioPlayer = document.getElementById(element);
+        let allArtists;
+        const audioPlayer = document.getElementById(element);
         audioPlayer.src = fileSrc;
+        if (startingTimeInSec != null) {
+            startingTimeInSec = parseInt(startingTimeInSec) >= 0 ? startingTimeInSec : 0;
+            audioPlayer.currentTime = startingTimeInSec;
+        }
+        else audioPlayer.currentTime = 0;
+        if (title != null || title != undefined) $(".ongaku-track-name-lbl").html(title);
+        if (mainArtist != null) allArtists = mainArtist;
+        else allArtists = "Track Preview";
+        if (featuringArtists != null && featuringArtists.length > 0) {
+            for (let i = 0; i < featuringArtists.length; i++) {
+                if (i == 0) mainArtist += " feat. " + featuringArtists[i];
+                else mainArtist += ", " + featuringArtists[i];
+            }
+        }
         audioPlayer.play();
+        $(".btn-play-pause-track").html(' <i class="fa-solid fa-play"></i> ');
+        $(".btn-audio-start-stop").html(' <i class="fa-solid fa-pause"></i> ');
+        if (allArtists != null) $(".ongaku-artist-name-lbl").html(allArtists);
+        $(".ongaku-track-name-lbl").removeClass("super-disabled");
+        $(".ongaku-track-duration-left").text(audioPlayer.duration);
+        $(".ongaku-track-current-duration-line").css("width", 0);
+        $(".btn-pre-play-pause-track").html(' <i class="fa-solid fa-play"></i> Play');
+        $("#" + trackId + "-TrackPrePlay_Btn").attr("data-src", fileSrc);
+        $("#" + trackId + "-TrackPrePlay_Btn").html(' <i class="fa-solid fa-pause"></i> Pause');
+
+        if (playlistId == null || playlistId == undefined) $("#OngakuPlayer_PlaylistId_Val").val(-256);
+        else $("#OngakuPlayer_PlaylistId_Val").val(playlistId);
+        if (trackId != null || trackId != undefined) $("#OngakuPlayer_TrackId_Val").val(trackId);
+        else $("#OngakuPlayer_TrackId_Val").val(0);
     } 
 }
 
@@ -1636,6 +2009,12 @@ function audioPause(element) {
     if (element != null) {
         let audioPlayer = document.getElementById(element);
         audioPlayer.pause();
+        if (audioPlayer.paused) {
+            $(".ongaku-track-name-lbl").addClass("super-disabled");
+            $(".btn-audio-start-stop").html(' <i class="fa-solid fa-play"></i> ');
+            $(".btn-play-pause-track").html(' <i class="fa-solid fa-pause"></i> ');
+            $(".btn-pre-play-pause-track").html(' <i class="fa-solid fa-play"></i> Play');
+        }
     }
 }
 
@@ -1653,6 +2032,7 @@ function audioEdit(element, volume, playbackSpeed, loop = false, currentTime) {
         audioElement.volume = volume;
         audioElement.playbackRate = playbackSpeed;
         audioElement.loop = loop;
+        audioElement.currentTime = currentTime;
     }
 }
 
@@ -2799,16 +3179,17 @@ $("#SearchForGenres_Form").on("submit", function (event) {
     $.get(url, data, function (response) {
         if (response.success) {
             if (response.type == 1) {
-                createInsideLgCard("ChooseGenres", "Choose Genres ∙ " + response.count, "<div class='box-standard mt-1'><h6 class='h6' id='GenreSearchKeyword_Lbl'></h6><div class='box-standard mt-1' id='FoundGenres_Box'></div></div>", null, null);
-                $("#FoundGenres_Box").empty();
+                createInsideLgCard("ChooseGenres", "Choose Genres ∙ " + response.count, "<div class='box-standard'><span class='card-text fs-6 ms-1' id='GenreSearchKeyword_Lbl'></span></div><div class='box-standard mt-1' id='FoundGenresListed_Box'></div></div>", null, null);
+                $("#FoundGenresListed_Box").empty();
+                $("#FoundGenresListed_Box").append("<div class='box-standard' id='FoundGenres_Box'><div class='form-control-search-container mb-1'><span class='form-control-search-icon' id='GenreNativeSearch_Val-Icon_Span'><i class='fa-solid fa-magnifying-glass'></i></span><input type='text' class='form-control form-control-search' placeholder='Search for genres' id='GenreNativeSearch_Val' data-search-in='btn-add-as-genre' /></div></div>");
                 if (response.keyword == null) $("#GenreSearchKeyword_Lbl").html("All available genres are listed");
-                else $("#GenreSearchKeyword_Lbl").html("Matching genres for <span class='fw-500'>" + response.keyword + "</span>");
+                else $("#GenreSearchKeyword_Lbl").html("Matching genres for <span class='fw-500'>'" + response.keyword + "'</span>");
 
                 $.each(response.result, function (index) {
                     let genreBtn = $("<button type='button' class='btn btn-standard-bordered btn-add-as-genre w-100 mt-1'></button>");
                     genreBtn.html(response.result[index].name);
                     genreBtn.attr("id", response.result[index].id + "-AddAsGenre_Btn");
-                    $("#FoundGenres_Box").append(genreBtn);
+                    $("#FoundGenresListed_Box").append(genreBtn);
                 });
                 displayCorrector(currentWindowSize, false);
                 setTimeout(function () {
@@ -2842,15 +3223,19 @@ $(document).on("mousedown", ".btn-add-as-genre", function () {
 
                 if (isCurrentGenreAvailable) {
                     let genreInput = $("<input type='text' name='Genres' class='included-genres d-none' />");
+                    let genreNameInput = $("<input type='text' name='Genres' class='included-genre-names-val d-none' />");
                     let genreBtn = $("<button type='button' class='btn btn-profile-tag btn-remove-as-genre me-1 mb-1'></button>");
                     genreBtn.attr("id", trueId + "-RemoveAsGenre_Btn");
                     genreBtn.html($(this).html());
                     genreInput.attr("id", trueId + "-AddedGenre_Val");
                     genreInput.val(trueId);
+                    genreNameInput.attr("id", trueId + "-AddedGenreName_Val");
+                    genreNameInput.val($(this).html());
                     $(this).addClass("bg-chosen-bright");
 
                     $("#ChosenGenres_Box").append(genreBtn);
                     $("#ChosenGenreInputs_Box").append(genreInput);
+                    $("#ChosenGenreNameInputs_Box").append(genreNameInput);
                     $("#ChosenGenres_Box").fadeIn(300);
                 }
             }
@@ -2891,6 +3276,7 @@ $(document).on("mousedown", ".btn-remove-as-genre", function () {
         if (currentGenresQty.length > 0) {
             $(this).fadeOut(300);
             $("#" + trueId + "-AddedGenre_Val").remove();
+            $("#" + trueId + "-AddedGenreName_Val").remove();
             $("#" + trueId + "-AddAsGenre_Btn").removeClass("bg-chosen-bright");
             setTimeout(function () {
                 $(this).remove();
@@ -2918,23 +3304,40 @@ $(document).on("change", "#SearchForGenres_Keyword_Val", function () {
 $(document).on("change", ".form-control-date-year", function () {
     let value = $(this).val();
     if (value > 0 && value != undefined) {
-        let formatType = $(this).attr("data-format-type");
-        let yearDays = calendarRefresh(value, ++value);
-        if (yearDays.length > 0) {
-            hideTimeBar();
-            $(".calendar-days-box").empty();
-            for (let i = 0; i < yearDays.length; i++) {
-                let dayInfo = new Date(yearDays[i]);
-                let week = dayOfWeekShortArr[dayInfo.getDay()];
-                let month = monthsShortArr[dayInfo.getMonth()];
-
-                let yearDayBtn = $("<button type='button' class='btn btn-standard btn-year-day-update w-100'></button>");
-                yearDayBtn.attr("data-format-type", formatType);
-                yearDayBtn.attr("data-val", dayInfo.getMonth() + 1 + "/" + dayInfo.getDate() + "/" + dayInfo.getFullYear());
-                yearDayBtn.html(week + ", " + dayInfo.getDate() + " " + month);
-                $(".calendar-days-box").append(yearDayBtn);
+        let targetValue = $(this).attr("data-target");
+        if (targetValue != undefined) {
+            let formatType = $(this).attr("data-type");
+            let dateDisplayElement = $(this).attr("data-date-display");
+            switch (parseInt(formatType)) {
+                case 0:
+                    callDateAndTimeContainer(targetValue, dateDisplayElement, value, true, true, true, true, false);
+                    break;
+                case 1:
+                    callDateAndTimeContainer(targetValue, dateDisplayElement, value, true, true, true, false, false);
+                    break;
+                case 2:
+                    callDateAndTimeContainer(targetValue, dateDisplayElement, value, true, false, false, true, false);
+                    break;
+                case 3:
+                    callDateAndTimeContainer(targetValue, dateDisplayElement, value, false, false, false, true, false);
+                    break;
+                default:
+                    callDateAndTimeContainer(targetValue, dateDisplayElement, value, true, true, true, true, false);
+                    break;
             }
         }
+        /*            let monthValue = -1*/
+        //for (let i = 0; i < yearDays.length; i++) {
+        //    let dayInfo = new Date(yearDays[i]);
+        //    let week = dayOfWeekShortArr[dayInfo.getDay()];
+        //    let month = monthsShortArr[dayInfo.getMonth()];
+
+        //    let yearDayBtn = $("<button type='button' class='btn btn-standard btn-year-day-update w-100'></button>");
+        //    yearDayBtn.attr("data-format-type", formatType);
+        //    yearDayBtn.attr("data-val", dayInfo.getMonth() + 1 + "/" + dayInfo.getDate() + "/" + dayInfo.getFullYear());
+        //    yearDayBtn.html(week + ", " + dayInfo.getDate() + " " + month);
+        //    $(".calendar-days-box").append(yearDayBtn);
+        //}
     }
 });
 
@@ -2944,7 +3347,6 @@ $(document).on("mousedown", ".btn-decrease-the-value", function () {
         let step = $(this).attr("data-step");
         let minValue = $("#" + target).attr("min");
         minValue = minValue != undefined ? minValue : 0;
-
         if (parseFloat(step) != undefined) step = parseFloat(step);
         else step = 1;
 
@@ -2977,7 +3379,7 @@ $(document).on("mousedown", ".btn-year-day-update", function () {
         $(".btn-year-day-update").removeClass("bg-chosen-bright");
         $(this).addClass("bg-chosen-bright");
 
-        if (newDayValue != null) $(".calendar-chosen-dt-span").html(newDayValue);
+        if (newDayValue != null) $(".calendar-chosen-dt-span").html(newDayValue[0]);
         else $(".calendar-chosen-dt-span").text("today");
     }
     else $(".calendar-chosen-dt-span").text("today");
@@ -2992,42 +3394,49 @@ $(document).on("mousedown", ".btn-dtformat-update", function () {
         $(".btn-dtformat-update").removeClass("bg-chosen-bright");
         $(this).addClass("bg-chosen-bright");
 
-        if (newDayValue != null) $(".calendar-chosen-dt-span").html(newDayValue);
+        if (newDayValue != null) $(".calendar-chosen-dt-span").html(newDayValue[0]);
         else $(".calendar-chosen-dt-span").text("today");
     }
     else $(".calendar-chosen-dt-span").text("today");
 });
 
 $(document).on("mousedown", ".btn-show-the-clock", function () {
-    let type = $(this).attr('data-type');
+    let type = $(this).attr("data-type");
     let targetValue = $(this).attr("data-target");
     if (targetValue != undefined) {
         let dateResultDisplay = $(this).attr("data-date-display");
-        let minYear = $(this).attr("data-min-year");
-        let maxYear = $(this).attr("data-max-year");
-        minYear = minYear != undefined ? minYear : 1750;
-        maxYear = maxYear != undefined ? maxYear : new Date().getFullYear();
-        let minDate = new Date(minYear);
-        let maxDate = new Date(maxYear);
-
+        let currentYear = $(this).attr("data-current-year");
+        currentYear = currentYear != undefined ? currentYear : 1000;
+        let currentDate = new Date(currentYear);
         switch (parseInt(type)) {
             case 0:
-                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, true, true, true);
+                callDateAndTimeContainer(targetValue, dateResultDisplay, currentDate, true, true, true, true, true);
                 break;
             case 1:
-                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, true, true, false);
+                callDateAndTimeContainer(targetValue, dateResultDisplay, currentDate, true, true, true, false, true);
                 break;
             case 2:
-                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, false, false, true);
+                callDateAndTimeContainer(targetValue, dateResultDisplay, currentDate, true, false, false, true, true);
                 break;
             case 3:
-                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, false, false, false, true);
+                callDateAndTimeContainer(targetValue, dateResultDisplay, currentDate, false, false, false, true, true);
                 break;
             default:
-                callDateAndTimeContainer(targetValue, dateResultDisplay, minDate, maxDate, true, true, true, true);
+                callDateAndTimeContainer(targetValue, dateResultDisplay, currentDate, true, true, true, true, true);
                 break;
         }
+        $(".form-control-date-year").attr("data-type", type);
+        $(".form-control-date-year").attr("data-target", targetValue);
+        $(".form-control-date-year").attr("data-date-display", dateResultDisplay);
     }
+    //let endDate = new Date(endYear, endMonth, endDay);
+    //if (currentYear == endYear && restrictPrevDaysForCurrentYear) endDate = startDate > endDate ? new Date(currentYear, 11, 31) : endDate;
+
+    //for (let i = new Date(startDate); i < endDate; i.setDate(i.getDate() + 1)) {
+    //    yearDays.push(new Date(i));
+    //}
+    //if (yearDays.length > 0) return yearDays;
+    //else return null;
 });
 
 $(document).on("change", "#RAS_ReleaseDateTrigger_Val", function () {
@@ -3067,16 +3476,20 @@ $(document).on("mousedown", ".btn-calendar-submit", function () {
         let minValue = $("#CalendarMin_Val").val();
 
         let newDayValue = dateAndTimeFormation(formatType, new Date(yearValue, monthValue, dayValue, hrValue, minValue));
-        let newDate = dateAndTimeParser(dayValue, monthValue, yearValue, hrValue, minValue);
-        if (newDate != null) {
-            newDate.setMonth(newDate.getMonth() + 1); 
-            $("#" + target).val(newDate);
+        if (newDayValue != null) {
+            if (newDayValue[0] != null) $("#" + target).val(newDayValue[0]);
+            if (newDayValue[1] != null) {
+                $("#" + target + "-Year").val(parseInt(newDayValue[1][2]));
+                $("#" + target + "-Month").val(parseInt(newDayValue[1][1]));
+                $("#" + target + "-Day").val(parseInt(newDayValue[1][0]));
+                $("#" + target + "-Hour").val(parseInt(newDayValue[1][3]));
+                $("#" + target + "-Min").val(parseInt(newDayValue[1][4]));
+            }
         }
         else $("#" + target).val(null);
-
         if (newDayValue != null && dateResultDisplay != undefined) {
-            $("#" + dateResultDisplay).val("Set for " + newDayValue);
-            $("#" + dateResultDisplay).html("Set for " + newDayValue);
+            $("#" + dateResultDisplay).val("Set for " + newDayValue[0]);
+            $("#" + dateResultDisplay).html("Set for " + newDayValue[0]);
         }
         $(".btn-clock-dt-reset").removeClass("super-disabled");
         $(".date-and-time-display").change();
@@ -3100,36 +3513,35 @@ function dateAndTimeDeparser(dateAndTimeValue) {
     else return null;
 }
 
-function callDateAndTimeContainer(targetValueElemenetId, dateResultDisplay, startDate, endDate, showDays, showTime, showMinutes, twentyforHoursFormat = true) {
+function callDateAndTimeContainer(targetValueElemenetId, dateResultDisplay, currentDate = new Date().getFullYear(), showDays, showTime, showMinutes, twentyforHoursFormat = true, openOnCall = true) {
     let divExists = document.getElementById("DateAndTime_Container");
-    if (!divExists) createInsideLgCard("DateAndTime", "Set Date and Time", '<div class="box-standard"> <div class="row"> <div class="col date-box calendar-days-box" id="CalendarDays_Box"> </div> <div class="col date-box calendar-hrs-box" id="CalendarHours_Box"> </div> <div class="col date-box calendar-mins-box" id="CalendarMinutes_Box"> </div> <div class="col date-box calendar-hrformat-box" id="CalendarDateTimeFormat_Box"> <button type="button" class="btn btn-standard btn-dtformat-type bg-chosen-bright w-100" data-val="AM">AM</button> <button type="button" class="btn btn-standard btn-dtformat-type w-100" data-val="PM">PM</button> </div> </div> <div class="box-standard row mt-2"> <div class="col col-3"> <button type="button" class="btn btn-standard-bordered btn-decrease-the-value w-100" id="CalendarYearValueLowerer_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-minus"></i></button> </div> <div class="col col-6"> <input type="number" class="d-none" id="CalendarDay_Val" value="1" /> <input type="number" class="d-none" id="CalendarMonth_Val" value="1" /> <input type="number" class="d-none" id="CalendarYear_Val" value="0" /> <input type="number" class="d-none" id="CalendarHr_Val" value="0" /> <input type="number" class="d-none" id="CalendarMin_Val" value="0" /> <input type="number" class="form-control form-control-date-year" id="CalendarYear_Val" placeholder="Enter year value here" min="1750" max="2025" step="1" value="2025" /> </div> <div class="col col-3"> <button type="button" class="btn btn-standard-bordered btn-increase-the-value w-100" id="CalendarYearValueIncreaser_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-plus"></i> </button> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-calendar-submit w-100" id="CalendarSubmit_Btn">Set for <span class="calendar-chosen-dt-span" id="ChosenDateTime_Span">today, at 23:00</span></button> </div> </div>', null, null);
+    if (!divExists) createInsideLgCard("DateAndTime", "Set Date and Time", '<div class="box-standard"><div class="form-control-search-container"> <span class="card-text text-muted"> <i class="fa-solid fa-magnifying-glass"></i> </span> <input type="text" class="form-control form-control-search" placeholder="Search for days and months" id="SearchInDates_Val" data-search-in="btn-year-day-update" /> </div><div class="box-inshadowed mt-2"> <div class="row"> <div class="col date-box calendar-days-box" id="CalendarDays_Box"> </div> <div class="col date-box calendar-hrs-box" id="CalendarHours_Box"> </div> <div class="col date-box calendar-mins-box" id="CalendarMinutes_Box"> </div> <div class="col date-box calendar-hrformat-box" id="CalendarDateTimeFormat_Box"> <button type="button" class="btn btn-standard btn-dtformat-type bg-chosen-bright w-100" data-val="AM">AM</button> <button type="button" class="btn btn-standard btn-dtformat-type w-100" data-val="PM">PM</button> </div> </div> <div class="box-standard row mt-2"> <div class="col col-3"> <button type="button" class="btn btn-standard-bordered btn-decrease-the-value text-center w-100" id="CalendarYearValueLowerer_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-chevron-down"></i> </button> </div> <div class="col col-6"> <input type="number" class="d-none" id="CalendarDay_Val" value="1" /> <input type="number" class="d-none" id="CalendarMonth_Val" value="1" />  <input type="number" class="d-none" id="CalendarHr_Val" value="0" /> <input type="number" class="d-none" id="CalendarMin_Val" value="0" /> <input type="number" class="form-control form-control-date-year" id="CalendarYear_Val" placeholder="Enter year value here" min="1000" max="2025" step="1" value="2025" /> </div> <div class="col col-3"> <button type="button" class="btn btn-standard-bordered btn-increase-the-value text-center w-100" id="CalendarYearValueIncreaser_Btn" data-step="1" data-target="CalendarYear_Val" data-format-type="0"> <i class="fa-solid fa-chevron-up"></i> </button> </div> </div></div> <div class="box-standard mt-2"> <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-calendar-submit w-100" id="CalendarSubmit_Btn">Set for <span class="calendar-chosen-dt-span" id="ChosenDateTime_Span">today, at 23:00</span></button> </div> </div>', null, null);
     $(".calendar-days-box").empty();
     $(".calendar-hrs-box").empty();
     $(".calendar-mins-box").empty();
 
-    let startDt = new Date(startDate);
-    let endTimeDt = new Date(endDate);
-
-    let calendarResult = calendarRefresh(startDt.getFullYear(), endTimeDt.getFullYear(), startDt.getMonth(), startDt.getDate(), endTimeDt.getMonth(), endTimeDt.getDate(), false);
+    let currentDt = new Date(currentDate);
+    let calendarResult = calendarRefresh(currentDt.getFullYear(), currentDt.getMonth(), currentDt.getDate(), false);
     let timesResult = timeBarRefresh(showMinutes, twentyforHoursFormat);
     if (calendarResult != null) {
-        let currentYear = 0;
+        let currentMonth = -1;
         for (let i = 0; i < calendarResult.length; i++) {
             let dayInfo = new Date(calendarResult[i]);
             let week = dayOfWeekShortArr[dayInfo.getDay()];
             let month = monthsShortArr[dayInfo.getMonth()];
 
-            if (currentYear != dayInfo.getFullYear()) {
-                let yearChangeDiv = $("<div class='box-standard mt-1 p-1'></div>");
-                let yearChangeSpan = $("<h6 class='h6'></h6>");
-                yearChangeDiv.append(yearChangeSpan);
-                yearChangeSpan.text(dayInfo.getFullYear());
-                $(".calendar-days-box").append(yearChangeDiv);
+            if (currentMonth != dayInfo.getMonth()) {
+                currentMonth = dayInfo.getMonth();
+                let monthChangeDiv = $("<div class='box-standard p-1'></div>");
+                monthChangeSpan = $("<h6 class='card-text'></h6>");
+                monthChangeSpan.html(monthsArr[currentMonth]);
+                monthChangeDiv.append(monthChangeSpan);
+                $(".calendar-days-box").append(monthChangeDiv);
             }
-            currentYear = dayInfo.getFullYear();
 
             let yearDayBtn = $("<button type='button' class='btn btn-standard btn-year-day-update w-100'></button>");
             yearDayBtn.attr("data-format-type", 0);
+            yearDayBtn.attr("id", i + "-YearDay_Btn");
             yearDayBtn.attr("data-val", dayInfo.getMonth() + 1 + "/" + dayInfo.getDate() + "/" + dayInfo.getFullYear());
             yearDayBtn.html(week + ", " + dayInfo.getDate() + " " + month);
             $(".calendar-days-box").append(yearDayBtn);
@@ -3167,39 +3579,46 @@ function callDateAndTimeContainer(targetValueElemenetId, dateResultDisplay, star
     }
     else hideTimeBar();
 
-    displayCorrector(currentWindowSize, false);
-    setTimeout(function () {
-        callAContainer(false, "DateAndTime_Container", false);
-    }, 150);
+    if (openOnCall) {
+        displayCorrector(currentWindowSize, false);
+        setTimeout(function () {
+            callAContainer(false, "DateAndTime_Container", false);
+        }, 150);
+    }
 }
 
 function dateAndTimeFormation(formatType, dateAndTime) {
     let newDayValue = new Date(dateAndTime);
     if (newDayValue != undefined && newDayValue != null) {
-        $("#CalendarDay_Val").val(newDayValue.getDate());
-        $("#CalendarMonth_Val").val(newDayValue.getMonth());
-        $("#CalendarYear_Val").val(newDayValue.getFullYear());
-        $("#CalendarHr_Val").val(newDayValue.getHours());
-        $("#CalendarMin_Val").val(newDayValue.getMinutes());
+        let rDayValue = newDayValue.getDate();
+        let rMonthValue = newDayValue.getMonth();
+        let rYearValue = newDayValue.getFullYear();
+        let rHourValue = newDayValue.getHours();
+        let rMinValue = newDayValue.getMinutes();
+        $("#CalendarDay_Val").val(rDayValue);
+        $("#CalendarMonth_Val").val(rMonthValue);
+        $("#CalendarYear_Val").val(rYearValue);
+        $("#CalendarHr_Val").val(rHourValue);
+        $("#CalendarMin_Val").val(rMinValue);
 
         switch (parseInt(formatType)) {
             case 0:
-                newDayValue = dateAndTimeCompiller(userLocale, newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), false, true);
+                newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, false, true);
                 break;
             case 1:
-                newDayValue = dateAndTimeCompiller(userLocale, newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), false, false);
+                newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, false, false);
                 break;
             case 2:
-                newDayValue = dateAndTimeCompiller(newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), true, true);
+                newDayValue = dateAndTimeCompiller(rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, true, true);
                 break;
             case 4:
-                newDayValue = dateAndTimeCompiller(newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), true, false);
+                newDayValue = dateAndTimeCompiller(rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, true, false);
                 break;
             default:
-                newDayValue = dateAndTimeCompiller(userLocale, newDayValue.getDate(), newDayValue.getDay(), newDayValue.getMonth(), newDayValue.getFullYear(), newDayValue.getHours(), newDayValue.getMinutes(), false, true);
+                newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, false, true);
                 break;
         }
-        return newDayValue;
+        return [newDayValue, [rDayValue, rMonthValue + 1, rYearValue, rHourValue, rMinValue]];
     }
     else return null;
 }
@@ -3233,14 +3652,12 @@ function dateAndTimeCompiller(countryISO2, day, weekday, month, year, hour, min,
     else return null;
 }
 
-function calendarRefresh(currentYear, endYear, startMonth = 0, startDay = 1, endMonth = 0, endDay = 1, restrictPrevDaysForCurrentYear = false) {
-    endYear = currentYear > endYear ? ++currentYear : endYear;
+function calendarRefresh(currentYear = new Date().getFullYear(), currentMonth = 0, currentDay = 1, restrictPrevDaysForCurrentYear = false) {
     let yearDays = [];
-    let startDate = new Date(currentYear, startMonth, startDay);
-    let endDate = new Date(endYear, endMonth, endDay);
-    if (currentYear == endYear && restrictPrevDaysForCurrentYear) endDate = startDate > endDate ? new Date(currentYear, 11, 31) : endDate;
+    let currentDate = new Date(currentYear, currentMonth, currentDay);
+    let endDate = new Date(currentYear, 11, 31);
 
-    for (let i = new Date(startDate); i < endDate; i.setDate(i.getDate() + 1)) {
+    for (let i = new Date(currentDate); i < endDate; i.setDate(i.getDate() + 1)) {
         yearDays.push(new Date(i));
     }
     if (yearDays.length > 0) return yearDays;
