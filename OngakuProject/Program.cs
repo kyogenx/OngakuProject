@@ -25,6 +25,7 @@ builder.Services.AddTransient<IAccount, AccountRep>();
 builder.Services.AddTransient<IUser, UserRep>();
 builder.Services.AddTransient<IProfile, ProfileRep>();
 builder.Services.AddTransient<ITrack, TrackRep>();
+builder.Services.AddTransient<IPlaylist, PlaylistRep>();
 builder.Services.AddTransient<ICountry, CountryRep>();
 builder.Services.AddTransient<IGenre, GenreRep>();
 builder.Services.AddTransient<IMail, MailRep>();
@@ -43,6 +44,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseStaticFiles();
 app.UseAuthorization();
 app.UseAuthentication();
 

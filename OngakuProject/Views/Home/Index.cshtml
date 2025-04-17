@@ -14,28 +14,54 @@
             <input type="hidden" name="Type" id="SearchForGenres_Type_Val" value="1" />
             <input type="hidden" name="Keyword" id="SearchForGenres_Keyword_Val" />
         </form>
-        <div class="d-none">
-            <input type="hidden" id="OngakuPlayer_TrackId_Val" value="0" />
-            <input type="hidden" id="OngakuPlayer_PlaylistId_Val" value="0" />
-            <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
-        </div>
+        <input type="hidden" id="CurrentUserInfo_Id_Val" value="@UserInfo.Id" />
+        <form method="get" asp-controller="Track" asp-action="GetSingleInfo" id="GetSingleInfo_Form">
+            <input type="hidden" name="Id" id="GSI_Id_Val" value="0" />
+            <input type="hidden" name="IsForAuthor" id="GSI_IsForAuthor_Val" value="false" />
+        </form>
+        <form method="get" asp-controller="Playlists" asp-action="GetInfo" id="GetPlaylistInfo_Form">
+            <input type="hidden" name="Id" id="GPI_Id_Val" value="0" />
+            <input type="hidden" name="UserId" value="@UserInfo.Id" />
+        </form>
     </div>
-    <div class="box-standard p-1">
-        <div class="row">
-            <div class="col">
-                <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
-            </div>
-            <div class="col">
-                <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-folder-plus"></i> <br /> Add Playlist</button>
-            </div>
-        </div>
-    </div>
-    <div class="box-standard p-1 mt-2" id="SelfMusic_Box" style="display: none;">
 
-    </div>
+    @* <div class="box-standard p-1">
+        <div class="playlist-box">
+            <div class="hstack gap-1">
+                <div>
+                    <div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>
+                </div>
+                <div class="ms-1">
+                    <span class="h6">Playlist Name</span>
+                    <br />
+                    <small class="card-text text-muted"><small class="badge-standard"> <i class="fa-solid fa-wave-square"></i> Playlist</small> ∙ 100 songs</small>
+                </div>
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li><button type="button" class="dropdown-item"></button></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div> *@
+
+    @* <div class="p-1">
+        <div class="box-standard p-1">
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-folder-plus"></i> <br /> Add Playlist</button>
+                </div>
+            </div>
+        </div>
+    </div> *@
 </div>
 
-<div class="box-lg-part shadow-sm" id="Primary_Container">
+<div class="box-lg-part shadow-sm" id="@* Primary_Container *@">
     <div class="box-lg-part-header p-2">
         <div class="div-swiper mx-auto" id="AddSingle_Container-Swiper"></div>
         <div class="hstack gap-1">
@@ -352,7 +378,8 @@
         </div>
     </div>
 </div>
-@* <div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
+
+<div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
     <div class="ongaku-player-bg-box" id="OngakuPlayerBackground_Box">
         <div class="box-hidden-on-left" id="OngakuPlayerNotMainPart_Box">
             <div class="hstack gap-1">
@@ -361,6 +388,17 @@
                     <div>
                         <small class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistsDublicate_Span">Artists</small>
                     </div>
+                </div>
+                <div class="d-none">
+                    <form method="get" action="/Track/Load" id="LoadTheTrack_Form">
+                        <input type="hidden" name="Id" id="OngakuPlayer_TrackId_Val" value="0" />
+                        <input type="hidden" name="PlaylistId" id="OngakuPlayer_PlaylistId_Val" value="0" />
+                    </form>
+                    <form method="get" action="/Track/StreamAudio" id="StreamTheTrack_Form">
+                        <input type="hidden" name="Id" id="StreamTheTrack_Id_Val" />
+                        <input type="hidden" name="Url" id="StreamTheTrack_Url_Val" />
+                    </form>
+                    <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
                 </div>
                 <div class="box-standard text-center ms-auto">
                     <div>
@@ -390,9 +428,9 @@
                 <div>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend btn-sm d-touch-none me-1"> <i class="fa-solid fa-indent"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-sm me-1"> <i class="fa-solid fa-star"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-backward"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-play"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-sm"> <i class="fa-solid fa-forward"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward btn-sm me-1"> <i class="fa-solid fa-backward"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1"> <i class="fa-solid fa-play"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward btn-sm"> <i class="fa-solid fa-forward"></i> </button>
                 </div>
                 <div class="hstack gap-1 mt-1">
                     <small class="card-text text-muted ongaku-track-duration-current">0:00</small>
@@ -410,7 +448,7 @@
         <div class="hstack gap-1 mt-2 d-none d-md-flex">
             <div class="box-standard ongaku-img-box" id="ImgPart_Enlarged_Box">
                 <div class="ongaku-player-album-box-enlarged" id="OngakuPlayer_NoImg_Enlarged_Box"> <i class="fa-solid fa-music"></i> </div>
-                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Enlarged_Img" style="display: none;" />
+                <img class="ongaku-player-album-img-enlarged" src="#" id="OngakuPlayer_Enlarged_Img" style="display: none;" />
             </div>
             <div class="box-standard w-100 ms-2">
                 <div>
@@ -526,24 +564,113 @@
         </div>
     </div>
 </div>
- *@
+ 
 
-<div class="box-lg-part shadow-sm" id="">
+@* <div class="box-lg-part shadow-sm" id="Primary_Container ">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="Primary_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="Primary_Container-Header_Lbl">Release Name</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="Primary_Box">
+        <div class="release-box-lg">
+            <div class="dropdown">
+                <button class="btn btn-standard float-end ms-1" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-pencil"></i> </button>
+                <ul class="dropdown-menu shadow-sm">
+                    <li><button type="button" class="dropdown-item">Edit Credits <span class="float-end ms-1"> <i class="fa-solid fa-user-pen"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item">Edit Cover Image <span class="float-end ms-1"> <i class="fa-solid fa-images"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item">Disable <span class="float-end ms-1"> <i class="fa-solid fa-volume-xmark"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item text-danger">Delete <span class="float-end ms-1"> <i class="fa-solid fa-xmark"></i> </span></button></li>
+                </ul>
+            </div>
+            <div class="hstack gap-1">
+                <div class="release-img-box-lg" id="ReleaseInfo_Img_Box"> <i class="fa-solid fa-music"></i> </div>
+                <img src="#" class="release-img-lg" id="ReleaseInfo_Img" />
+                <div class="box-standard ms-1">
+                    <div>
+                        <small class="card-text"><span id="ReleaseInfo_Type_Span">Single</span><span id="ReleaseInfo_SongsQty_Span" style="display: none;">, 0</span> ∙ <span id="ReleaseInfo_TotalDuration_Span">3 min 46 sec</span></small>
+                        <div></div>
+                        <span class="h1" id="ReleaseInfo_Name_Lbl">Release Name</span>
+                        <div class="btn-borderless-profile-tag mt-1">
+                            <div class="hstack gap-1">
+                                <div class="profile-avatar-sm bg-chosen-bright" id="ReleaseInfo_AuthorImg_Box">R</div>
+                                <img src="#" class="profile-avatar-img-sm" alt="This image cannot be displayed" id="ReleaseInfo_Author_Img" style="display: none;" />
+                                <small id="ReleaseInfo_MainArtist_Span">Rammstein</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-standard mt-2">
+                        <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-play"></i> Play</button>
+                        <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle</button>
+                        <button type="button" class="btn btn-standard-bolded btn-lg me-1"> <i class="fa-solid fa-star"></i> </button>
+                    </div>
+                    <div class="box-standard mt-1">
+                        <small class="card-text text-muted"><span id="ReleaseInfo_Genres_Span">Release Genres</span> ∙ <span id="ReleaseInfo_ReleaseYear_Span">2025</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box-standard" id="ReleaseInfo_TrackBoxes_Box">
+            <div class="track-table-box">
+                <div class="hstack gap-1">
+                    <button type="button" class="btn btn-track-table"> <i class="fa-solid fa-play"></i> </button>
+                    <div class="ms-2">
+                        <span class="h6">Amerika!</span>
+                        <br />
+                        <small class="artist-name-span text-muted">Rammstein</small>
+                    </div>
+                    <div class="ms-auto">
+                        <small class="card-text text-muted me-1">3:46</small>
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                            <ul class="dropdown-menu shadow-sm p-1">
+                                <li><button type="button" class="dropdown-item">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box-bordered mt-2 p-2" id="ReleaseInfo_CreditsInfo_Box">
+            <small class="card-text text-muted">Released <span class="card-text fw-500" id="ReleaseInfo_ReleasedAtDate_Span">15 april 2025</span></small>
+            <br/>
+            <small class="card-text text-muted">&copy; Released by <span class="card-text fw-500" id="ReleaseInfo_LabelInfo_Span">Rammstein (no label)</span></small>
+        </div>
+    </div>
+</div> *@
+
+<div class="box-lg-part shadow-sm" id="Primary_Container">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">
             <div class="dropdown">
-                <button class="btn btn-standard" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                <button class="btn btn-standard me-1" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
                 <ul class="dropdown-menu shadow-sm p-1">
-                    <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-feather"></i> New post</button></li>
-                    <li><button type="button" class="dropdown-item btn-sm"> <i class="fa-solid fa-square-poll-vertical"></i> New poll</button></li>
-                    <li><button type="button" class="dropdown-item btn-open-container btn-sm" id="AddMusic_Container-Open"> <i class="fa-solid fa-file-circle-plus"></i> Add Music</button></li>
+                    <li><button type="button" class="dropdown-item btn-sm">New post <span class="card-text float-end"> <i class="fa-solid fa-feather"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item btn-sm">New poll <span class="card-text float-end"> <i class="fa-solid fa-square-poll-vertical"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item btn-open-container btn-sm" id="AddMusic_Container-Open">Add Music <span class="card-text float-end"> <i class="fa-solid fa-microphone-lines"></i> </span></button></li>
+                    <li>
+                        <div>
+                            <form method="get" asp-controller="Track" asp-action="GetStudioItems" id="GetStudioItems_Form">
+                                <button type="submit" class="dropdown-item btn-sm">Studio <span class="card-text float-end"> <i class="fa-solid fa-music"></i> </span></button>
+                            </form>
+                        </div>
+                    </li>
                 </ul>
+            </div>
+            <div class="d-inline-block">
+                <form method="get" asp-controller="Playlists" asp-action="GetFavorites" id="GetFavorites_Form">
+                    <button type="submit" class="btn btn-standard" id="GetFavorites_SbmtBtn"> <i class="fa-solid fa-star"></i> Favorites</button>
+                </form>
             </div>
             @if (UserInfo is not null)
             {
                 @if (UserInfo.ImgUrl != null)
                 {
-                    <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" />
+                    <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" id="CurrentUserProfile_Img" />
                 }
                 else
                 {
@@ -556,7 +683,17 @@
             }
         </div>
     </div>
-    <div class="box-lg-part-body mt-5" id="Primary_Box">
+    <div class="box-lg-part-body mt-5" id="Primary_Box">       
+@*         <div class="box-bordered mt-2 p-2" id="ReleaseInfo_CreditsInfo_Box">
+            <small class="card-text text-muted">
+                Released
+                <span class="card-text fw-500" id="ReleaseInfo_ReleasedAtDate_Span">15 april 2025</span>
+            </small><br />
+            <small class="card-text text-muted">
+                &copy; Released by
+                <span class="card-text fw-500" id="ReleaseInfo_LabelInfo_Span">Rammstein (no label)</span>
+            </small>
+        </div> *@
 
     </div>
 </div>

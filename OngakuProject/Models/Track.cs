@@ -32,12 +32,20 @@ namespace OngakuProject.Models
         public int? LabelId { get; set; }
         [ForeignKey("Lyrics")]
         public int? LyricsId { get; set; }
+        [ForeignKey("TrackCredit")]
+        public int? CreditId { get; set; }
         public User? User { get; set; }
         public Album? Album { get; set; }
+        public TrackCredit? TrackCredit { get; set; }
         public Label? Label { get; set; }
         public Lyrics? Lyrics { get; set; }
+        public List<Genre>? Genres { get; set; } = new List<Genre>();
+        public List<MoodTag>? MoodTags { get; set; } = new List<MoodTag>();
+        public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
         public List<TrackArtist>? TrackArtists { get; set; }
-        public List<TrackGenre>? TrackGenres { get; set; }
-        public List<TrackMood>? TrackMoods { get; set; }
+        [NotMapped]
+        public int NextTrackId { get; set; }
+        [NotMapped]
+        public string? MainArtistName { get; set; }
     }
 }

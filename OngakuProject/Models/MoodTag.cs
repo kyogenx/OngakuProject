@@ -6,6 +6,6 @@ namespace OngakuProject.Models
     {
         [MaxLength(75)]
         public string? Name { get; set; }
-        public List<TrackMood>? TrackMoods { get; set; }
+        public List<Track>? Tracks { get; set; } = new List<Track>();
     }
 }

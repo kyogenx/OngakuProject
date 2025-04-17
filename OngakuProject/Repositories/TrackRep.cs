@@ -1,4 +1,5 @@
-﻿using OngakuProject.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using OngakuProject.Data;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
@@ -21,24 +22,44 @@ namespace OngakuProject.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<int> DisableTrackAsync(int Id, int UserId)
+        public async Task<int> DisableTrackAsync(int Id, int UserId)
         {
-            throw new NotImplementedException();
+            if(Id > 0 && UserId > 0)
+            {
+                int Result = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && t.UserId == UserId && !t.IsDeleted).ExecuteUpdateAsync(t => t.SetProperty(t => t.Status, 2));
+                if (Result > 0) return 2;
+            }
+            return 0;
         }
 
-        public Task<int> MuteTrackAsync(int Id, int UserId, int Duration = 0)
+        public async Task<int> MuteTrackAsync(int Id, int UserId, int Duration = 0)
         {
-            throw new NotImplementedException();
+            if (Id > 0 && UserId > 0)
+            {
+                int Result = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && t.UserId == UserId && !t.IsDeleted).ExecuteUpdateAsync(t => t.SetProperty(t => t.Status, 0));
+                if (Result > 0) return -1;
+            }
+            return 0;
         }
 
-        public Task<int> SubmitUploadedTrackAsync(int Id, int UserId)
+        public async Task<int> SubmitUploadedTrackAsync(int Id, int UserId)
         {
-            throw new NotImplementedException();
+            if (Id > 0 && UserId > 0)
+            {
+                int Result = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && t.UserId == UserId && !t.IsDeleted).ExecuteUpdateAsync(t => t.SetProperty(t => t.Status, 3).SetProperty(t => t.LastUpdatedAt, DateTime.Now));
+                if (Result > 0) return 3;
+            }
+            return 0;
         }
 
-        public Task<int> UnmuteTrackAsync(int Id, int UserId)
+        public async Task<int> UnmuteTrackAsync(int Id, int UserId)
         {
-            throw new NotImplementedException();
+            if (Id > 0 && UserId > 0)
+            {
+                int Result = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && t.UserId == UserId && !t.IsDeleted).ExecuteUpdateAsync(t => t.SetProperty(t => t.Status, 3));
+                if (Result > 0) return 3;
+            }
+            return 0;
         }
 
         public Task<int> UpdateCreditsOfTrackAsync(TrackCredits_VM Model)
@@ -46,9 +67,34 @@ namespace OngakuProject.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<int> UpdateTrackAsync(Track_VM Model)
+        public async Task<int> UpdateTrackAsync(Track_VM Model)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<int> UpdateStatusAsync(int Id, int UserId, int Status)
+        {
+            if(Id > 0 && UserId > 0)
+            {
+                int Result = 0;
+                switch(Status)
+                {
+                    case 0:
+                        Result = await UnmuteTrackAsync(Id, UserId);
+                        break;
+                    case 1:
+                        Result = await SubmitUploadedTrackAsync(Id, UserId);
+                        break;
+                    case 3:
+                        Result = await MuteTrackAsync(Id, UserId);
+                        break;
+                    default:
+                        Result = await UnmuteTrackAsync(Id, UserId);
+                        break;
+                }
+                if (Result > 0) return Result;
+            }
+            return 0;
         }
 
         public async Task<int> UploadTrackAsync(Track_VM Model)
@@ -59,7 +105,6 @@ namespace OngakuProject.Repositories
                 string? StrThumbnailUrl = null;
                 string? StrCoverImageUrl = null;
                 int GenresQty = Model.Genres.Count > 3 ? 3 : Model.Genres.Count;
-                List<TrackGenre>? TrackGenres = new List<TrackGenre>();
                 if (Model.TrackFileUrl != null)
                 {
                     StrTrackFileUrl = Guid.NewGuid().ToString("D").Substring(0, 8) + Path.GetExtension(Model.TrackFileUrl.FileName);
@@ -70,8 +115,8 @@ namespace OngakuProject.Repositories
                 }
                 if(Model.CoverImageUrl != null)
                 {
-                    StrThumbnailUrl = Guid.NewGuid().ToString("D").Substring(6, 8) + Path.GetExtension(Model.CoverImageUrl.FileName);
-                    StrCoverImageUrl = Guid.NewGuid().ToString("D").Substring(4, 8) + Path.GetExtension(Model.CoverImageUrl.FileName);
+                    StrThumbnailUrl = Guid.NewGuid().ToString("D").Substring(6, 9) + Path.GetExtension(Model.CoverImageUrl.FileName);
+                    StrCoverImageUrl = Guid.NewGuid().ToString("D").Substring(4, 9) + Path.GetExtension(Model.CoverImageUrl.FileName);
                     using(FileStream fs = new FileStream(_webHostEnvironment.WebRootPath + "/TrackCovers/" + StrCoverImageUrl,  FileMode.Create))
                     {
                         await Model.CoverImageUrl.CopyToAsync(fs);
@@ -84,6 +129,7 @@ namespace OngakuProject.Repositories
                     Status = 1,
                     Title = Model.Title,
                     LastUpdatedAt = null,
+                    UserId = Model.UserId,
                     AddedAt = DateTime.Now,
                     TrackFileUrl = StrTrackFileUrl,
                     HasExplicit = Model.HasExplicit,
@@ -100,11 +146,29 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
+        public async Task<string?> UpdateCoverImageAsync(TrackURL_VM Model)
+        {
+            if (Model.CoverImageUrl != null)
+            {
+                string? CurrentImgUrl = await _context.Tracks.AsNoTracking().Where(t => t.Id == Model.Id && !t.IsDeleted).Select(t => t.CoverImageUrl).FirstOrDefaultAsync();
+                if(CurrentImgUrl != null)
+                {
+                    if(File.Exists(_webHostEnvironment.WebRootPath + "/TrackCovers/" + CurrentImgUrl)) File.Delete(_webHostEnvironment.WebRootPath + "/TrackCovers/" + CurrentImgUrl);
+                    using (FileStream fs=new FileStream(_webHostEnvironment.WebRootPath + "/TrackCovers/" + CurrentImgUrl, FileMode.Create))
+                    {
+                        await Model.CoverImageUrl.CopyToAsync(fs);
+                    }
+                    return CurrentImgUrl;
+                }   
+            }
+            return null;
+        }
+
         public async Task<int> UpdateGenresAsync(TrackGenre_VM Model)
         {
             if(Model.Id > 0 && Model.Genres is not null)
             {
-                List<TrackGenre> TrackGenres = new List<TrackGenre>();
+                List<int>? CheckedGenreIds = new List<int>();
                 for (int i = 0; i < Model.Genres.Count; i++)
                 {
                     for (int j = 0; j < Model.Genres.Count; j++)
@@ -112,21 +176,28 @@ namespace OngakuProject.Repositories
                         if ((Model.Genres[i] == Model.Genres[j]) && (i != j)) continue;
                         else
                         {
-                            TrackGenre trackGenreSample = new TrackGenre()
-                            {
-                                IsDeleted = false,
-                                TrackId = Model.Id,
-                                GenreId = Model.Genres[i]
-                            };
-                            TrackGenres.Add(trackGenreSample);
+                            CheckedGenreIds.Add(Model.Genres[i]);
                             break;
                         }
                     }
                 }
-                await _context.AddRangeAsync(TrackGenres);
-                await _context.SaveChangesAsync();
-
-                return Model.Id;
+                Genre? TempGenre = null;
+                List<Genre>? NecessaryGenres = new List<Genre>();
+                for(int i = 0; i < CheckedGenreIds.Count; i++)
+                {
+                    TempGenre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == CheckedGenreIds[i]);
+                    if (TempGenre is not null) NecessaryGenres.Add(TempGenre);
+                }
+                if (NecessaryGenres.Any())
+                {
+                    Track? TrackInfo = await _context.Tracks.Include(g => g.Genres).FirstOrDefaultAsync(t=>t.Id == Model.Id && !t.IsDeleted);
+                    if(TrackInfo is not null)
+                    {
+                        TrackInfo.Genres?.AddRange(NecessaryGenres);
+                        await _context.SaveChangesAsync();
+                        return Model.Id;
+                    }
+                }
             }
             return 0;
         }
@@ -151,6 +222,54 @@ namespace OngakuProject.Repositories
                 return Model.Id;
             }
             return 0;
+        }
+
+        public async Task<Track?> GetTrackInfoAsync(int Id, bool IsForAuthor = false)
+        {
+            if(Id > 0)
+            {
+                if (IsForAuthor) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, Status = t.Status, CoverImageUrl = t.CoverImageUrl, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, AddedAt = t.AddedAt }).FirstOrDefaultAsync();
+                else return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, CoverImageUrl = t.CoverImageUrl, UserId = t.UserId, User = t.User != null ? new User { Nickname = t.User.Nickname } : null, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null }).FirstOrDefaultAsync();
+            }
+            return null;
+        }
+
+        public IQueryable<Track>? GetStudioItems(int Id, bool IsForAuthor = false)
+        {
+            if (Id > 0)
+            {
+                if(IsForAuthor) return _context.Tracks.AsNoTracking().Where(t => t.UserId == Id && !t.IsDeleted).Select(t => new Track { Id = t.Id, Status = t.Status, Title = t.Title, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Name = g.Name }).ToList() : null, ReleasedAt = t.ReleasedAt, CoverImageUrl = t.CoverImageUrl });
+                else return _context.Tracks.AsNoTracking().Where(t => t.UserId == Id && !t.IsDeleted && t.Status == 3).Select(t => new Track { Id = t.Id, Title = t.Title, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Name = g.Name }).ToList() : null, ReleasedAt = t.ReleasedAt, CoverImageUrl = t.CoverImageUrl });
+            }
+            else return null;
+        }
+
+        public async Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId)
+        {
+            if (Id > 0)
+            {
+                Track? TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, TrackFileUrl = t.TrackFileUrl, NextTrackId = 0 }).FirstOrDefaultAsync();
+                if (TrackInfo is not null)
+                {
+                    if (PlaylistId > 0)
+                    {
+
+                    }
+                    else return TrackInfo;
+                }
+            }
+            return null;
+        }
+
+        public async Task<int> UpdateStreamsQtyAsync(int TrackId)
+        {
+            if(TrackId > 0)
+            {
+                int CurrentStreams = await _context.Tracks.AsNoTracking().Where(t => t.Id == TrackId && !t.IsDeleted && t.Status == 3).Select(t => t.StreamsQty).FirstOrDefaultAsync() + 1;
+                int Result = await _context.Tracks.AsNoTracking().Where(t => t.Id == TrackId && !t.IsDeleted && t.Status == 3).ExecuteUpdateAsync(t => t.SetProperty(t => t.StreamsQty, CurrentStreams));
+                if (Result > 0) return CurrentStreams;
+            }
+            return -1;
         }
     }
 }

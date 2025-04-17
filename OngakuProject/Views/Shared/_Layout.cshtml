@@ -22,7 +22,17 @@
                 <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-comments"></i> <br />Chats</button>
             </div>
             <div class="col">
-                <a asp-controller="Profile" asp-action="P" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-circle-user"></i> <br />Account</a>
+                @if(User.Identity.IsAuthenticated) 
+                {
+                    <form method="get" asp-controller="Playlists" asp-action="Get" id="GetPlaylists_Form">
+                        <button type="submit" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+                    </form>
+                }
+                else 
+                {
+                    <button type="button" class="btn btn-bottom-navbar btn-show-tooltip btn-sm w-100 super-disabled" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip shadow-sm" data-bs-html="true" data-bs-title="<span class='fw-500'>Sign In</span> or <span class='fw-500'>Sign Up</span> to create, stream, and download tracks and playlists"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+                }
+@*                 <a asp-controller="Profile" asp-action="P" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-circle-user"></i> <br />Account</a> *@
             </div>
         </div>
     </div>

@@ -16,8 +16,20 @@ namespace OngakuProject.Repositories
 
         public async Task<List<Genre?>?> GetTrackGenresAsync(int Id)
         {
-            if (Id > 0) return await _context.TrackGenres.AsNoTracking().Where(g => g.TrackId == Id && !g.IsDeleted).Select(g => g.Genre != null ? new Genre { Id = g.Id, Name = g.Genre.Name } : null).ToListAsync();
-            else return null;
+            if (Id > 0)
+            {
+                Track? TrackResult = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null }).FirstOrDefaultAsync();
+                if(TrackResult?.Genres is not null)
+                {
+                    List<Genre?>? Genres = new List<Genre?>();
+                    foreach(Genre Item in TrackResult.Genres)
+                    {
+                        Genres.Add(new Genre { Id = Item.Id, Name = Item.Name });
+                    }
+                    return Genres;
+                }
+            }
+            return null;
         }
 
         public IQueryable<Genre>? GetAllGenres()

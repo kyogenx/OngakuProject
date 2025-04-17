@@ -790,7 +790,7 @@ $(document).on("submit", "#ReleaseASingle_Form", function (event) {
     const trackFile = $("#RAS_TrackFileUrl_Val").get(0).files[0];
     const coverImg = $("#RAS_CoverImg_Url").get(0).files[0];
     const title = $("#RAS_Title_Val").val();
-    const releaseDate = $("#RAS_ReleaseDate_Val").val();
+/*    const releaseDate = $("#RAS_ReleaseDate_Val").val();*/
     const hasExplicit = $("#RAS_HasExplicit_Val").val();
     const releaseDateDay = parseInt($("#RAS_ReleaseDate_Val-Day").val());
     const releaseDateMonth = parseInt($("#RAS_ReleaseDate_Val-Month").val());
@@ -827,106 +827,16 @@ $(document).on("submit", "#ReleaseASingle_Form", function (event) {
         contentType: false,
         success: function (response) {
             if (response.success) {
-                if (response.result != null) {
-                    let releaseBox = $('<div class="release-box me-1"></div>');
-                    let releaseImg = $("<img src='#' class='release-img' />");
-                    let releaseImgBox = $("<div class='release-img-box'></div>");
-                    let releaseInfoBox = $('<div class="box-standard text-truncate mt-1"></div>');
-                    let releaseName = $('<span class="h6 text-truncate"></span>');
-                    let releaseStatsBox = $('<div></div>');
-                    let releaseStatsBadge = $('<span class="badge-sm btn-tooltip" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-placement="bottom" data-bs-title="The track will be released as soon as we get your submission"></span>');
-                    let releaseStatsSeparator = $("<br/>");
-                    let releaseGenre = $("<small class='card-text text-muted'></small>");
-                    let releaseDateTime = $("<span class='card-text text-muted'></span>");
-                    let genresListed;
-
-                    releaseDateTime.html(" ∙ " + new Date(response.result.releasedAtDt).getFullYear());
-                    if (response.result.title != null) releaseName.html(response.result.title);
-                    else releaseName.html("No Title");
-
-                    if (response.result.genreNames != null) {
-                        for (let i = 0; i < response.result.genreNames.length; i++) {
-                            if (i == 0) genresListed = response.result.genreNames[i];
-                            else genresListed += ", " + response.result.genreNames[i];
-                        }
-                        releaseGenre.html(genresListed);
-                    }
-                    else releaseGenre.html("No Genre");
-                    //0 - inactive; 1 - pending for submission; 2 - muted; 3 - active ([0-2] - inactive)
-                    switch (parseInt(response.result.status)) {
-                        case 0:
-                            releaseStatsBadge.html(' <i class="fa-solid fa-volume-xmark"></i> ');
-                            releaseStatsBadge.attr("data-bs-title", "This track was disabled manually by you");
-                            break;
-                        case 1:
-                            releaseStatsBadge.html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> ');
-                            releaseStatsBadge.attr("data-bs-title", "The track will be released as soon as we get your submission");
-                            break;
-                        case 2:
-                            releaseStatsBadge.html(' <i class="fa-solid fa-volume-off"></i> ');
-                            releaseStatsBadge.attr("data-bs-title", "This track has been muted. Refer to your notifications for more information");
-                            break;
-                        case 3:
-                            releaseStatsBadge.html(' <i class="fa-solid fa-check-double"></i> ');
-                            releaseStatsBadge.attr("data-bs-title", "The track is currently active and accessible to all");
-                            break;
-                        default:
-                            releaseStatsBadge.html(' <i class="fa-solid fa-check-double"></i> ');
-                            releaseStatsBadge.attr("data-bs-title", "The track is currently active and accessible to all");
-                            break;
-                    }
-
-                    if (response.result.coverImageUrl != null) {
-                        releaseImg.attr("src", "/TrackCovers/" + response.result.coverImageUrl);
-                        releaseImg.fadeIn(0);
-                        releaseImgBox.fadeOut(0);
-                    }
-                    else {
-                        releaseImgBox.html(' <i class="fa-solid fa-music"></i> ');
-                        releaseImg.fadeOut(0);
-                        releaseImgBox.fadeIn(0);
-                    }
-
-                    let dropdownBox = $(' <div class="dropdown"></div>');
-                    let dropdownBtn = $("<button type='button' class='btn btn-standard btn-sm float-end ms-1'> <i class='fa-solid fa-ellipsis'></i> </button>");
-                    let dropdownItemsUl = $("<ul class='dropdown-menu shadow-sm p-1'></ul>");
-                    let dropdownLi0 = $("<li></li>");
-                    let dropdownLi1 = $("<li></li>");
-                    let dropdownLi2 = $("<li></li>");
-                    let dropdownLi3 = $("<li></li>");
-                    let dropdownBtn0 = $("<button type='button' class='dropdown-item btn-sm'>Edit Credits <span class='float-end'> <i class='fa-solid fa-pencil'></i> </span></button>");
-                    let dropdownBtn1 = $("<button type='button' class='dropdown-item btn-sm'>Edit Cover <span class='float-end'> <i class='fa-solid fa-images'></i> </span></button>");
-                    let dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Submit <span class='float-end'> <i class='fa-solid fa-check-double'></i> </span></button>");
-                    let dropdownBtn3 = $("<button type='button' class='dropdown-item btn-sm'>Delete <span class='float-end'> <i class='fa-solid fa-xmark'></i> </span></button>");
-
-                    dropdownLi0.append(dropdownBtn0);
-                    dropdownLi1.append(dropdownBtn1);
-                    dropdownLi2.append(dropdownBtn2);
-                    dropdownLi3.append(dropdownBtn3);
-                    dropdownItemsUl.append(dropdownLi0);
-                    dropdownItemsUl.append(dropdownLi1);
-                    dropdownItemsUl.append(dropdownLi2);
-                    dropdownItemsUl.append(dropdownLi3);
-                    dropdownBox.append(dropdownBtn);
-                    dropdownBox.append(dropdownItemsUl);
-
-                    releaseInfoBox.append(releaseStatsBadge);
-                    releaseInfoBox.append(releaseStatsSeparator);
-                    releaseInfoBox.append(releaseGenre);
-                    releaseInfoBox.append(releaseDate);
-
-                    releaseStatsBox.append(dropdownBox);
-                    releaseStatsBox.append(releaseName);
-                    releaseStatsBox.append(releaseInfoBox);
-                    releaseBox.append(releaseImg);
-                    releaseBox.append(releaseImgBox);
-                    releaseBox.append(releaseStatsBox);
-
-                    $("#SelfMusic_Box").append(releaseStatsBox);
-                    $("#SelfMusic_Box").fadeIn(300);
+                if (response.result != null) {     
+                    createSmContainer("StudioMusic", "Your Studio ∙ <span id='StudioItemsQty_Span'>0</span>", '<div class="x-row-sliding-only-box mt-2" id="SelfMusic_Box"></div>', null, null, false);
+                    let currentLength = parseInt($("#StudioItemsQty_Span").text());
+                    $("#StudioItemsQty_Span").text(++currentLength);
+                    studioItemSampler(response.result.id, response.result.title, response.result.coverImageUrl, response.result.genres, response.result.releasedAtDt, 1, "SelfMusic_Box", true);
+                    setTimeout(function () {
+                        callASmContainer(false, "StudioMusic_Container");
+                    }, 150);
                 }
                 callAlert(' <i class="fa-solid fa-forward-step"></i> ', null, null, "Track saved successfully. To make it visible to everyone, please submit it and add credits and lyrics (optional)", 4, "Close", -1, null);
-                //buttonUndisabler(false, "ReleaseASingle_SbmtBtn", baseHtml);
             }
             else {
                 callAlert('<i class="fa-solid fa-circle-exclamation fa-shake" --fa-animation-duration: 0.8s; --fa-animation-iteration-count: 3; --fa-animation-delay: 0.3s;></i>', null, null, response.alert, 4, "Close", -1, null);
@@ -936,24 +846,810 @@ $(document).on("submit", "#ReleaseASingle_Form", function (event) {
     });
 });
 
-function unsetCurrentSwitcherValues(elementId, switcherInternalIndex) {
-    elementId = elementId.includes("-") ? getTrueId(elementId, false) : elementId;
-    let neccessarySwitchers = [];
-    let allSwitchersOnPage = document.getElementsByClassName("btn-box-switcher-member");
-    if (allSwitchersOnPage.length > 0) {
-        for (let i = 0; i < allSwitchersOnPage.length; i++) {
-            if (($("#" + allSwitchersOnPage[i].id).attr("data-switcher-internal-id") == switcherInternalIndex) && (getTrueId(allSwitchersOnPage[i].id) == elementId)) {
-                neccessarySwitchers.push(allSwitchersOnPage[i]);
+function studioItemSampler(id, title, imgUrl, genres = [], releaseDate, status, insertInElementId = null, isForAuthor = false) {
+    let releaseBox = $('<div class="release-box btn-get-release-info d-inline-block me-2"></div>');
+    let releaseImg = $("<img src='#' class='release-img' />");
+    let releaseImgBox = $("<div class='release-img-box'></div>");
+    let releaseInfoBox = $('<div class="box-standard text-truncate mt-1"></div>');
+    let releaseName = $('<span class="h6 text-truncate"></span>');
+    let releaseStatsBox = $('<div></div>');
+    let releaseStatsBadge = $('<span class="badge-sm btn-tooltip" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-placement="bottom" data-bs-title="The track will be released as soon as we get your submission"></span>');
+    let releaseStatsSeparator = $("<div class='mt-1'></div>");
+    let releaseGenre = $("<small class='card-text text-muted'></small>");
+    let releaseDateTime = $("<span class='card-text text-muted'></span>");
+    let genresListed;
+
+    releaseBox.attr("id", id + "-ReleaseInfo_Box");
+    releaseDateTime.html(" ∙ " + new Date(releaseDate).getFullYear());
+    if (title != null) releaseName.html(title);
+    else releaseName.html("No Title");
+
+    if (genres != null) {
+        for (let i = 0; i < genres.length; i++) {
+            if (i == 0) genresListed = genres[i].name;
+            else genresListed += ", " + genres[i].name;
+        }
+        releaseGenre.html(genresListed);
+    }
+    else releaseGenre.html("No Genre");
+    //0 - inactive; 1 - pending for submission; 2 - muted; 3 - active ([0-2] - inactive)
+
+    releaseImg.attr("id", id + "-StudioRelease_Img");
+    releaseImgBox.attr("id", id + "-StudioRelease_Img_Box");
+    releaseStatsBadge.attr("id", id + "-ReleaseInfo_Badge");
+    if (imgUrl != null) {
+        releaseImg.attr("src", "/TrackCovers/" + imgUrl);
+        releaseImg.fadeIn(0);
+        releaseImgBox.fadeOut(0);
+    }
+    else {
+        releaseImgBox.html(' <i class="fa-solid fa-music"></i> ');
+        releaseImg.fadeOut(0);
+        releaseImgBox.fadeIn(0);
+    }
+
+    if (isForAuthor) {
+        releaseBox.removeClass("btn-get-release-info");
+        releaseBox.addClass("btn-get-release-info-as-author");
+        switch (parseInt(status)) {
+            case 0:
+                releaseStatsBadge.html(' <i class="fa-solid fa-volume-xmark"></i> Muted');
+                releaseStatsBadge.attr("data-bs-title", "This track was disabled manually by you");
+                dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Resume <span class='float-end'> <i class='fa-solid fa-volume-high'></i> </span></button>");
+                break;
+            case 1:
+                releaseStatsBadge.html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Pending');
+                releaseStatsBadge.attr("data-bs-title", "The track will be released as soon as we get your submission");
+                dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Submit <span class='float-end'> <i class='fa-solid fa-check-double'></i> </span></button>");
+                break;
+            case 2:
+                releaseStatsBadge.html(' <i class="fa-solid fa-circle-pause"></i> Disabled');
+                releaseStatsBadge.attr("data-bs-title", "This track has been muted. Refer to your notifications for more information");
+                dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Submit <span class='float-end'> <i class='fa-solid fa-check-double'></i> </span></button>");
+                dropdownBtn2.fadeOut(0);
+                break;
+            case 3:
+                releaseStatsBadge.html(' <i class="fa-solid fa-check-double"></i> Active');
+                releaseStatsBadge.attr("data-bs-title", "The track is currently active and accessible to all");
+                dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Mute <span class='float-end'> <i class='fa-solid fa-volume-off'></i> </span></button>");
+                break;
+            default:
+                releaseStatsBadge.html(' <i class="fa-solid fa-check-double"></i> Active');
+                releaseStatsBadge.attr("data-bs-title", "The track is currently active and accessible to all");
+                dropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Mute <span class='float-end'> <i class='fa-solid fa-volume-off'></i> </span></button>");
+                break;
+        }
+        releaseInfoBox.append(releaseStatsBadge);
+    }
+    releaseInfoBox.append(releaseStatsSeparator);
+    releaseInfoBox.append(releaseGenre);
+    releaseInfoBox.append(releaseDateTime);
+
+    releaseStatsBox.append(releaseName);
+    releaseStatsBox.append(releaseInfoBox);
+    releaseBox.append(releaseImg);
+    releaseBox.append(releaseImgBox);
+    releaseBox.append(releaseStatsBox);
+
+    if (insertInElementId != null) {
+        $("#" + insertInElementId).fadeIn(300);
+        $("#" + insertInElementId).append(releaseBox);
+    }
+    else return releaseBox;
+}
+
+$(document).on("submit", "#GetStudioItems_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.result != null) {
+                createSmContainer("StudioMusic", "Your Studio ∙ <span id='StudioItemsQty_Span'>0</span>", '<div class="x-row-sliding-only-box mt-2" id="SelfMusic_Box"></div>', null, null, false);
+                $("#StudioItemsQty_Span").text(response.result.length);
+                $.each(response.result, function (index) {
+                    studioItemSampler(response.result[index].id, response.result[index].title, response.result[index].coverImageUrl, response.result[index].genres, response.result[index].releasedAt, response.result[index].status, "SelfMusic_Box", true);            
+                });
+                setTimeout(function () {
+                    callASmContainer(false, "StudioMusic_Container");
+                }, 150);
             }
         }
+        else {
+            callAlert('<i class="fa-solid fa-microphone-lines-slash"></i>', null, null, "Studio items are temporarily unavailable", 3.75, "Close", -1, null);
+        }
+    });
+});
 
-        if (neccessarySwitchers.length > 0) {
-            for (let i = 0; i < neccessarySwitchers.length; i++) {
-                $("#" + neccessarySwitchers[i].id).removeClass("btn-box-switcher-member-active");
+$("#LoadTheTrack_Form").on("submit", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            $("#StreamTheTrack_Id_Val").val(response.result.id);
+            $("#StreamTheTrack_Url_Val").val(response.result.trackFileUrl);
+            $("#StreamTheTrack_Form").submit();
+
+            buttonUndisabler(true, "btn-play-pause-track", ' <i class="fa-solid fa-pause"></i> ');
+            buttonUndisabler(true, "btn-play-pause-track-lg", ' <i class="fa-solid fa-pause"></i> Pause');
+        }
+        else {
+            buttonUndisabler(true, "btn-play-pause-track", ' <i class="fa-solid fa-play"></i> ');
+            buttonUndisabler(true, "btn-play-pause-track-lg", ' <i class="fa-solid fa-play"></i> Play');
+        }
+    });
+});
+
+$(document).on("submit", "#StreamTheTrack_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let streamUrl = url + "?" + data;
+
+    $.get(url, data, function (response) {
+        if (response != null) {
+            let trackId = $("#StreamTheTrack_Id_Val").val();
+            let playlistId = $("#StreamTheTrack_PlaylistId_Val").val();
+            let trackTitleImg = $("#ReleaseInfo_Img").attr("src");
+            let title = $("#" + trackId + "-TrackName_Lbl").html();
+            let artistsName = $("#" + trackId + "-TrackArtistsName_Lbl").html();
+            audioPlay("OngakuPlayer_Audio", trackTitleImg == undefined ? null : trackTitleImg, streamUrl, playlistId, trackId, 0, title, artistsName, null);
+        }
+        else {
+
+        }
+    });
+});
+
+$(document).on("submit", "#UpdateTrackCoverImage_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let formData = new FormData();
+
+    let imgFile = $("#UTCI_File_Val").get(0).files[0];
+    formData.append("id", $("#UTCI_Id_Val").val());
+    formData.append("coverImageUrl", imgFile);
+    buttonDisabler(true, "btn-save-images", "Applying...");
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            if (response.success) {
+                $("#ReleaseInfo_Img_Box").fadeOut(0);
+                $("#" + response.id + "-StudioRelease_Img_Box").fadeOut(0);
+                $("#ReleaseInfo_Img").attr("src", "/TrackCovers/" + response.result + "?" + new Date().getTime());
+                $("#" + response.id + "-StudioRelease_Img").attr("src", "/TrackCovers/" + response.result + "?" + new Date().getTime());
+                $("#ReleaseInfo_Img").fadeIn(0);
+                $("#" + response.id + "-StudioRelease_Img").fadeIn(0);
+                uncallAContainer(false, "ImagePreview_Container");
+                callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "The cover image has been successfully updated for this track", 3.25, "Close", -1, null);
+            }
+            else {
+                uncallAContainer(false, "ImagePreview_Container");
+                callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-duration: 0.85s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.3s;></i>', null, null, "Invalid cover image format. Please select a supported format such as <span class='fw-500'>.jpg (.jpeg)</span>, <span class='fw-500'>.png</span>, <span class='fw-500'>.webp</span>, or another common image type", 3.5, "Close", -1, null);
+            }
+            buttonUndisabler(true, "btn-save-images", "Save");
+        }
+    });
+});
+
+$(document).on("submit", "#UpdateTrackStatus_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#UpdateTrackStatus_Status_Val").val(response.updatedStatus);
+            switch (parseInt(response.status)) {
+                case 0:
+                    $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                    $("#UpdateTrackStatus_SbmtBtn").html('Mute <span class="float-end ps-2"> <i class="fa-solid fa-volume-xmark"></i> </span>');
+                    $("#TrackReleaseDropdownText_Span").html("Released and public.<br/>Tap to mute and hide");
+                    $("#" + response.id + "-ReleaseInfo_Badge").html(' <i class="fa-solid fa-check-double"></i> Active');
+                    callAlert('<i class="fa-solid fa-volume-high"></i>', null, null, "Track unmuted successfully", 4.25, "Close", -1, null);
+                    break;
+                case 1:
+                    $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                    $("#UpdateTrackStatus_SbmtBtn").html('Mute <span class="float-end ps-2"> <i class="fa-solid fa-volume-xmark"></i> </span>');
+                    $("#TrackReleaseDropdownText_Span").html("Released and public.<br/>Tap to mute and hide");
+                    $("#" + response.id + "-ReleaseInfo_Badge").html(' <i class="fa-solid fa-check-double"></i> Active');
+                    callAlert('<i class="fa-solid fa-check-double"></i>', null, null, " The track has been successfully released and is now available for listening", 4.25, "Close", -1, null);
+                    break;
+                case 3:
+                    $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                    $("#UpdateTrackStatus_SbmtBtn").html('Unmute <span class="float-end ps-2"> <i class="fa-solid fa-volume-high"></i> </span>');
+                    $("#TrackReleaseDropdownText_Span").html("You manually muted this track.< br /> Tap to unmute and make it visible to everyone");
+                    $("#" + response.id + "-ReleaseInfo_Badge").html(' <i class="fa-solid fa-volume-xmark"></i> Muted');
+                    callAlert('<i class="fa-solid fa-volume-xmark"></i>', null, null, "This track was manually muted. It’s hidden from search, playback, and your artist page. You can unmute it anytime, or set a date to unmute automatically", 3.5, "Close", -1, null);
+                    break;
+                default:
+                    $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                    $("#UpdateTrackStatus_SbmtBtn").html('Mute <span class="float-end ps-2"> <i class="fa-solid fa-volume-xmar"></i> </span>');
+                    $("#TrackReleaseDropdownText_Span").html("Released and public.<br/>Tap to mute and hide");
+                    $("#" + response.id + "-ReleaseInfo_Badge").html(' <i class="fa-solid fa-check-double"></i> Active');
+                    callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "Track unmuted successfully", 4.25, "Close", -1, null);
+                    break;
+            }
+            $("#TrackReleaseDropdownText_Span").fadeIn(0);
+        }
+        else {
+            callAlert('<i class="fa-solid fa-xmark fa-shake" --fa-animation-duration: 0.85s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.3s;></i>', null, null, "Track status can’t be edited right now. Try again later", 3.5, "Close", -1, null);
+        }
+    });
+});
+
+function playlistInfoSampler(playlistId, playlistTitle, playlistType, coverImageUrl, releaseDateAndTime, songsQty, mainArtistId, mainArtistName, mainArtistImgUrl, songs = [], openOnFinish = false) {
+    createAContainer("PlaylistInfo", playlistTitle, '<div class="release-box-lg"> <div class="hstack gap-1"> <div class="release-img-box-lg" id="Playlist_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-lg" id="Playlist_Img" /> <div class="box-standard ms-1"> <div> <small class="card-text"> <span id="PlaylistInfo_Type_Span">Single</span> <span id="PlaylistInfo_SongsQty_Span" style="display: none;">, 0</span> ∙ <span id="PlaylistInfo_TotalDuration_Span">3 min 46 sec</span> </small> <div></div> <span class="h1" id="PlaylistInfo_Name_Lbl">Release Name</span> <div class="btn-borderless-profile-tag mt-1"> <div class="hstack gap-1"> <div class="profile-avatar-sm bg-chosen-bright" id="PlaylistInfo_AuthorImg_Box">R</div> <img src="#" class="profile-avatar-img-sm" alt="This image cannot be displayed" id="PlaylistInfo_Author_Img" style="display: none;" /> <small id="PlaylistInfo_MainArtist_Span">Rammstein</small> </div> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1"> <i class="fa-solid fa-play"></i> Play </button> <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle </button> <div class="d-inline-block"> <form method="get" action="/Playlists/IsFavorited" id="IsThePlaylistFavorited_Form"> <input type="hidden" name="Id" id="ITPF_Id_Val" value="0" /> <input type="hidden" name="UserId" id="ITPF_UserId_Val" value="0" /> </form> <form method="post" action="/Playlists/AddOrRemove" id="AddOrRemoveThePlaylist_Form"> <input type="hidden" name="TrackId" id="ARTP_Id_Val" value="0" /> <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTP_SbmtBtn"> <i class="fa-solid fa-check"></i> </button> </form> </div> </div> <div class="box-standard mt-1"> <small class="card-text text-muted"> <span id="PlaylistInfo_Genres_Span">Release Genres</span> ∙ <span id="PlaylistInfo_ReleaseDate_Span">2025</span> </small> </div> </div> </div> </div> <div class="box-standard" id="PlaylistInfo_TrackBoxes_Box"> </div>', null, null);
+    let releaseDate = new Date(releaseDateAndTime);
+    let artistsListed = $("<span></span>");
+
+    $("#PlaylistInfo_Name_Lbl").html(playlistTitle);
+    $("#PlaylistInfo_MainArtist_Span").html(mainArtistName);
+    $("#PlaylistInfo_SongsQty_Span").html(songsQty > 1 ? "<span class='fw-500'>" + songsQty + "</span>" : "<span class='fw-500'>One</span> song");
+
+    $("#PlaylistInfo_ReleaseDate_Span").text(releaseDate.getFullYear());
+    $("#PlaylistInfo_ReleaseDate_Span").attr("data-bs-title", "Release <span class='fw-500'>" + dateAndTimeFormation(userLocale, releaseDate) + "</span>");
+    $("#PlaylistInfo_TrackBoxes_Box").empty();
+    if (mainArtistImgUrl != null) {
+        $("#PlaylistInfo_Author_Img").attr("src", "/ProfileImages/" + mainArtistImgUrl);
+        $("#PlaylistInfo_AuthorImg_Box").fadeOut(0);
+        $("#PlaylistInfo_Author_Img").fadeIn(0);
+    }
+    else {
+        $("#PlaylistInfo_Author_Img").fadeOut(0);
+        $("#PlaylistInfo_Author_Img").attr("src", "#");
+        $("#PlaylistInfo_AuthorImg_Box").fadeIn(0);
+        $("#PlaylistInfo_AuthorImg_Box").html(' <i class="fa-solid fa-circle-user"></i> ');
+    }
+
+    if (coverImageUrl != null) {
+        $("#Playlist_Img").attr("src", "/PlaylistCovers/" + coverImageUrl);
+        $("#Playlist_Img_Box").fadeOut(0);
+        $("#Playlist_Img").fadeIn(0);
+    }
+    else {
+        $("#Playlist_Img").fadeOut(0);
+        $("#Playlist_Img_Box").fadeIn(0);
+        $("#Playlist_Img").attr("src", "#");
+    }
+
+    switch (parseInt(playlistType)) {
+        case 0:
+            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-wave-square"></i> ');
+            break;
+        case 1:
+            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-record-vinyl"></i> Album');
+            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-record-vinyl"></i> ');
+            break;
+        case 2:
+            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-compact-disc"></i> EP/Single');
+            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-compact-disc"></i> ');
+            break;
+        case 3:
+            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-star text-primary"></i> Favorite Songs');
+            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-star text-primary"></i> ');
+            break;
+        default:
+            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-wave-square"></i> ');
+            break;
+    }
+
+    if (songs != null && songs.length > 0) {
+        $.each(songs, function (index) {
+            let trackMainBox = $("<div class='track-table-box'></div>");
+            let trackStackBox = $("<div class='hstack gap-1'></div>");
+            let playBtn = $("<button type='button' class='btn btn-track-table btn-play-pause-track'> <i class='fa-solid fa-play'></i> </button>");
+            let trackInfoBox = $("<div class='ms-2'></div>");
+            let trackNameLbl = $("<span class='h6'></span>");
+            let trackInfoSeparator = $("<br/>");
+            let trackArtistsName = $("<small class='artist-name-span text-muted'></small>");
+            let trackStatsBox = $("<div class='ms-auto'></div>");
+            let trackDurationSpan = $("<small class='card-text text-muted me-1'></small>");
+            let trackDropdown = $("<div class='dropdown d-inline-block'></div>");
+            let trackDropdownBtn = $('<button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+            let trackDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
+            let trackDropdownLi0 = $("<li></li>");
+            let trackDropdownBtn0 = $('<button type="button" class="dropdown-item">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button>');
+            let mainArtistSpan;
+            let featIconSpan;
+            if (songs[index].trackArtists != null) {
+                mainArtistSpan = $("<span class='artist-search-span'></span>");
+                featIconSpan = $("<span> feat. </span>");
+            }
+            else mainArtistSpan = $("<span class='artist-search-span'></span>");
+
+            mainArtistSpan.html(songs[index].mainArtistName);
+            mainArtistSpan.attr("id", songs[index].userId + "-FindArtistById_Span");
+            playBtn.attr("data-id", songs[index].id);
+            playBtn.attr("id", songs[index].id + "-PlayTheTrack_Btn");
+            trackNameLbl.attr("id", songs[index].id + "-TrackName_Lbl");
+            trackArtistsName.attr("id", songs[index].id + "-TrackArtistsName_Lbl");
+
+            trackNameLbl.html(songs[index].title);
+            trackArtistsName.append(mainArtistSpan);
+            if (songs[index].trackArtists != null) {
+                for (let i = 0; i < songs[index].trackArtists.length; i++) {
+                    let artistSeparator = $("<span>, </span>");
+                    let artistSpan = $("<span class='artist-search-span'></span>");
+                    console.log(songs[index].trackArtists[i]);
+                    artistSpan.html(songs[index].trackArtists[i].artistName);
+                    artistSpan.attr("id", songs[index].trackArtists[i].artistId + "-FindTheArtistById_Span");
+                    if (i == 0) artistsListed.append(artistSpan);
+                    else {
+                        artistsListed.append(artistSeparator);
+                        artistsListed.append(artistSpan);
+                    }
+                }
+                trackArtistsName.append(featIconSpan);
+                trackArtistsName.append(artistsListed);
+            }
+
+            trackDropdownLi0.append(trackDropdownBtn0);
+            trackDropdownUl.append(trackDropdownLi0);
+            trackDropdown.append(trackDropdownBtn);
+            trackDropdown.append(trackDropdownUl);
+            trackInfoBox.append(trackNameLbl);
+            trackInfoBox.append(trackInfoSeparator);
+            trackInfoBox.append(trackArtistsName);
+            trackStatsBox.append(trackDurationSpan);
+            trackStatsBox.append(trackDropdown);
+            trackStackBox.append(playBtn);
+            trackStackBox.append(trackInfoBox);
+            trackStackBox.append(trackStatsBox);
+            trackMainBox.append(trackStackBox);
+            $("#PlaylistInfo_TrackBoxes_Box").append(trackMainBox);
+
+            //$(audioFileSample).on("loadedmetadata", function () {
+            //    const duration = secondsToRegularDuration(audioFileSample.duration);
+            //    if (duration != null) {
+            //        if (duration[0] > 0) $("#ReleaseInfo_TotalDuration_Span").text(duration[0] + " min " + duration[1] + " sec");
+            //        else $("#ReleaseInfo_TotalDuration_Span").text(duration[1] + " seconds");
+            //    }
+            //});
+        });
+    }
+
+    if (openOnFinish) slideContainers(null, "PlaylistInfo_Container");
+}
+
+function singleSampler(isForAuthor = false, id, status = -1, title, coverImageUrl, genres = [], releaseDateAndTime = new Date(), mainArtist, mainArtistId, featuringArtists = [], song) {
+    let genresListed;
+    let artistsListed = $("<span></span>");
+    let audioFileSample;
+    const releaseDate = new Date(releaseDateAndTime);
+    mainArtist = mainArtist == null ? "You" : mainArtist.nickname;
+    createAContainer("ReleaseInfo", title, '<div class="release-box-lg"><div class="d-none"><form method="post" action="/Track/UpdateCoverImage" id="UpdateTrackCoverImage_Form"> <input type="hidden" name="Id" id="UTCI_Id_Val" value="0" /> <input type="file" class="d-none" name="FileUrl" id="UTCI_File_Val" /> </form></div><div class="dropdown"> <button class="btn btn-standard float-end ms-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="EditTrackContentInfo_Btn"> <i class="fa-solid fa-pencil"></i> </button> <ul class="dropdown-menu shadow-sm"> <li id="ReleaseDropdown_0-Li"><button type="button" class="dropdown-item">Edit Credits <span class="float-end ps-2"> <i class="fa-solid fa-user-pen"></i> </span></button></li> <li id="ReleaseDropdown_1-Li"><button type="button" class="dropdown-item" id="EditTrackCoverImageInitiation_Btn">Edit Cover Image <span class="float-end ps-2"> <i class="fa-solid fa-images"></i> </span></button></li> <li id="ReleaseDropdown_2-Li"><form method="post" action="/Track/UpdateStatus" id="UpdateTrackStatus_Form"> <input type="hidden" name="Id" id="UpdateTrackStatus_Id_Val" value="0" /> <input type="hidden" name="Status" id="UpdateTrackStatus_Status_Val" value="0" /> <button type="submit" class="dropdown-item" id="UpdateTrackStatus_SbmtBtn"></button> </form></li> <li id="ReleaseDropdown_3-Li"><button type="button" class="dropdown-item text-danger">Delete <span class="float-end ps-2"> <i class="fa-solid fa-circle-xmark"></i> </span></button></li><li><small class="dropdown-item-text text-muted" id="TrackReleaseDropdownText_Span"></small></li> </ul> </div> <div class="hstack gap-1"> <div class="release-img-box-lg" id="ReleaseInfo_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-lg" id="ReleaseInfo_Img" /> <div class="box-standard ms-1"> <div> <small class="card-text"><span id="ReleaseInfo_Type_Span">Single</span><span id="ReleaseInfo_SongsQty_Span" style="display: none;">, 0</span> ∙ <span id="ReleaseInfo_TotalDuration_Span">3 min 46 sec</span></small> <div></div> <span class="h1" id="ReleaseInfo_Name_Lbl">Release Name</span> <div class="btn-borderless-profile-tag mt-1"> <div class="hstack gap-1"> <div class="profile-avatar-sm bg-chosen-bright" id="ReleaseInfo_AuthorImg_Box">R</div> <img src="#" class="profile-avatar-img-sm" alt="This image cannot be displayed" id="ReleaseInfo_Author_Img" style="display: none;" /> <small id="ReleaseInfo_MainArtist_Span">Rammstein</small> </div> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1"> <i class="fa-solid fa-play"></i> Play</button> <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle</button> <div class="d-inline-block"><form method="get" action="/Playlists/IsTheTrackFavorited" id="IsTheTrackFavorited_Form"> <input type="hidden" name="Id" id="ITTF_Id_Val" value="0" /> <input type="hidden" name="UserId" id="ITTF_UserId_Val" value="0" /> </form> <form method="post" action="/Playlists/AddOrRemoveTheAsFavorite" id="AddOrRemoveTheAsFavorite_Form"> <input type="hidden" name="TrackId" id="ARTAF_Id_Val" value="0" /> <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTAF_SbmtBtn"> <i class="fa-solid fa-star"></i> </button> </form></div> </div> <div class="box-standard mt-1"> <small class="card-text text-muted"><span id="ReleaseInfo_Genres_Span">Release Genres</span> ∙ <span id="ReleaseInfo_ReleaseYear_Span">2025</span></small> </div> </div> </div> </div> <div class="box-standard" id="ReleaseInfo_TrackBoxes_Box"> <div class="track-table-box"> <div class="hstack gap-1"> <button type="button" class="btn btn-track-table"> <i class="fa-solid fa-play"></i> </button> <div class="ms-2"> <span class="h6">Amerika!</span> <br /> <small class="artist-name-span text-muted">Rammstein</small> </div> <div class="ms-auto"> <small class="card-text text-muted me-1">3:46</small> <div class="dropdown d-inline-block"> <button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm p-1"> <li><button type="button" class="dropdown-item">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button></li> </ul> </div> </div> </div> </div> </div> <div class="box-bordered mt-2 p-2" id="ReleaseInfo_CreditsInfo_Box"> <small class="card-text text-muted">Released <span class="card-text fw-500" id="ReleaseInfo_ReleasedAtDate_Span">15 april 2025</span></small> <br/> <small class="card-text text-muted">&copy; Released by <span class="card-text fw-500" id="ReleaseInfo_LabelInfo_Span">Rammstein (no label)</span></small> </div>', null, null);
+    audioFileSample = new Audio("/Tracks/" + songs);
+
+    if (isForAuthor) {
+        $("#UTCI_Id_Val").val(id);
+        $("#EditTrackContentInfo_Btn").fadeIn(0);
+        $("#UTCI_File_Val").attr("data-trigger", "UpdateTrackCoverImage_Form");
+        $("#EditTrackCoverImageInitiation_Btn").attr("onmousedown", "$('#UTCI_File_Val').mousedown();");
+
+        $("#UpdateTrackStatus_Id_Val").val(id);
+        $("#UpdateTrackStatus_Status_Val").val(status);
+        switch (parseInt(status)) {
+            case 0:
+                $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                $("#UpdateTrackStatus_SbmtBtn").html('Unmute <span class="float-end ps-2"> <i class="fa-solid fa-volume-high"></i> </span>');
+                $("#TrackReleaseDropdownText_Span").html("You manually muted this track.<br/>Tap to unmute and make it visible to everyone");
+                break;
+            case 1:
+                $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                $("#UpdateTrackStatus_SbmtBtn").html('Waiting for Submission <span class="float-end ps-2"> <i class="fa-solid fa-circle-pause"></i> </span>');
+                $("#TrackReleaseDropdownText_Span").html(" <i class='fa-solid fa-circle-pause'></i> This track is nearly ready. Add or edit details like author credits or cover image (if necessary), then submit to release it");
+                break;
+            case 2:
+                $("#UpdateTrackStatus_Id_Val").val(0);
+                $("#UpdateTrackStatus_SbmtBtn").addClass("super-disabled");
+                $("#UpdateTrackStatus_SbmtBtn").html('Disabled <span class="float-end ps-2"> <i class="fa-solid fa-volume-off"></i> </span>');
+                $("#TrackReleaseDropdownText_Span").html("This track was muted due to rule violations or multiple reports.<br/>Check your account notifications<br/> for more details");
+                break;
+            case 3:
+                $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                $("#UpdateTrackStatus_SbmtBtn").html('Mute <span class="float-end ps-2"> <i class="fa-solid fa-volume-xmark"></i> </span>');
+                $("#TrackReleaseDropdownText_Span").html("Released and public.<br/>Tap to mute and hide");
+                break;
+            default:
+                $("#UpdateTrackStatus_SbmtBtn").removeClass("super-disabled");
+                $("#UpdateTrackStatus_SbmtBtn").html('Active <span class="float-end ps-2"> <i class="fa-solid fa-volume-off"></i> </span>');
+                $("#TrackReleaseDropdownText_Span").html("Released and public.<br/>Tap to mute and hide");
+                break;
+        }
+        $("#TrackReleaseDropdownText_Span").fadeIn(0);
+    }
+    else {
+        $("#UTCI_Id_Val").val(0);
+        $("#EditTrackContentInfo_Btn").fadeOut(0);
+        $("#UTCI_File_Val").removeAttr("data-trigger");
+        $("#EditTrackCoverImageInitiation_Btn").removeAttr("onmousedown");
+        $("#UpdateTrackStatus_Id_Val").val(0);
+        $("#UpdateTrackStatus_Status_Val").val(0);
+    }
+    $("#ReleaseInfo_TrackBoxes_Box").empty();
+    if (coverImageUrl != null) {
+        $("#ReleaseInfo_Img_Box").fadeOut(0);
+        $("#ReleaseInfo_Img").attr("src", "/TrackCovers/" + coverImageUrl);
+        $("#ReleaseInfo_Img").fadeIn(0);
+    }
+    else {
+        $("#ReleaseInfo_Img_Box").fadeIn(0);
+        $("#ReleaseInfo_Img_Box").html(' <i class="fa-solid fa-music"></i> ');
+        $("#ReleaseInfo_Img").attr("src", "#");
+        $("#ReleaseInfo_Img").fadeOut(0);
+    }
+    //0 - inactive; 1 - pending for submission; 2 - muted; 3 - active ([0-2] - inactive)
+    $("#ReleaseInfo_Type_Span").html("Single");
+    $("#ReleaseInfo_SongsQty_Span").fadeOut(0);
+
+    $("#ReleaseInfo_Name_Lbl").html(title);
+    $(".btn-play-pause-track-lg").attr("data-id", id);
+    $(".btn-play-pause-track-lg").attr("id", id + "-PlayFirstTrack_Btn");
+    if (genres != null && genres.length > 0) {
+        for (let i = 0; i < genres.length; i++) {
+            if (i == 0) genresListed = genres[i].name;
+            else genresListed += ", " + genres[i].name;
+        }
+        $("#ReleaseInfo_Genres_Span").html(genresListed);
+    }
+    else $("#ReleaseInfo_Genres_Span").html("No Genre");
+    if (featuringArtists != null && featuringArtists.length > 0) {
+        for (let i = 0; i < featuringArtists.length; i++) {
+            let artistSeparator = $("<span>, </span>");
+            let artistSpan = $("<span class='artist-search-span'></span>");
+            artistSpan.html(featuringArtists[i].artistName);
+            artistSpan.attr("id", featuringArtists[i].id + "-FindTheArtistById_Span");
+            if (i == 0) artistsListed.append(artistSpan);
+            else {
+                artistsListed.append(artistSeparator);
+                artistsListed.append(artistSpan);
             }
         }
     }
+
+    $("#ReleaseInfo_ReleaseYear_Span").html(releaseDate.getFullYear());
+    $("#ReleaseInfo_ReleasedAtDate_Span").html(dateAndTimeFormation(userLocale, releaseDate)[0]);
+    $("#ReleaseInfo_LabelInfo_Span").text(mainArtist);
+    $("#ReleaseInfo_MainArtist_Span").text(mainArtist);
+    
+    let trackMainBox = $("<div class='track-table-box'></div>");
+    let trackStackBox = $("<div class='hstack gap-1'></div>");
+    let playBtn = $("<button type='button' class='btn btn-track-table btn-play-pause-track'> <i class='fa-solid fa-play'></i> </button>");
+    let trackInfoBox = $("<div class='ms-2'></div>");
+    let trackNameLbl = $("<span class='h6'></span>");
+    let trackInfoSeparator = $("<br/>");
+    let trackArtistsName = $("<small class='artist-name-span text-muted'></small>");
+    let trackStatsBox = $("<div class='ms-auto'></div>");
+    let trackDurationSpan = $("<small class='card-text text-muted me-1'></small>");
+    let trackDropdown = $("<div class='dropdown d-inline-block'></div>");
+    let trackDropdownBtn = $('<button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+    let trackDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
+    let trackDropdownLi0 = $("<li></li>");
+    let trackDropdownBtn0 = $('<button type="button" class="dropdown-item">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button>');
+    let mainArtistSpan;
+    let featIconSpan;
+    if (featuringArtists != null) {
+        mainArtistSpan = $("<span class='artist-search-span'></span>");
+        featIconSpan = $("<span> feat. </span>");
+    }
+    else mainArtistSpan = $("<span class='artist-search-span'></span>");
+
+    mainArtistSpan.html(mainArtist);
+    mainArtistSpan.attr("id", mainArtistId + "-FindArtistById_Span");
+    playBtn.attr("data-id", id);
+    playBtn.attr("id", id + "-PlayTheTrack_Btn");
+    trackNameLbl.attr("id", id + "-TrackName_Lbl");
+    trackArtistsName.attr("id", id + "-TrackArtistsName_Lbl");
+
+    trackNameLbl.html(title);
+    trackArtistsName.append(mainArtistSpan);
+    if (featuringArtists != null) {
+        trackArtistsName.append(featIconSpan);
+        trackArtistsName.append(artistsListed);
+    }
+    trackDurationSpan.html(audioFileSample.duration);
+
+    trackDropdownLi0.append(trackDropdownBtn0);
+    trackDropdownUl.append(trackDropdownLi0);
+    trackDropdown.append(trackDropdownBtn);
+    trackDropdown.append(trackDropdownUl);
+    trackInfoBox.append(trackNameLbl);
+    trackInfoBox.append(trackInfoSeparator);
+    trackInfoBox.append(trackArtistsName);
+    trackStatsBox.append(trackDurationSpan);
+    trackStatsBox.append(trackDropdown);
+    trackStackBox.append(playBtn);
+    trackStackBox.append(trackInfoBox);
+    trackStackBox.append(trackStatsBox);
+    trackMainBox.append(trackStackBox);
+    $("#ReleaseInfo_TrackBoxes_Box").append(trackMainBox);
+
+    $(audioFileSample).on("loadedmetadata", function () {
+        const duration = secondsToRegularDuration(audioFileSample.duration);
+        if (duration != null) {
+            if (duration[0] > 0) $("#ReleaseInfo_TotalDuration_Span").text(duration[0] + " min " + duration[1] + " sec");
+            else $("#ReleaseInfo_TotalDuration_Span").text(duration[1] + " seconds");
+        }
+    });
 }
+
+function secondsToRegularDuration(durationInSeconds = 0) {
+    if (durationInSeconds > 0) {
+        let mins = Math.floor(durationInSeconds / 60);
+        let secondsLeft = Math.round(durationInSeconds - Math.floor(mins * 60));
+        return [mins, secondsLeft];
+    }
+    else return null;
+}
+
+function regularToSecondsDuration(durationInMins = 0, seconds = 0) {
+    let fullDuration = durationInMins * 60 + seconds;
+    return fullDuration;
+}
+
+function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor = false) {
+    if (id != null && title != null) {
+        let playlistBox = $("<div class='playlist-box btn-get-playlist-info mb-1'></div>");
+        let playlistBoxStack = $('<div class="hstack gap-1"></div>');
+        let playlistImg;
+        let playlistInfoBox = $("<div class='ms-1'></div>");
+        let playlistNameTitle = $("<span class='h6'></h6>");
+        let playlistInfoSeparator = $("<br/>");
+        let playlistBadge = $("<span class='badge badge-standard'></span>");
+        let playlistSongsQtySpan = $("<small class='card-text text-muted'></small>");
+        let playlistStatsSpan = $("<span class='card-text'></span>");
+        let playlistDropdownBox = $("<div class='dropdown ms-auto'></div>");
+        let playlistDropdownBtn = $('<button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let playlistDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
+        let playlistDropdownLi0 = $("<li></li>");
+        let playlistDropdownBtn0 = $("<button type='button' class='dropdown-item'>Reorder <span class='float-end'> <i class='fa-solid fa-sort'></i> </span></button>");
+
+        playlistBox.attr("id", id + "-GetPlaylistInfo_Box");
+        if (coverImageUrl != null) {
+            playlistImg = $("<img class='release-img-sm' alt='This image cannot be displayed yet' />");
+            playlistImg.attr("src", "/PlaylistCovers/" + coverImageUrl);
+        }
+        else {
+            switch (parseInt(type)) {
+                case 0:
+                    playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+                    playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
+                    break;
+                case 1:
+                    playlistBadge.html(' <i class="fa-solid fa-record-vinyl"></i> Album');
+                    playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-record-vinyl"></i> </div>');
+                    break;
+                case 2:
+                    playlistBadge.html(' <i class="fa-solid fa-star"></i> Favorites');
+                    playlistImg = $('<div class="release-img-box-sm text-primary"> <i class="fa-solid fa-star"></i> </div>');
+                    break;
+                default:
+                    playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+                    playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
+                    break;
+            }
+        }
+
+        playlistNameTitle.html(title);
+        playlistSongsQtySpan.text(parseInt(songsQty) > 1 ? " ∙ " + songsQty + " songs" : " ∙ One song");
+         
+        playlistStatsSpan.append(playlistBadge);
+        playlistStatsSpan.append(playlistSongsQtySpan);
+        playlistInfoBox.append(playlistNameTitle);
+        playlistInfoBox.append(playlistInfoSeparator);
+        playlistInfoBox.append(playlistStatsSpan);
+        playlistBoxStack.append(playlistImg);
+        playlistBoxStack.append(playlistInfoBox);
+        if (isForAuthor) {
+            playlistDropdownLi0.append(playlistDropdownBtn0);
+            playlistDropdownUl.append(playlistDropdownLi0);
+            playlistDropdownBox.append(playlistDropdownBtn);
+            playlistDropdownBox.append(playlistDropdownUl);
+            playlistBoxStack.append(playlistDropdownBox);
+        }
+        playlistBox.append(playlistBoxStack);
+
+        return playlistBox;
+    }
+    else return null;
+}
+
+$(document).on("submit", "#GetPlaylists_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            createSmContainer("Playlists", "Playlists ∙ <span id='PlaylistsQty_Span'>0</span>", "<div class='box-standard' id='PlaylistsListed_Box'></div>", null, null, false);
+            $("#PlaylistsListed_Box").empty();
+            $("#PlaylistsQty_Span").text(response.count + 1);
+            let songsTotalQty = response.favoriteSongsQty;
+            let statsFullInfoBox = $("<div class='box-standard text-center mt-1 p-1'></div>");
+            let statsFullInfoSpan = $("<small class='card-text text-muted'></small>");
+            let favoriteElement = playlistSampler("fvr", 2, "Favorites", null, response.favoriteSongsQty, true);
+            if (favoriteElement != null) $("#PlaylistsListed_Box").append(favoriteElement);
+
+            if (response.count > 0) {
+                $.each(response.result, function (index) {
+                    let element = playlistSampler(response.result[index].id, response.result[index].albumId == null ? 0 : 1, response.result[index].playlist.name, response.result[index].playlist.imageUrl, response.result[index].playlist.songsQty, true);
+                    if (element != null) {
+                        $("#PlaylistsListed_Box").append(element);
+                        songsTotalQty += response.result[index].playlist.songsQty;
+                    }
+                });
+            }
+
+            if (parseInt(response.count + 1) > 1) statsFullInfoSpan.html("<span class='fw-500'>" + parseInt(response.count + 1) > 1 + "</span> playlists containing <span class='fw-500'>" + songsTotalQty + "</span> song(s)");
+            else statsFullInfoSpan.html("<span class='fw-500'>One</span> playlist containing <span class='fw-500'>" + songsTotalQty + "</span> song(s)");
+            statsFullInfoBox.append(statsFullInfoSpan);
+            $("#PlaylistsListed_Box").append(statsFullInfoBox);
+            setTimeout(function () {
+                callASmContainer(false, "Playlists_Container");
+            }, 150);
+        }
+        else callAlert('<i class="fa-solid fa-bars-staggered"></i>', null, null, "Playlists are temporarily unavailable", 4, "Okay", -1, null);
+    });
+});
+
+$(document).on("submit", "#GetSingleInfo_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.result != null) {
+                let currentUserId = $("#CurrentUserInfo_Id_Val").val();
+                singleSampler(response.isForAuthor, response.result.id, response.result.status, response.result.title, response.result.coverImageUrl, response.result.genres, response.result.releasedAt, response.result.user, response.result.userId, response.result.trackArtists, response.result.trackFileUrl);
+                if (currentUserId != undefined) {
+                    buttonDisabler(false, "ARTAF_SbmtBtn", "");
+                    $("#ITTF_Id_Val").val(response.result.id);
+                    $("#ITTF_UserId_Val").val(currentUserId);
+                    $("#IsTheTrackFavorited_Form").submit();
+                }
+                else {
+                    $("#ARTAF_Id_Val").val(0);
+                    $("#ARTAF_SbmtBtn").addClass("super-disabled");
+                    $("#ARTAF_SbmtBtn").html(' <i class="fa-solid fa-circle-exclamation"></i> ');
+                }
+
+                setTimeout(function () {
+                    slideContainers(null, "ReleaseInfo_Container");
+                }, 150);
+            }
+        }
+        else {
+            callAlert('<i class="fa-solid fa-music"></i>', null, null, "This single is temporarily unavailable to see", 3.75, "Close", -1, null);
+        }
+        $("#GSI_IsForAuthor_Val").val(false);
+    });
+});
+
+$(document).on("submit", "#GetFavorites_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#GetFavorites_SbmtBtn").html();
+    buttonDisabler(false, "GetFavorites_SbmtBtn", "Loading...");
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.result != null) {
+                let profileImgSrc = $("#CurrentUserProfile_Img").attr("src");
+                let songsArr = [];
+                for (let i = 0; i < response.result.length; i++) {
+                    songsArr.push(response.result[i].track);
+                }
+                playlistInfoSampler(-256, "Favorites", 3, null, new Date(), response.count, 0, "You", null, songsArr, false);
+                setTimeout(function () {
+                    slideContainers(null, "PlaylistInfo_Container");
+                }, 150);
+            }
+        }
+        else {
+            callAlert('<i class="fa-solid fa-music"></i>', null, null, "Access to favorite songs is temporarily unavailable", 3.5, "Close", -1, null);
+        }
+        buttonUndisabler(false, "GetFavorites_SbmtBtn", baseHtml);
+    });
+});
+
+$(document).on("submit", "#IsTheTrackFavorited_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    buttonDisabler(false, "ARTAF_SbmtBtn", "");
+
+    $.get(url, data, function (response) {
+        buttonUndisabler(false, "ARTAF_SbmtBtn", '<i class="fa-solid fa-star"></i>');
+        if (response.id > 0) {
+            $("#ARTAF_Id_Val").val(response.id);
+            if (response.success) {
+                $("#ARTAF_SbmtBtn").removeClass("super-disabled");
+                $("#ARTAF_SbmtBtn").html(' <i class="fa-solid fa-star"></i> ');
+                $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/RemoveFromFavorites");
+            }
+            else {
+                $("#ARTAF_SbmtBtn").removeClass("super-disabled");
+                $("#ARTAF_SbmtBtn").html(' <i class="fa-regular fa-star"></i> ');
+                $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/AddToFavorites");
+            }
+        }
+        else {
+            $("#ARTAF_Id_Val").val(0);
+            $("#ARTAF_SbmtBtn").removeClass("super-disabled");
+            $("#ARTAF_SbmtBtn").html(' <i class="fa-solid fa-circle-exclamation"></i> ');
+            $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlist/AddToFavorites");
+            callAlert('<i class="fa-solid fa-circle-exclamation fa-shake --fa-animation-duration: 0.85s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 1;"></i>', null, null, "You can’t add or remove this track from your favorites right now. Try again later", 3.75, "Hide", -1, null);
+        }
+    });
+});
+
+$(document).on("submit", "#AddOrRemoveTheAsFavorite_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    buttonDisabler(false, "ARTAF_SbmtBtn", "");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#ARTAF_Id_Val").val(response.id);
+            buttonUndisabler(false, "ARTAF_SbmtBtn", '<i class="fa-solid fa-star"></i>');
+            if (response.isAdded) {
+                $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/RemoveFromFavorites");
+                $("#ARTAF_SbmtBtn").html(' <i class="fa-solid fa-star fa-flip" style="--fa-animation-duration: 0.75s; --fa-animation-iteration-count: 1;"></i> ');
+                callAlert('<i class="fa-solid fa-star fa-flip" style="--fa-animation-delay: 0.3s; --fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2;"></i>', null, null, "Added to your <span class='fw-500'>Favorites</span>", 3,5, "Hide", -1, null);
+            }
+            else {
+                $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/AddToFavorites");
+                $("#ARTAF_SbmtBtn").html(' <i class="fa-regular fa-star fa-flip" style="--fa-animation-duration: 0.95s; --fa-animation-iteration-count: 1;"></i> ');
+                callAlert('<i class="fa-regular fa-star fa-flip" style="--fa-flip-angle: -360; --fa-animation-delay: 0.3s; --fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2;"></i>', null, null, "Removed from your <span class='fw-500'>Favorites</span>", 3.25, "Hide", -1, null);
+            }
+        }
+        else {
+            $("#ARTAF_Id_Val").val(0);
+            $("#ARTAF_SbmtBtn").removeClass("super-disabled");
+            $("#ARTAF_SbmtBtn").html(' <i class="fa-solid fa-circle-exclamation"></i> ');
+            $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlist/AddToFavorites");
+            callAlert('<i class="fa-solid fa-circle-exclamation fa-shake" --fa-animation-duration: 0.85s; --fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2;></i>', null, null, response.alert, 3.75, "Hide", -1, null);
+        }
+    });
+});
+
+$(document).on("mousedown", ".btn-get-playlist-info", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        if (trueId === "fvr") $("#GetFavorites_Form").submit();
+        else {
+            trueId = parseInt(trueId);
+            if (trueId != undefined) {
+                $("#GPI_Id_Val").val(trueId);
+                $("#GetPlaylistInfo_Form").submit();
+            }
+            else $("#GPI_Id_Val").val(0);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-get-release-info-as-author", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        $("#GSI_Id_Val").val(trueId);
+        $("#GSI_IsForAuthor_Val").val(true);
+        $("#GetSingleInfo_Form").submit();
+    }
+});
 
 $("#GetPrivacySettings_Form").on("submit", function (event) {
     event.preventDefault();
@@ -1222,6 +1918,13 @@ $(document).on("mousedown", ".btn-box-vertical-swticher", function () {
             $("#" + currentSwitchers[i].id).removeClass("btn-box-vertical-swticher-active");
         }
         $(this).addClass("btn-box-vertical-swticher-active");
+    }
+});
+
+$(document).on("mousedown", ".btn-close-sm-container", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        uncallAContainer(false, trueId);
     }
 });
 
@@ -1735,7 +2438,7 @@ function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = tr
 function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = true, openPreviewBox = true) {
     let rowsQty = 0;
     let divExists = document.getElementById("AudioPreview_Container");
-    if (!divExists) createInsideLgCard("AudioPreview", "Audio Preview ∙ <span id='AudioFilesQty_Span'>0</span>", '<div class="mt-1 p-1 pt-0"> <div class="box-bordered p-2"> <div> <span class="h4 ongaku-track-name-lbl">Not Playing</span> <div> <small class="card-text ongaku-artist-name-lbl text-muted">no file chosen</small> </div> </div> <div class="hstack gap-1 mt-1"> <span class="card-text text-muted ongaku-track-duration-current">0:00</span> <div class="ongaku-track-duration-line-enlarged" id="TrackPreviewDurationLine_Box"> <div class="ongaku-track-current-duration-line-enlarged"></div> </div> <span class="card-text text-muted ongaku-track-duration-left">0:00</span> </div> <div class="row w-100 mt-1"> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward w-100"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-audio-start-stop btn-ongaku-player-enlarged w-100" id="TrackPreviewPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward w-100"> <i class="fa-solid fa-forward"></i> </button> </div> </div> </div><div class="row w-100 mt-2" id="AddedTracks_Box"> </div> </div>', null, null);
+    if (!divExists) createInsideLgCard("AudioPreview", "Audio Preview ∙ <span id='AudioFilesQty_Span'>0</span>", '<div class="mt-1 p-1 pt-0"> <div class="box-bordered p-2"> <div> <span class="h4 ongaku-track-name-lbl">Not Playing</span> <div> <small class="card-text ongaku-artist-name-lbl text-muted">no file chosen</small> </div> </div> <div class="hstack gap-1 mt-1"> <span class="card-text text-muted ongaku-track-duration-current">0:00</span> <div class="ongaku-track-duration-line-enlarged" id="TrackPreviewDurationLine_Box"> <div class="ongaku-track-current-duration-line-enlarged"></div> </div> <span class="card-text text-muted ongaku-track-duration-left">0:00</span> </div> <div class="row w-100 mt-1"> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward w-100"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-ongaku-player-enlarged w-100" id="TrackPreviewPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward w-100"> <i class="fa-solid fa-forward"></i> </button> </div> </div> </div><div class="row w-100 mt-2" id="AddedTracks_Box"> </div> </div>', null, null);
     else {
         $("#AddedTracks_Box").empty();
     }
@@ -1812,49 +2515,45 @@ function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = tru
     }
 }
 
-$(document).on("mousedown", ".btn-audio-start-stop", function () {
-    let thisId = $(this).attr("id");
-    if (thisId != undefined) {
-        let element = document.getElementById("OngakuPlayer_Audio");
-        if (element != null) {
-            let objectSrc = element.src;
-            if (element.paused) {
-                if (objectSrc != undefined) {
-                    let trackId = $("#OngakuPlayer_TrackId_Val").val();
-                    let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
-                    let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
-                    audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, null, null, null);
-                }
-            }
-            else audioPause("OngakuPlayer_Audio");
-        }
-    }
-});
-
 $(document).on("mousedown", ".btn-play-pause-track", function () {
-    let thisId = $(this).attr("id");
+    let thisId = $(this).attr("data-id");
     if (thisId != undefined) {
         let isForPreview = $(this).attr("data-preview");
         let trackId = null;
         let playlistId = null;
         let objectSrc = null;
         let objectTitle = null;
-        let currentSrc = document.getElementById("OngakuPlayer_Audio").src;
+        let currentTrackId = $("#OngakuPlayer_TrackId_Val").val();
+        let currentPlaylistId = $("#OngakuPlayer_PlaylistId_Val").val();
+        const element = document.getElementById("OngakuPlayer_Audio");
         if (isForPreview) {
             objectSrc = $(this).attr("data-src");
             objectTitle = $(this).attr("data-title");
             trackId = $(this).attr("data-order-index");
+            let currentSrc = document.getElementById("OngakuPlayer_Audio").src;
+
+            if ((objectSrc != undefined) && (currentSrc == objectSrc)) {
+                let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
+                audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, objectTitle, "Track Preview", null);
+            }
+            else audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, 0, objectTitle, "Track Preview", null);
         }
         else {
-            trackId = $("#OngakuPlayer_TrackId_Val").val();
-            playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
+            if (element != null) {
+                if (element.paused) {
+                    if ((currentTrackId == thisId) && (playlistId == null || currentPlaylistId == playlistId)) {
+                        audioContinue("OngakuPlayer_Audio", thisId);
+                    }
+                    else {
+                        buttonDisabler(true, "btn-play-pause-track", "");
+                        $("#OngakuPlayer_TrackId_Val").val(thisId);
+                        $("#OngakuPlayer_PlaylistId_Val").val(playlistId);
+                        $("#LoadTheTrack_Form").submit();
+                    }
+                }
+                else audioPause("OngakuPlayer_Audio");
+            }
         }
-
-        if ((objectSrc != undefined) && (currentSrc == objectSrc)) {
-            let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
-            audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, objectTitle, "Track Preview", null);
-        }
-        else audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, 0, objectTitle, "Track Preview", null);
     }
 });
 
@@ -1968,7 +2667,7 @@ function audioChange(element, isForPreview = false, backward = true, currentOrde
     }
 }
 
-function audioPlay(element, fileSrc, playlistId, trackId, startingTimeInSec, title, mainArtist, featuringArtists = []) {
+function audioPlay(element, coverImgSrc = null, fileSrc, playlistId, trackId, startingTimeInSec, title, mainArtist, featuringArtists = []) {
     if (element != null && fileSrc != null) {
         let allArtists;
         const audioPlayer = document.getElementById(element);
@@ -1987,16 +2686,39 @@ function audioPlay(element, fileSrc, playlistId, trackId, startingTimeInSec, tit
                 else mainArtist += ", " + featuringArtists[i];
             }
         }
+
+        if (coverImgSrc != null) {
+            $(".ongaku-player-album-img").attr("src", coverImgSrc);
+            $(".ongaku-player-album-img-enlarged").attr("src", coverImgSrc);
+            $(".ongaku-player-album-img").fadeIn(0);
+            $(".ongaku-player-album-img-enlarged").fadeIn(0);
+            $(".ongaku-player-album-box").fadeOut(0);
+            $(".ongaku-player-album-box-enlarged").fadeOut(0);
+        }
+        else {
+            $(".ongaku-player-album-img").attr("src", "#");
+            $(".ongaku-player-album-img-enlarged").attr("src", "#");
+            $(".ongaku-player-album-img").fadeOut(0);
+            $(".ongaku-player-album-img-enlarged").fadeOut(0);
+            $(".ongaku-player-album-box").fadeIn(0);
+            $(".ongaku-player-album-box-enlarged").fadeIn(0);
+        }
+
+        audioPlayer.load();
         audioPlayer.play();
+        $(".btn-play-pause-track").attr("data-id", trackId);
         $(".btn-play-pause-track").html(' <i class="fa-solid fa-play"></i> ');
-        $(".btn-audio-start-stop").html(' <i class="fa-solid fa-pause"></i> ');
+        $(".btn-pre-play-pause-track").html(' <i class="fa-solid fa-play"></i> Play');
+        $(".btn-play-pause-track-lg").html(' <i class="fa-solid fa-pause"></i> Pause');
+        $(".btn-player-play-pause-track").html(' <i class="fa-solid fa-pause"></i> ');
+        $("#" + trackId + "-TrackPrePlay_Btn").attr("data-src", fileSrc);
+        $("#" + trackId + "-PlayTheTrack_Btn").html(' <i class="fa-solid fa-pause"></i> ');
+        $("#" + trackId + "-TrackPrePlay_Btn").html(' <i class="fa-solid fa-pause"></i> Pause');
+
         if (allArtists != null) $(".ongaku-artist-name-lbl").html(allArtists);
         $(".ongaku-track-name-lbl").removeClass("super-disabled");
         $(".ongaku-track-duration-left").text(audioPlayer.duration);
         $(".ongaku-track-current-duration-line").css("width", 0);
-        $(".btn-pre-play-pause-track").html(' <i class="fa-solid fa-play"></i> Play');
-        $("#" + trackId + "-TrackPrePlay_Btn").attr("data-src", fileSrc);
-        $("#" + trackId + "-TrackPrePlay_Btn").html(' <i class="fa-solid fa-pause"></i> Pause');
 
         if (playlistId == null || playlistId == undefined) $("#OngakuPlayer_PlaylistId_Val").val(-256);
         else $("#OngakuPlayer_PlaylistId_Val").val(playlistId);
@@ -2005,14 +2727,29 @@ function audioPlay(element, fileSrc, playlistId, trackId, startingTimeInSec, tit
     } 
 }
 
+function audioContinue(element, trackId) {
+    const audioPlayer = document.getElementById(element);
+    if (audioPlayer != null) {
+        audioPlayer.play();
+        $(".ongaku-track-name-lbl").removeClass("super-disabled");
+        $(".btn-play-pause-track").html(' <i class="fa-solid fa-play"></i> ');
+        $(".btn-pre-play-pause-track").html(' <i class="fa-solid fa-play"></i> Play');
+        $(".btn-player-play-pause-track").html(' <i class="fa-solid fa-pause"></i> ');
+        $(".btn-play-pause-track-lg").html(' <i class="fa-solid fa-pause"></i> Pause');
+        $("#" + trackId + "-PlayTheTrack_Btn").html(' <i class="fa-solid fa-pause"></i> ');
+        $("#" + trackId + "-TrackPrePlay_Btn").html(' <i class="fa-solid fa-pause"></i> Pause');
+    }
+}
+
 function audioPause(element) {
     if (element != null) {
-        let audioPlayer = document.getElementById(element);
+        const audioPlayer = document.getElementById(element);
         audioPlayer.pause();
         if (audioPlayer.paused) {
             $(".ongaku-track-name-lbl").addClass("super-disabled");
-            $(".btn-audio-start-stop").html(' <i class="fa-solid fa-play"></i> ');
-            $(".btn-play-pause-track").html(' <i class="fa-solid fa-pause"></i> ');
+            $(".btn-play-pause-track").html(' <i class="fa-solid fa-play"></i> ');
+            $(".btn-player-play-pause-track").html(' <i class="fa-solid fa-play"></i> ');
+            $(".btn-play-pause-track-lg").html(' <i class="fa-solid fa-play"></i> Play');
             $(".btn-pre-play-pause-track").html(' <i class="fa-solid fa-play"></i> Play');
         }
     }
@@ -2760,6 +3497,8 @@ function slideContainers(closingContainerId, id) {
 
 function callASmContainer(callByClassname, id) {
     let isNowOpen = false;
+    let isPlayerActive = $(".ongaku-player-box").css("bottom");
+    if (isPlayerActive != undefined) isPlayerActive = parseInt(parseInt($(".ongaku-player-box").css("bottom")) + $(".ongaku-player-box").innerHeight());
     if (callByClassname) {
         let elements = document.getElementsByClassName(id);
         if (elements.length > 0) {
@@ -2779,93 +3518,98 @@ function callASmContainer(callByClassname, id) {
 
     if (parseInt(currentWindowSize) < 1024) {
         let alertBottom = bottomNavbarH;
+        if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
         if (callByClassname) {
             if (isNowOpen) {
                 $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", alertBottom + 32 + "px");
+                $(".box-sm-part-inner").css("bottom", alertBottom + "px");
                 setTimeout(function () {
                     $(".box-sm-part-inner").css("bottom", "-1200px");
                 }, 300);
                 setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom + 32 + "px");
+                    $(".box-sm-part-inner").css("bottom", alertBottom + "px");
                 }, 600);
                 setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom + 12 + "px");
+                    $(".box-sm-part-inner").css("bottom", alertBottom - 50 + "px");
                 }, 900);
             }
             else {
                 $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", alertBottom + 32 + "px");
+                $(".box-sm-part-inner").css("bottom", alertBottom + "px");
                 setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom + 12 + "px");
+                    $(".box-sm-part-inner").css("bottom", alertBottom - 50 + "px");
                 }, 300);
             }
         }
         else {
             if (isNowOpen) {
                 $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", alertBottom + 32 + "px");
+                $("#" + id).css("bottom", alertBottom + "px");
                 setTimeout(function () {
                     $("#" + id).css("bottom", "-1200px");
                 }, 300);
                 setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + 32 + "px");
+                    $("#" + id).css("bottom", alertBottom + "px");
                 }, 600);
                 setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + 12 + "px");
+                    $("#" + id).css("bottom", alertBottom - 50 + "px");
                 }, 900);
             }
             else {
                 $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", alertBottom + 32 + "px");
+                $("#" + id).css("bottom", alertBottom + "px");
                 setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + 12 + "px");
+                    $("#" + id).css("bottom", alertBottom - 50 + "px");
                 }, 300);
             }
         }
     }
     else {
+        let alertBottom = 10;
+        if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
         if (callByClassname) {
             if (isNowOpen) {
                 $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", "32px");
+                $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
                 setTimeout(function () {
                     $(".box-sm-part-inner").css("bottom", "-1200px");
                 }, 300);
                 setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", "32px");
+                    $(".box-sm-part-inner").css("bottom", alertBottom + 55 + "px");
                 }, 600);
                 setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", "10px");
+                    $(".box-sm-part-inner").css("bottom", alertBottom  + "px");
                 }, 900);
             }
             else {
                 $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", "32px");
+                $(".box-sm-part-inner").css("bottom", alertBottom + 55 + "px");
                 setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", "10px");
+                    $(".box-sm-part-inner").css("bottom", alertBottom + "px");
                 }, 300);
             }
         }
         else {
+            let alertBottom = 10;
+            if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
             if (isNowOpen) {
                 $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", "32px");
+                $("#" + id).css("bottom", alertBottom + 45 + "px");
                 setTimeout(function () {
                     $("#" + id).css("bottom", "-1200px");
                 }, 300);
                 setTimeout(function () {
-                    $("#" + id).css("bottom", "32px");
+                    $("#" + id).css("bottom", alertBottom + 55 + "px");
                 }, 600);
                 setTimeout(function () {
-                    $("#" + id).css("bottom", "10px");
+                    $("#" + id).css("bottom", alertBottom + "px");
                 }, 900);
             }
             else {
                 $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", "32px");
+                $("#" + id).css("bottom", alertBottom + 55 + "px");
                 setTimeout(function () {
-                    $("#" + id).css("bottom", "10px");
+                    $("#" + id).css("bottom", alertBottom + "px");
                 }, 300);
             }
         }
@@ -2876,7 +3620,7 @@ function uncallASmContainer(callByClassname, id) {
     if (callByClassname) {
         if (currentWindowSize < 1024) {
             let alertBottom = bottomNavbarH;
-            $(".box-sm-part-inner").css("bottom", alertBottom + 32 + "px");
+            $(".box-sm-part-inner").css("bottom", alertBottom + 65 + "px");
             setTimeout(function () {
                 $(".box-sm-part-inner").css("bottom", "-1200px");
             }, 300);
@@ -2885,7 +3629,7 @@ function uncallASmContainer(callByClassname, id) {
             }, 600);
         }
         else {
-            $(".box-sm-part-inner").css("bottom", "32px");
+            $(".box-sm-part-inner").css("bottom", "50px");
             setTimeout(function () {
                 $(".box-sm-part-inner").css("bottom", "-1200px");
             }, 300);
@@ -2897,7 +3641,7 @@ function uncallASmContainer(callByClassname, id) {
     else {
         if (currentWindowSize < 1024) {
             let alertBottom = bottomNavbarH;
-            $("#" + id).css("bottom", alertBottom + 32 + "px");
+            $("#" + id).css("bottom", alertBottom + 65 + "px");
             setTimeout(function () {
                 $("#" + id).css("bottom", "-1200px");
             }, 300);
@@ -2906,7 +3650,7 @@ function uncallASmContainer(callByClassname, id) {
             }, 600);
         }
         else {
-            $("#" + id).css("bottom", "32px");
+            $("#" + id).css("bottom", "50px");
             setTimeout(function () {
                 $("#" + id).css("bottom", "-1200px");
             }, 300);
@@ -3104,6 +3848,56 @@ function callAlert(icon, backgroundColor, foregroundColor, text, duration, butto
         $(".ongaku-alert-timer").css("width", 0);
         $("#OngakuAlert_Btn").fadeIn(300);
         $("#OngakuAlert_Btn").html("Close");
+    }
+}
+
+function createSmContainer(id, title, body, headerBtn1 = null, headerBtn2 = null, openOnCreate = false) {
+    let divExists = document.getElementById(id + "_Container");
+    if (divExists == null) {
+        $("body").append('<div class="box-sm-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-sm-part-header p-2"><div class="box-standard"><div class="hstack gap-1" id="' + id + '-Header_Box">            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button><span class="h5 ms-1 pt-1">' + title + '</span> <button type="button" class="btn btn-standard btn-close-sm-container btn-sm ms-auto" id="' + id + '_Container-Close_Btn">Done</button></div></div></div> <div class="box-standard p-1" id="' + id + '_Box"> </div> </div>');
+        $("#" + id + "_Box").append(body);
+        if (headerBtn1 != null) {
+            let firstButton = $(headerBtn1);
+            $("#" + id + "-Header_Box").append(firstButton);
+
+            if (headerBtn2 != null) {
+                let secondBtn = $(headerBtn2);
+                $("#" + id + "-Header_Box").append(secondBtn);
+            }
+        }
+        if (currentWindowSize > 1024) {
+            $(".box-sm-part-inner").css("left", "0.4%");
+            $(".box-sm-part-inner").css("width", "36%");
+        }
+        else {
+            $(".box-sm-part-inner").css("left", "0.75%");
+            $(".box-sm-part-inner").css("width", "98.25%");
+        }
+    }
+    else {
+        $("#" + id + "_Box").empty();
+        $("#" + id + "_Box").append(body);
+    }
+
+    if (openOnCreate) callASmContainer(false, id + "_Container");
+}
+
+function unsetCurrentSwitcherValues(elementId, switcherInternalIndex) {
+    elementId = elementId.includes("-") ? getTrueId(elementId, false) : elementId;
+    let neccessarySwitchers = [];
+    let allSwitchersOnPage = document.getElementsByClassName("btn-box-switcher-member");
+    if (allSwitchersOnPage.length > 0) {
+        for (let i = 0; i < allSwitchersOnPage.length; i++) {
+            if (($("#" + allSwitchersOnPage[i].id).attr("data-switcher-internal-id") == switcherInternalIndex) && (getTrueId(allSwitchersOnPage[i].id) == elementId)) {
+                neccessarySwitchers.push(allSwitchersOnPage[i]);
+            }
+        }
+
+        if (neccessarySwitchers.length > 0) {
+            for (let i = 0; i < neccessarySwitchers.length; i++) {
+                $("#" + neccessarySwitchers[i].id).removeClass("btn-box-switcher-member-active");
+            }
+        }
     }
 }
 

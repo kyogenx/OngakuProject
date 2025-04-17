@@ -26,6 +26,7 @@
     <Folder Include="wwwroot\TrackCovers\" />
     <Folder Include="wwwroot\Tracks\" />
     <Folder Include="wwwroot\ProfileImages\" />
+    <Folder Include="wwwroot\PlaylistCovers\" />
   </ItemGroup>
 
 </Project>

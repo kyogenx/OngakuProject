@@ -22,5 +22,8 @@ namespace OngakuProject.Models
         public List<Disc>? Discs { get; set; }
         public List<MoodTag>? MoodTags { get; set; }
         public List<AlbumGenre>? AlbumGenres { get; set; }
+        public List<UserPlaylist>? UserPlaylists { get; set; } = new List<UserPlaylist>();
+        [NotMapped]
+        public int SongsQty { get; set; }
     }
 }

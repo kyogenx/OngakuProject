@@ -1,0 +1,104 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OngakuProject.Data;
+using OngakuProject.Interfaces;
+using OngakuProject.Models;
+using OngakuProject.ViewModels;
+using System.Security.Claims;
+
+namespace OngakuProject.Controllers
+{
+    public class PlaylistsController : Controller
+    {
+        private readonly Context _context;
+        private readonly IPlaylist _playlist;
+        private readonly IProfile _profile;
+
+        public PlaylistsController(Context context, IPlaylist playlist, IProfile profile)
+        {
+            _context = context;
+            _playlist = playlist;
+            _profile = profile;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddToFavorites(Favorites_VM Model)
+        {
+            if(User.Identity.IsAuthenticated)
+            {
+                string? UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.UserId = _profile.ParseCurrentUserId(UserId);
+                if (ModelState.IsValid)
+                {
+                    int Result = await _playlist.AddToFavoritesAsync(Model);
+                    if (Result > 0) return Json(new { success = true, isAdded = true, id = Result, result = Model });
+                }
+                return Json(new { success = false, alert = "This track isn’t available to be added to your favorites" });
+            }
+            return Json(new { success = false, alert = "Please sign in to add this track to your favorites" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveFromFavorites(int TrackId)
+        {
+            if (TrackId > 0)
+            {
+                string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(UserIdStr);
+
+                int Result = await _playlist.RemoveFromFavoritesAsync(TrackId, UserId);
+                if (Result > 0) return Json(new { success = true, isAdded = false, id = Result });
+                else return Json(new { success = false, alert = "Removing this track from favorites is temporarily unavailable. Try again soon" });
+            }
+            else return Json(new { success = false, alert = "Looks like this track is already off your favorites list" });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetFavorites()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int Id = _profile.ParseCurrentUserId(UserIdStr);
+
+                IQueryable<Favorite>? FavoritesPreview = _playlist.GetFavorites(Id);
+                List<Favorite>? Favorites = FavoritesPreview != null ? await FavoritesPreview.ToListAsync() : null;
+                if (Favorites is not null) return Json(new { success = true, result = Favorites, count = Favorites.Count });
+                else return Json(new { success = true, count = 0 });
+            }
+            else return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> IsTheTrackFavorited(int Id, int UserId)
+        {
+            bool Result = await _playlist.IsFavoritedAsync(Id, UserId);
+            return Json(new { success = Result, id = Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int Id = _profile.ParseCurrentUserId(UserIdStr);
+
+            IQueryable<UserPlaylist>? PlaylistsPreview = _playlist.GetPlaylists(Id);
+            List<UserPlaylist>? Playlists = PlaylistsPreview is not null ? await PlaylistsPreview.ToListAsync() : null;
+            int FavoriteSongsQty = await _playlist.GetFavoriteSongsQuantityAsync(Id);
+
+            return Json(new { success = true, result = Playlists, count = Playlists?.Count, favoriteSongsQty = FavoriteSongsQty });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetInfo(int Id, int UserId)
+        {
+            Playlist? PlaylistInfo = await _playlist.GetPlaylistInfoAsync(Id);
+            if (PlaylistInfo is not null)
+            {
+                bool IsSaved = await _playlist.IsPlaylistSavedAsync(Id, UserId);
+                return Json(new { success = true, result = PlaylistInfo });
+            }
+            else return Json(new { success = false });
+        }
+    }
+}

@@ -16,8 +16,11 @@ namespace OngakuProject.Models
         public string? MasteringEngineer { get; set; }
         public string? RecordingEngineer { get; set; }
         public string? SoundDesigner { get; set; }
+        [ForeignKey("Track")]
+        public int? TrackId { get; set; }
         [ForeignKey("User")]
         public int MainArtistId { get; set; }
+        public Track? Track { get; set; }
         public User? User { get; set; }
     }
 }

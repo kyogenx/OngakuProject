@@ -85,6 +85,7 @@ body {
 }
 
 .box-sm-part-inner {
+    z-index: 9000;
     width: 37%;
     min-height: 250px;
     left: 0;
@@ -566,6 +567,7 @@ body {
 
 .dropdown-menu {
     border-radius: 10px;
+    max-width: 290px;
     padding: 6px;
     border: 1px solid #f0f0f0;
     background-color: rgba(248, 249, 250, 0.7);
@@ -874,6 +876,56 @@ body {
     border: 1px solid #f0f0f0;
     transition: all ease 0.3s;
 }
+.btn-profile-tag:hover,
+.btn-profile-tag:active {
+    background-color: #f0f0f0;
+}
+
+.track-table-box {
+    margin-top: 6px;
+    padding: 5px 8px 5px 8px;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: transparent;
+    transition: all ease 0.24s;
+}
+.track-table-box:hover,
+.track-table-box:active {
+    border-bottom: 1px solid transparent;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+}
+.btn-track-table {
+    cursor: pointer;
+    border-radius: 8px;
+    background-color: transparent;
+    border: 0;
+    transition: all ease 0.24s;
+}
+.btn-track-table:hover,
+.btn-track-table:active {
+    background-color: #e0e0e0;
+    border-radius: 99px;
+}
+
+.btn-borderless-profile-tag {
+    cursor: pointer;
+    padding: 0;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    border: 0;
+    border-radius: 8px;
+    width: auto;
+    background-color: transparent;
+    transition: all ease 0.24s;
+}
+.btn-borderless-profile-tag:hover,
+.btn-borderless-profile-tag:active {
+    background-color: #f0f0f0;
+}
+
 .profile-tag:hover,
 .profile-tag:active {
     border: 1px solid #e0e0e0;
@@ -922,8 +974,51 @@ body {
     transition: all ease 0.3s;
 }
 
+.release-box-lg {
+    padding: 8px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    transition: all ease 0.3s;
+}
+.release-img-lg {
+    border-radius: 6px;
+    height: 215px;
+    width: 215px;
+    object-fit: cover;
+    transition: all ease 0.24s;
+}
+.release-img-box-lg {
+    border-radius: 8px;
+    height: 215px;
+    width: 215px;
+    font-size: 150px;
+    text-align: center;
+    background-color: #f0f0f0;
+    transition: all ease 0.24s;
+}
+.btn-release-title {
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #2b2b2b;
+    border-radius: 10px;
+    transition: all ease 0.24s;
+} 
+.btn-release-title:hover,
+.btn-release-title:active {
+    background-color: #e0e0e0;
+}
+
+.rounded-af {
+    border-radius: 99px !important;
+}
+
+.dropdown-item {
+    white-space: normal;
+}
+
 .release-box {
-    width: 30%;
+    width: 40%;
+    max-width: 40%;
     background-color: #f8f9fa;
     padding: 6px;
     cursor: pointer;
@@ -934,22 +1029,57 @@ body {
 .release-box:active {
     background-color: #e0e0e0;
 }
-.badge-standard
 .release-img {
     border-radius: 8px;
-    height: 125px;
+    height: 150px;
     width: 100%;
-    object-fit: contain;
+    object-fit: cover;
     transition: all ease 0.24s;
 }
 .release-img-box {
     border-radius: 8px;
-    height: 125px;
+    height: 150px;
     width: 100%;
-    font-size: 75px;
+    font-size: 85px;
     text-align: center;
     background-color: #f0f0f0;
     transition: all ease 0.24s;
+}
+
+.release-img-sm {
+    border-radius: 8px;
+    height: 55px;
+    width: 55px;
+    object-fit: cover;
+    transition: all ease 0.24s;
+}
+.release-img-box-sm {
+    padding: 4px;
+    border-radius: 8px;
+    height: 55px;
+    width: 55px;
+    font-size: 32px;
+    text-align: center;
+    background-color: #f0f0f0;
+    transition: all ease 0.24s;
+}
+
+.playlist-box {
+    padding: 5px;
+    cursor: pointer;
+    background-color: transparent;
+    color: #2b2b2b;
+    border-radius: 8px 8px 0 0;
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all ease 0.24s;
+}
+.playlist-box:hover,
+.playlist-box:active {
+    background-color: #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 8px;
 }
 
 .explicit-span {
@@ -971,6 +1101,16 @@ body {
 .artist-name-span:active {
     opacity: 0.925;
     padding-left: 2px;
+}
+
+.artist-search-span {
+    cursor: pointer;
+    text-decoration: none;
+    transition: all ease 0.24s;
+}
+.artist-search-span:hover,
+.artist-search-span:active {
+    text-decoration: underline;
 }
 
 .bg-chosen {
@@ -1235,7 +1375,8 @@ body {
         width: 100%;
     }
     .release-box {
-        width: 40%;
+        width: 50%;
+        max-width: 50%;
     }
     .badge-sm {
         font-size: 12px;
@@ -1259,6 +1400,7 @@ body {
     }
     .release-box {
         width: 55%;
+        max-width: 55%;
     }
     .badge-sm {
         font-size: 10px;

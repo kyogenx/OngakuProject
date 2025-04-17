@@ -22,6 +22,21 @@ namespace OngakuProject.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GenreTrack", b =>
+                {
+                    b.Property<int>("GenresId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TracksId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GenresId", "TracksId");
+
+                    b.HasIndex("TracksId");
+
+                    b.ToTable("GenreTrack");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
                 {
                     b.Property<int>("Id")
@@ -153,6 +168,21 @@ namespace OngakuProject.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("MoodTagTrack", b =>
+                {
+                    b.Property<int>("MoodTagsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TracksId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MoodTagsId", "TracksId");
+
+                    b.HasIndex("TracksId");
+
+                    b.ToTable("MoodTagTrack");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Album", b =>
@@ -287,6 +317,38 @@ namespace OngakuProject.Migrations
                     b.ToTable("Discs");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.Favorite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrackId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Favorites");
+                });
+
             modelBuilder.Entity("OngakuProject.Models.Genre", b =>
                 {
                     b.Property<int>("Id")
@@ -380,6 +442,50 @@ namespace OngakuProject.Migrations
                     b.ToTable("MoodTags");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.Playlist", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(360)
+                        .HasColumnType("nvarchar(360)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(90)
+                        .HasColumnType("nvarchar(90)");
+
+                    b.Property<byte>("PrivacyStatus")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("Shortname")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Playlists");
+                });
+
             modelBuilder.Entity("OngakuProject.Models.Track", b =>
                 {
                     b.Property<int>("Id")
@@ -397,12 +503,12 @@ namespace OngakuProject.Migrations
                     b.Property<string>("CoverImageUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CreditId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("GenreId")
-                        .HasColumnType("int");
 
                     b.Property<bool>("HasExplicit")
                         .HasColumnType("bit");
@@ -461,7 +567,9 @@ namespace OngakuProject.Migrations
 
                     b.HasIndex("AlbumId");
 
-                    b.HasIndex("GenreId");
+                    b.HasIndex("CreditId")
+                        .IsUnique()
+                        .HasFilter("[CreditId] IS NOT NULL");
 
                     b.HasIndex("LabelId");
 
@@ -489,16 +597,13 @@ namespace OngakuProject.Migrations
                     b.Property<int>("TrackId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
 
                     b.HasIndex("TrackId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("TrackArtist");
+                    b.ToTable("TrackArtists");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.TrackCredit", b =>
@@ -545,14 +650,19 @@ namespace OngakuProject.Migrations
                     b.Property<string>("SoundDesigner")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TrackId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MainArtistId");
 
+                    b.HasIndex("TrackId");
+
                     b.ToTable("TrackCredits");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.TrackGenre", b =>
+            modelBuilder.Entity("OngakuProject.Models.TrackPlaylist", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -560,36 +670,16 @@ namespace OngakuProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("GenreId")
-                        .HasColumnType("int");
+                    b.Property<DateTime?>("AddedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("TrackId")
+                    b.Property<int>("Order")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("GenreId");
-
-                    b.HasIndex("TrackId");
-
-                    b.ToTable("TrackGenres");
-                });
-
-            modelBuilder.Entity("OngakuProject.Models.TrackMood", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MoodTagId")
+                    b.Property<int>("PlaylistId")
                         .HasColumnType("int");
 
                     b.Property<int>("TrackId")
@@ -597,11 +687,11 @@ namespace OngakuProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MoodTagId");
+                    b.HasIndex("PlaylistId");
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("TrackMoods");
+                    b.ToTable("TrackPlaylists");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.User", b =>
@@ -748,6 +838,58 @@ namespace OngakuProject.Migrations
                     b.ToTable("UserImages");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.UserPlaylist", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AlbumId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<byte>("PinOrder")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int?>("PlaylistId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SavedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlbumId");
+
+                    b.HasIndex("PlaylistId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPlaylists");
+                });
+
+            modelBuilder.Entity("GenreTrack", b =>
+                {
+                    b.HasOne("OngakuProject.Models.Genre", null)
+                        .WithMany()
+                        .HasForeignKey("GenresId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OngakuProject.Models.Track", null)
+                        .WithMany()
+                        .HasForeignKey("TracksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
@@ -795,6 +937,21 @@ namespace OngakuProject.Migrations
                     b.HasOne("OngakuProject.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MoodTagTrack", b =>
+                {
+                    b.HasOne("OngakuProject.Models.MoodTag", null)
+                        .WithMany()
+                        .HasForeignKey("MoodTagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OngakuProject.Models.Track", null)
+                        .WithMany()
+                        .HasForeignKey("TracksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -848,11 +1005,41 @@ namespace OngakuProject.Migrations
                     b.Navigation("Album");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.Favorite", b =>
+                {
+                    b.HasOne("OngakuProject.Models.Track", "Track")
+                        .WithMany()
+                        .HasForeignKey("TrackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OngakuProject.Models.User", "User")
+                        .WithMany("Favorites")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Track");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OngakuProject.Models.MoodTag", b =>
                 {
                     b.HasOne("OngakuProject.Models.Album", null)
                         .WithMany("MoodTags")
                         .HasForeignKey("AlbumId");
+                });
+
+            modelBuilder.Entity("OngakuProject.Models.Playlist", b =>
+                {
+                    b.HasOne("OngakuProject.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Track", b =>
@@ -861,9 +1048,9 @@ namespace OngakuProject.Migrations
                         .WithMany("Tracks")
                         .HasForeignKey("AlbumId");
 
-                    b.HasOne("OngakuProject.Models.Genre", null)
-                        .WithMany("Tracks")
-                        .HasForeignKey("GenreId");
+                    b.HasOne("OngakuProject.Models.TrackCredit", "TrackCredit")
+                        .WithOne()
+                        .HasForeignKey("OngakuProject.Models.Track", "CreditId");
 
                     b.HasOne("OngakuProject.Models.Label", "Label")
                         .WithMany("Tracks")
@@ -883,20 +1070,24 @@ namespace OngakuProject.Migrations
 
                     b.Navigation("Lyrics");
 
+                    b.Navigation("TrackCredit");
+
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.TrackArtist", b =>
                 {
+                    b.HasOne("OngakuProject.Models.User", "User")
+                        .WithMany("TrackArtists")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OngakuProject.Models.Track", "Track")
                         .WithMany("TrackArtists")
                         .HasForeignKey("TrackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("OngakuProject.Models.User", "User")
-                        .WithMany("TrackArtists")
-                        .HasForeignKey("UserId");
 
                     b.Navigation("Track");
 
@@ -911,43 +1102,30 @@ namespace OngakuProject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("OngakuProject.Models.Track", "Track")
+                        .WithMany()
+                        .HasForeignKey("TrackId");
+
+                    b.Navigation("Track");
+
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.TrackGenre", b =>
+            modelBuilder.Entity("OngakuProject.Models.TrackPlaylist", b =>
                 {
-                    b.HasOne("OngakuProject.Models.Genre", "Genre")
-                        .WithMany()
-                        .HasForeignKey("GenreId")
+                    b.HasOne("OngakuProject.Models.Playlist", "Playlist")
+                        .WithMany("TrackPlaylists")
+                        .HasForeignKey("PlaylistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OngakuProject.Models.Track", "Track")
-                        .WithMany("TrackGenres")
+                        .WithMany("TrackPlaylists")
                         .HasForeignKey("TrackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Genre");
-
-                    b.Navigation("Track");
-                });
-
-            modelBuilder.Entity("OngakuProject.Models.TrackMood", b =>
-                {
-                    b.HasOne("OngakuProject.Models.MoodTag", "MoodTag")
-                        .WithMany("TrackMoods")
-                        .HasForeignKey("MoodTagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OngakuProject.Models.Track", "Track")
-                        .WithMany("TrackMoods")
-                        .HasForeignKey("TrackId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MoodTag");
+                    b.Navigation("Playlist");
 
                     b.Navigation("Track");
                 });
@@ -976,6 +1154,29 @@ namespace OngakuProject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.UserPlaylist", b =>
+                {
+                    b.HasOne("OngakuProject.Models.Album", "Album")
+                        .WithMany("UserPlaylists")
+                        .HasForeignKey("AlbumId");
+
+                    b.HasOne("OngakuProject.Models.Playlist", "Playlist")
+                        .WithMany("UserPlaylists")
+                        .HasForeignKey("PlaylistId");
+
+                    b.HasOne("OngakuProject.Models.User", "User")
+                        .WithMany("UserPlaylists")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Playlist");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OngakuProject.Models.Album", b =>
                 {
                     b.Navigation("AlbumGenres");
@@ -985,6 +1186,8 @@ namespace OngakuProject.Migrations
                     b.Navigation("MoodTags");
 
                     b.Navigation("Tracks");
+
+                    b.Navigation("UserPlaylists");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Country", b =>
@@ -995,8 +1198,6 @@ namespace OngakuProject.Migrations
             modelBuilder.Entity("OngakuProject.Models.Genre", b =>
                 {
                     b.Navigation("Albums");
-
-                    b.Navigation("Tracks");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Label", b =>
@@ -1013,27 +1214,31 @@ namespace OngakuProject.Migrations
                     b.Navigation("Tracks");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.MoodTag", b =>
+            modelBuilder.Entity("OngakuProject.Models.Playlist", b =>
                 {
-                    b.Navigation("TrackMoods");
+                    b.Navigation("TrackPlaylists");
+
+                    b.Navigation("UserPlaylists");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Track", b =>
                 {
                     b.Navigation("TrackArtists");
 
-                    b.Navigation("TrackGenres");
-
-                    b.Navigation("TrackMoods");
+                    b.Navigation("TrackPlaylists");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.User", b =>
                 {
+                    b.Navigation("Favorites");
+
                     b.Navigation("TrackArtists");
 
                     b.Navigation("TrackCredits");
 
                     b.Navigation("UserImages");
+
+                    b.Navigation("UserPlaylists");
                 });
 #pragma warning restore 612, 618
         }
