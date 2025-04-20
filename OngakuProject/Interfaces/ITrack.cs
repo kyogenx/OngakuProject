@@ -1,5 +1,6 @@
 ﻿using OngakuProject.Models;
 using OngakuProject.ViewModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace OngakuProject.Interfaces
 {
@@ -21,5 +22,6 @@ namespace OngakuProject.Interfaces
         public Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId);
         public Task<Track?> GetTrackInfoAsync(int Id, bool IsForAuthor = false);
         public IQueryable<Track>? GetStudioItems(int Id, bool IsForAuthor = false);
+        public ValidationResult? CreditValidation(string? Value, ValidationContext Context);
     }
 }

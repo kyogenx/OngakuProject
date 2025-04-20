@@ -776,8 +776,63 @@ body {
 }
 
 .x-row-sliding-only-box {
-    overflow: hidden;
-    overflow-x: auto;
+    overflow-y: hidden;
+    overflow-x: scroll;
+}
+.x-row-sliding-only-box::-webkit-scrollbar {
+    display: none;
+}
+
+.box-sticky-at-bottom {
+    z-index: 1000;
+    height: auto;
+    min-height: 75px;
+    max-height: 400px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid #f0f0f0;
+    padding: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    bottom: -1200px; /*56px - on open*/
+    background-color: white;
+    display: none; /*flex - on open*/
+    justify-content: center;
+    position: sticky;
+    width: 100%;
+    transition: all ease 0.3s;
+}
+
+.box-sticky-at-bottom-header {
+    padding: 2px 3px 3px 3px;
+    border-radius: 10px 10px 0 0;
+    border: 0;
+    border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+    transition: all ease 0.3s;
+}
+
+.btn-sticky-at-bottom {
+    margin-top: 10px;
+    cursor: pointer;
+    z-index: 1000;
+    padding: 6px;
+    border: 1px solid #f0f0f0;
+    color: #2b2b2b;
+    background-color: white;
+    bottom: 8px;
+    width: 85%;
+    text-align: center;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    transition: all ease 0.24s;
+}
+.btn-sticky-at-bottom:hover,
+.btn-sticky-at-bottom:active {
+    background-color: #f0f0f0;
 }
 
 .super-disabled {
@@ -991,7 +1046,7 @@ body {
     border-radius: 8px;
     height: 215px;
     width: 215px;
-    font-size: 150px;
+    font-size: 135px;
     text-align: center;
     background-color: #f0f0f0;
     transition: all ease 0.24s;
@@ -1048,17 +1103,17 @@ body {
 
 .release-img-sm {
     border-radius: 8px;
-    height: 55px;
-    width: 55px;
+    height: 45px;
+    width: 45px;
     object-fit: cover;
     transition: all ease 0.24s;
 }
 .release-img-box-sm {
     padding: 4px;
     border-radius: 8px;
-    height: 55px;
-    width: 55px;
-    font-size: 32px;
+    height: 45px;
+    width: 45px;
+    font-size: 26px;
     text-align: center;
     background-color: #f0f0f0;
     transition: all ease 0.24s;
@@ -1083,7 +1138,7 @@ body {
 }
 
 .explicit-span {
-    padding: 2px 9px 2px 9px;
+    padding: 1px 9px 2px 9px;
     border-radius: 8px;
     background-color: #f0f0f0;
     color: black;

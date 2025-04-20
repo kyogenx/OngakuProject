@@ -67,7 +67,7 @@ namespace OngakuProject.Repositories
 
         public IQueryable<Favorite>? GetFavorites(int Id, int Skip = 0, int Take = 30)
         {
-            if (Id > 0) return _context.Favorites.AsNoTracking().Where(f => f.UserId == Id && !f.IsDeleted).OrderByDescending(f => f.AddedAt).Select(f => new Favorite { Id = f.Id, Track = f.Track != null ? new Track { Id = f.Track.Id, Title = f.Track.Title, CoverImageUrl = f.Track.CoverImageUrl, UserId = f.Track.UserId, MainArtistName = f.Track.User!.Nickname, TrackArtists = f.Track.TrackArtists != null ? f.Track.TrackArtists.Select(ta => new TrackArtist { ArtistId = ta.ArtistId, ArtistName = ta.User!.Nickname }).ToList() : null } : null }).Skip(Skip).Take(Take);
+            if (Id > 0) return _context.Favorites.AsNoTracking().Where(f => f.UserId == Id && !f.IsDeleted).OrderByDescending(f => f.AddedAt).Select(f => new Favorite { Id = f.Id, Track = f.Track != null ? new Track { Id = f.Track.Id, HasExplicit = f.Track.HasExplicit, Title = f.Track.Title, CoverImageUrl = f.Track.CoverImageUrl, UserId = f.Track.UserId, MainArtistName = f.Track.User!.Nickname, TrackArtists = f.Track.TrackArtists != null ? f.Track.TrackArtists.Select(ta => new TrackArtist { ArtistId = ta.ArtistId, ArtistName = ta.User!.Nickname }).ToList() : null } : null }).Skip(Skip).Take(Take);
             else return null;
         }
 

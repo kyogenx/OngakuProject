@@ -4,6 +4,7 @@ using OngakuProject.Data;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace OngakuProject.Controllers
@@ -50,6 +51,17 @@ namespace OngakuProject.Controllers
                 }
             }
             else return Json(new { success = false, alert = "You need to sign in before uploading a track" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateCreditsInfo(TrackCredits_VM Model)
+        {
+            if (ModelState.IsValid)
+            {
+                int Result = await _track.UpdateCreditsOfTrackAsync(Model);
+                if (Result > 0) return Json(new { success = true, result = Model, id = Result });
+            }
+            return Json(new { success = false });
         }
 
         [HttpPost]

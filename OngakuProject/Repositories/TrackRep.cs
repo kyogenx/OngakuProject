@@ -4,6 +4,7 @@ using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
 using SixLabors.ImageSharp;
+using System.ComponentModel.DataAnnotations;
 
 namespace OngakuProject.Repositories
 {
@@ -62,9 +63,65 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
-        public Task<int> UpdateCreditsOfTrackAsync(TrackCredits_VM Model)
+        public async Task<int> UpdateCreditsOfTrackAsync(TrackCredits_VM Model)
         {
-            throw new NotImplementedException();
+            if (Model.Id > 0 && Model.MainVocalist != null)
+            {
+                string[]?[] Strings = [Model.Producer ?? null, Model.Composer ?? null, Model.Arranger ?? null, Model.Lyricist ?? null, Model.MainVocalist ?? null, Model.FeaturedArtists ?? null, Model.MixingEngineer ?? null, Model.MasteringEngineer ?? null, Model.RecordingEngineer ?? null, Model.SoundDesigner ?? null, Model.Instrumentalist ?? null];
+                string[]? ReadyStrings = [];
+
+                if (Strings != null)
+                {
+                    for (int i = 0; i < Strings.Length; i++)
+                    {
+                        string? TempValue = "";
+                        if (Strings[i] is not null)
+                        {
+                            for (int j = 0; j < Strings[i]?.Length; j++)
+                            {
+                                if (j == 0) TempValue = Strings[i]?[j];
+                                else TempValue += ", " + Strings[i]?[j];
+                            }
+                        }
+                        if(!String.IsNullOrWhiteSpace(TempValue))
+                        {
+                            ReadyStrings.Append(TempValue);
+                        }
+                    }
+                }
+
+                if(ReadyStrings is not null)
+                {
+                    bool CheckCreditsAvailability = await _context.TrackCredits.AsNoTracking().AnyAsync(t => t.TrackId == Model.Id && t.MainArtistId == Model.MainArtistId);
+                    if (CheckCreditsAvailability)
+                    {
+                        int Result = await _context.TrackCredits.AsNoTracking().Where(t => t.TrackId == Model.Id && t.MainArtistId == Model.MainArtistId).ExecuteUpdateAsync(t => t.SetProperty(t => t.Producer, ReadyStrings[0]).SetProperty(t => t.Composer, ReadyStrings[1]).SetProperty(t => t.Arranger, ReadyStrings[2]).SetProperty(t => t.Lyricist, ReadyStrings[3]).SetProperty(t => t.MainVocalist, ReadyStrings[4]).SetProperty(t => t.FeaturedArtists, ReadyStrings[5]).SetProperty(t => t.MixingEngineer, ReadyStrings[6]).SetProperty(t => t.MasteringEngineer, ReadyStrings[7]).SetProperty(t => t.RecordingEngineer, ReadyStrings[8]).SetProperty(t => t.SoundDesigner, ReadyStrings[9]).SetProperty(t => t.Instrumentalist, ReadyStrings[10]));
+                        if (Result > 0) return Model.Id;
+                    }
+                    else
+                    {
+                        //TrackCredit trackCreditSample=new TrackCredit()
+                        //{
+                        //    TrackId = Model.Id,
+                        //    MainArtistId = Model.MainArtistId,
+
+                        //}
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+        }
+
+        public ValidationResult? CreditValidation(string? ValueName, ValidationContext Context)
+        {
+            if (!String.IsNullOrWhiteSpace(ValueName))
+            {
+                List<string?>? NonValids = new List<string?>() { ",", "&", ";", ":", "/", "and", "|", "feat.", "or" };
+                if (NonValids.Any(v => v != null && ValueName.ToLower().Contains(v.ToLower()))) return new ValidationResult("\"Please enter only one person per field. Use a separate field for each person");
+                else return ValidationResult.Success;
+            }
+            else return new ValidationResult("Please, enter at least one person to store him as a valid member");
         }
 
         public async Task<int> UpdateTrackAsync(Track_VM Model)
