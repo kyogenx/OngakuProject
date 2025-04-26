@@ -31,6 +31,7 @@ namespace OngakuProject.Models
         public List<TrackArtist>? TrackArtists { get; set; }
         public List<TrackCredit>? TrackCredits { get; set; }
         public List<Favorite>? Favorites { get; set; }
+        public List<TrackHistory>? History { get; set; }
         public List<UserPlaylist>? UserPlaylists { get; set; } = new List<UserPlaylist>();
         [NotMapped]
         public int ImgId { get; set; }

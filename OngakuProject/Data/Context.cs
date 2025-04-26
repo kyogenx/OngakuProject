@@ -17,6 +17,7 @@ namespace OngakuProject.Data
         public DbSet<Label> Labels { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Lyrics> Lyrics { get; set; }
+        public DbSet<Language> Languages { get; set; }
         public DbSet<TrackArtist> TrackArtists { get; set; }
         public DbSet<MoodTag> MoodTags { get; set; }
         public DbSet<TrackCredit> TrackCredits { get; set; }
@@ -25,5 +26,6 @@ namespace OngakuProject.Data
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<TrackPlaylist> TrackPlaylists { get; set; }
         public DbSet<UserPlaylist> UserPlaylists { get; set; }
+        public DbSet<TrackHistory> TrackHistories { get; set; }
     }
 }

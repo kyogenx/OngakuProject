@@ -14,6 +14,10 @@
             <input type="hidden" name="Type" id="SearchForGenres_Type_Val" value="1" />
             <input type="hidden" name="Keyword" id="SearchForGenres_Keyword_Val" />
         </form>
+        <form method="get" asp-controller="Miscellaneous" asp-action="GetLanguages" id="GetLanguages_Form">
+            <input type="hidden" name="Keyword" id="GetLanguages_Keyword_Val" />
+            <input type="hidden" name="Type" id="GetLanguages_Type_Val" value="0" />
+        </form>
         <input type="hidden" id="CurrentUserInfo_Id_Val" value="@UserInfo.Id" />
         <form method="get" asp-controller="Track" asp-action="GetSingleInfo" id="GetSingleInfo_Form">
             <input type="hidden" name="Id" id="GSI_Id_Val" value="0" />
@@ -23,9 +27,9 @@
             <input type="hidden" name="Id" id="GPI_Id_Val" value="0" />
             <input type="hidden" name="UserId" value="@UserInfo.Id" />
         </form>
-        <form method="post" action="/Playlists/AddOrRemoveTheAsFavorite" id="AddOrRemoveTheAsFavorite_Form">
+        <form method="post" action="/Playlists/AddOrRemoveTheTrackAsFavorite" id="AddOrRemoveTheTrackAsFavorite_Form">
             <input type="hidden" name="TrackId" id="ARTAF_Id_Val" value="0" />
-            <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTAF_SbmtBtn"> <i class="fa-solid fa-star"></i> </button>
+            @* <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTAF_SbmtBtn"> <i class="fa-solid fa-star"></i> </button> *@
         </form>
     </div>
 
@@ -65,13 +69,100 @@
     </div> *@
 </div>
 
-<div class="box-lg-part shadow-sm" id="Primary_Container">
+<div class="box-lg-part shadow-sm" id="EditTrackLyrics_Container">
     <div class="box-lg-part-header p-2">
-        <div class="div-swiper mx-auto" id="Primary_Container-Swiper"></div>
+        <div class="div-swiper mx-auto" id="EditTrackLyrics_Container-Swiper"></div>
         <div class="hstack gap-1">
             <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
             <div class="ms-2">
-                <span class="h5" id="Primary_Container-Header_Lbl">Release Name</span>
+                <span class="h5" id="EditTrackLyrics_Container-Header_Lbl">Edit Lyrics</span>
+            </div>
+        </div>
+        <div class="box-bordered mt-1 p-1">
+            <div class="hstack gap-1">
+                <div>
+                    <img src="#" class="release-img-sm" id="ETL_Img" style="display: none;" />
+                    <div class="release-img-box-sm" id="ETL_Img_Box"> <i class="fa-solid fa-music"></i> </div>
+                </div>
+                <div class="ms-1">
+                    <span class="h6" id="ETL_TrackTitle_Lbl">Track Title</span>
+                    <br />
+                    <small class="card-text text-muted" id="ETL_TrackArtists_Span">Artists (all)</small>
+                </div>
+                <button type="button" class="btn btn-standard btn-previewer btn-tooltip btn-sm ms-auto" id="EditTrackLyricsPreview_BtnOpen" data-previewer-title="Lyrics Previewer" data-titles="UTL_Content_Title" data-content="UTL_Content_Val" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Review the lyrics before confirming"> <i class="fa-solid fa-eye"></i> </button>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="EditTrackLyrics_Box">
+        @* <div class="box-bordered text-center p-2 mt-5">
+            <h2 class="h2"> <i class="fa-solid fa-candy-cane"></i> </h2>
+            <h4 class="h4">Wordplays (Hints)</h4>
+            <small class="card-text text-muted">Identify select sections of the lyrics and incorporate nuanced wordplay elements to enrich their meaning</small>
+            <div class="box-standard text-start mt-3">
+                <span class="lyric-text">Never knowin' when to stop<br />Sunglasses indoors<br />Par for the course<div class="hint-span" id="HintExample_Span" data-hint="He’s at a lavish club, with go-go dancers and a fly scene. Moving around real cool and decked out head to toe, all to try and mask his loneliness">Lights in the floors and sweat on the walls<br />Cages and poles</div></span>
+            </div>
+        </div>
+        <div class="box-standard mt-2">
+            <span class="form-label fw-500 ms-1">Hint</span>
+            <div class="hstack gap-1 mt-1">
+                <div>
+                    <input type="hidden" id="UTL_HintText_Val" />
+                    <button type="button" class="btn btn-standard-bordered btn-form-replacer btn-sm" id="HintPlacer_Val-BtnReplacer" data-target="UTL_Hint_Val" data-initial-target="UTL_HintText_Val"> <i class="fa-solid fa-plus"></i> Add Hint</button>
+                </div>
+                <div class="vr"></div>
+                <div class="box-standard x-row-sliding-only-box ms-1" id="HintPlacer_Val-Box">
+                </div>
+            </div>
+            <textarea class="form-control form-textarea mt-2" rows="1" id="HintPlacer_Val" placeholder="Place your hint here"></textarea>
+        </div>
+        <div class="box-standard x-row-sliding-only-box mt-2" id="HintPlacer_Val-Box">
+
+        </div>
+        <div class="box-bordered mh-340 mt-2 p-2" id="HintPreview_Box">
+        </div> *@
+        <div class="mt-5 pt-3">
+            <form method="post" action="/Track/UpdateLyrics" id="UpdateTrackLyrics_Form">
+                <div>
+                    <span class="form-label fw-500 ms-1" id="UTL_Content_Title">Lyrics</span>
+                    <div class="mt-1">
+                        <input type="hidden" name="Id" id="UTL_TrackId_Val" value="0" />
+                        <input type="hidden" name="Hint" id="UTL_Hint_Val" />
+                        <button type="button" class="btn btn-standard-bordered btn-sm super-disabled opacity-100 me-1"> <i class="fa-solid fa-text-width"></i> Characters: <span id="UTL_Content_Val-Indicator_Span">0/4 000</span></button>
+                        <button type="button" class="btn btn-standard-bordered super-disabled opacity-100 btn-sm me-1"> <i class="fa-solid fa-align-left"></i> Rows: <span id="UTL_Content_Val-RowsIndicator_Span">0</span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-add-hint btn-tooltip btn-sm" data-value="UTL_Content_Val" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Drop a clever hint to reveal the deeper layers — wordplay, themes, or hidden gems. Shown whenever a listener hovers over the lyrics"> <i class="fa-solid fa-candy-cane"></i> Add Hint </button>
+                    </div>
+                    <textarea class="form-control form-textarea form-control-guard mt-1" rows="1" name="Content" id="UTL_Content_Val" placeholder="Paste lyrics here..." maxlength="4000" data-min-length="1" data-target="UpdateTrackLyrics_SbmtBtn"></textarea>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Paste the lyrics of the track here. Please review all necessary information in the section above, and edit as needed using the editor</small>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500 ms-1">Language</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="This setting helps with recommendations. If your track includes multiple languages, please select the primary one.<br/>Translations are available as a basic feature for <span class='fw-500'>all included languages</span>"> <i class="fa-solid fa-circle-info"></i> </button>
+                        <button type="button" class="btn btn-standard-bordered btn-get-form-languages btn-sm" id="GetAvailableLanguages_Btn"> <i class="fa-solid fa-language"></i> Choose a Language</button>
+                    </div>
+                    <input type="hidden" name="LanguageId" id="UTL_LanguageId_Val" value="0" />
+                    <input type="text" class="form-control mt-1" placeholder="Choose a language from the list" id="UTL_LanguageDisplay_Val" readonly />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="UTL_LanguageId_Val-Warn">Tap the button to view all available languages. Select the primary language of your track — this is used commonly for recommendations</small>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="UpdateTrackLyrics_SbmtBtn">Save Lyrics</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="box-lg-part shadow-sm" id="EditTrackCredits_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="EditTrackCredits_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="EditTrackCredits_Container-Header_Lbl">Edit Credits</span>
             </div>
         </div>
         <div class="box-bordered mt-1 p-1">
@@ -89,12 +180,12 @@
             </div>
         </div>
     </div>
-    <div class="box-lg-part-body mt-5" id="Primary_Box">
+    <div class="box-lg-part-body mt-5" id="EditTrackCredits_Box">
         <div class="box-vertical-switcher shadow-sm" id="SomeShitListed_Box">
             <div class="box-vertical-switcher-header hstack gap-1">
                 <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button>
             </div>
-            <div class="mt-2" id="SomeShitListed_Box-Items_Box">
+            <div class="mt-1" id="SomeShitListed_Box-Items_Box">
                 <span class="h5" id="SomeShitListed_Box-MembersQty_Lbl"></span>
                 <div></div>
                 <small class="card-text text-muted">Tap on each to remove</small>
@@ -103,11 +194,12 @@
             </div>
         </div>
 
-        <div class="mt-5 pt-2">
-            <form method="post" action="/Track/EditCredits" id="EditTrackCredits_Form">
+        <div class="mt-5 pt-3">
+            <form method="post" action="/Track/UpdateCredits" id="UpdateTrackCredits_Form">
                 <div>
                     <span class="form-label fw-500 ms-1">Main Vocalist(s)</span>
                     <div class="mt-1">
+                        <input type="hidden" name="Id" id="ETC_TrackId_Val" value="0" />
                         <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_MainVocalist_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn"> <i class="fa-solid fa-plus"></i> Add More</button>
                         <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn" data-prototype="ETC_MainVocalist_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
                         <input type="text" class="form-control form-control-juxtaposed mt-1" name="MainVocalist" id="ETC_MainVocalist_Val-0" placeholder="Enter the name of main vocalist" maxlength="250" data-index="0" data-update="ETCP_MainVocalists_Span" data-target="EditTrackCredits_SbmtBtn" />
@@ -135,45 +227,85 @@
                         <input type="text" class="form-control form-control-juxtaposed mt-1" name="Lyricist" id="ETC_Lyricist_Val-0" placeholder="Enter the name of lyricist" maxlength="250" data-index="0" data-update="ETCP_Lyricist_Val" data-target="EditTrackCredits_SbmtBtn" />
                     </div>
                 </div>
-                                <div class="mt-3" id="ETC_Lyricist_Box">
-                    <span class="form-label fw-500 ms-1">Lyricist(s)</span>
+                <div class="mt-3" id="ETC_Producers_Box" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Producer(s)</span>
                     <div class="mt-1">
-                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Lyricist_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn2"> <i class="fa-solid fa-plus"></i> Add More</button>
-                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn2" data-prototype="ETC_Lyricist_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
-                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Lyricist" id="ETC_Lyricist_Val-0" placeholder="Enter the name of lyricist" maxlength="250" data-index="0" data-update="ETCP_Lyricist_Val" data-target="EditTrackCredits_SbmtBtn" />
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Producer_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn3"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn3" data-prototype="ETC_Producer_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Producer" id="ETC_Producer_Val-0" placeholder="Enter the name of producer" maxlength="250" data-index="0" data-update="ETCP_Producer_Val" data-target="EditTrackCredits_SbmtBtn" />
                     </div>
                 </div>
-                <div class="mt-3" id="ETC_Lyricist_Box">
-                    <span class="form-label fw-500 ms-1">Lyricist(s)</span>
-                    <div class="mt-1">
-                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Lyricist_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn2"> <i class="fa-solid fa-plus"></i> Add More</button>
-                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn2" data-prototype="ETC_Lyricist_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
-                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Lyricist" id="ETC_Lyricist_Val-0" placeholder="Enter the name of lyricist" maxlength="250" data-index="0" data-update="ETCP_Lyricist_Val" data-target="EditTrackCredits_SbmtBtn" />
-                    </div>
-                </div>
-                <div class="mt-3" id="ETC_Arranger_Box" style="display: none;">
+                <div class="mt-3" id="ETC_Arranger_Box" data-input="ETC_Arranger_Val" style="display: none;">
                     <span class="form-label fw-500 ms-1">Arranger(s)</span>
                     <div class="mt-1">
-                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Arranger_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn3"> <i class="fa-solid fa-plus"></i> Add More</button>
-                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn3" data-prototype="ETC_Arranger_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Arranger_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn4"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn4" data-prototype="ETC_Arranger_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
                         <input type="text" class="form-control form-control-juxtaposed mt-1" name="Arranger" id="ETC_Arranger_Val-0" placeholder="Enter the name of arranger" maxlength="250" data-index="0" data-update="ETCP_Arranger_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_FeaturedArtists_Box" data-input="ETC_FeaturedArtists_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Featured Artist(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_FeaturedArtists_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn5"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn5" data-prototype="ETC_FeaturedArtists_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="FeaturedArtists" id="ETC_FeaturedArtists_Val-0" placeholder="Enter the name of featured artist" maxlength="250" data-index="0" data-update="ETCP_FeaturedArtists_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_Instrumentalists_Box" data-input="ETC_Instrumentalists_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Instrumentalist(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Instrumentalists_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn6"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn6" data-prototype="ETC_Instrumentalists_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Instrumentalists" id="ETC_Instrumentalists_Val-0" placeholder="Enter the name of instrumentalist" maxlength="250" data-index="0" data-update="ETCP_Instrumentalists_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_MixingEngineers_Box" data-input="ETC_MixingEngineers_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Mixing Engineer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_MixingEngineers_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn7"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn7" data-prototype="ETC_MixingEngineers_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="MixingEngineers" id="ETC_MixingEngineers_Val-0" placeholder="Enter the name of mixing engineer" maxlength="250" data-index="0" data-update="ETCP_MixingEngineers_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_MasteringEngineers_Box" data-input="ETC_MasteringEngineers_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Mastering Engineer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_MasteringEngineers_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn8"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn8" data-prototype="ETC_MixingEngineers_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="MasteringEngineers" id="ETC_MasteringEngineers_Val-0" placeholder="Enter the name of mastering engineer" maxlength="250" data-index="0" data-update="ETCP_MasteringEngineers_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_RecordingEngineers_Box" data-input="ETC_RecordingEngineers_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Recording Engineer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_RecordingEngineers_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn9"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn9" data-prototype="ETC_RecordingEngineers_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="RecordingEngineers" id="ETC_RecordingEngineers_Val-0" placeholder="Enter the name of recording engineer" maxlength="250" data-index="0" data-update="ETCP_RecordingEngineers_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_SoundDesigners_Box" data-input="ETC_SoundDesigners_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Sound Designer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_SoundDesigners_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn10"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn10" data-prototype="ETC_SoundDesigners_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="RecordingEngineers" id="ETC_SoundDesigners_Val-0" placeholder="Enter the name of recording engineer" maxlength="250" data-index="0" data-update="ETCP_SoundDesigners_Val" data-target="EditTrackCredits_SbmtBtn" />
                     </div>
                 </div>
                 <div class="box-sticky-at-bottom mx-auto shadow-sm" id="RoleSticky_Box">
                     <div class="box-sticky-at-bottom-header">
                         <div class="hstack gap-1">
                             <span class="h6">Choose Roles to Add</span>
-                            <button type="button" class="btn btn-standard btn-close-sticky-box btn-sm ms-auto" id="RoleSticky_Box-BtnClose">Done</button>
                         </div>
                     </div>
                     <div class="box-standard mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100" id="ETC_Producers_Box-BtnShow">Producer(s) <span class="float-end"> <i class="fa-solid fa-gears"></i> </span></button>
                         <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100" id="ETC_Arranger_Box-BtnShow">Arranger(s) <span class="float-end"> <i class="fa-solid fa-wave-square"></i> </span></button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2">Featured Artist(s) <span class="float-end"> <i class="fa-solid fa-user-plus"></i> </span></button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2">Instrumentalist(s) <span class="float-end"> <i class="fa-solid fa-guitar"></i> </span></button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2">Mixing Engineer(s) <span class="float-end"> <i class="fa-solid fa-gears"></i> </span></button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2">Mastering Engineer(s) <span class="float-end"> <i class="fa-solid fa-code-pull-request"></i> </span></button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2">Recording Engineer(s) <span class="float-end"> <i class="fa-solid fa-headset"></i> </span></button>
-                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2">Sound Designer(s) <span class="float-end"> <i class="fa-solid fa-braille"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_FeaturedArtists_Box-BtnShow">Featured Artist(s) <span class="float-end"> <i class="fa-solid fa-user-plus"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_Instrumentalists_Box-BtnShow">Instrumentalist(s) <span class="float-end"> <i class="fa-solid fa-guitar"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_MixingEngineers_Box-BtnShow">Mixing Engineer(s) <span class="float-end"> <i class="fa-solid fa-gears"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_MasteringEngineers_Box-BtnShow">Mastering Engineer(s) <span class="float-end"> <i class="fa-solid fa-code-pull-request"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_RecordingEngineers_Box-BtnShow">Recording Engineer(s) <span class="float-end"> <i class="fa-solid fa-headset"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_SoundDesigners_Box-BtnShow">Sound Designer(s) <span class="float-end"> <i class="fa-solid fa-braille"></i> </span></button>
                     </div>
                 </div>
                 <button type="button" class="btn btn-sticky-at-bottom btn-open-sticky-box mx-auto shadow-sm" id="RoleSticky_Box-BtnOpen">Add More Roles</button>
@@ -539,19 +671,21 @@
                         <input type="hidden" name="Url" id="StreamTheTrack_Url_Val" />
                     </form>
                     <form method="post" action="/Playlists/Unfavor" id="RemoveFromFavorites_Form">
-                        <input type="hidden" name="Id" id="UnfavorTheTrack_Id_Val" />
+                        <input type="hidden" name="Id" id="UnfavorThePlaylist_Id_Val" />
                     </form>
                     <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
                 </div>
                 <div class="box-standard text-center ms-auto">
                     <div>
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend btn-sm me-1"> <i class="fa-solid fa-outdent"></i> </button>
-                        <button type="button" class="btn btn-ongaku-player btn-sm fw-500 me-3" id="OngakuPlayer_VolumeMute_Btn">40</button>
-                        <button type="button" class="btn btn-ongaku-player btn-sm me-1"> <i class="fa-solid fa-repeat"></i> </button>
-                        <button type="button" class="btn btn-ongaku-player btn-sm"> <i class="fa-solid fa-shuffle"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend me-1"> <i class="fa-solid fa-outdent"></i> </button>
+                        <button type="button" class="btn btn-badged btn-playback-rate me-1" data-speed="1" data-target="OngakuPlayer_Audio">1.0x</button>
+                        <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen me-1" data-status="0"> <i class="fa-solid fa-repeat"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-audio-shuffle text-unchosen"> <i class="fa-solid fa-shuffle"></i> </button>
                     </div>
-                    <div class="mt-1 ps-1 pe-1">
-                        <input type="range" class="form-range-slider volume-range-slider" id="OngakuPlayer_Volume_Val" max="100" value="40" step="1" data-value-label="OngakuPlayer_VolumeMute_Btn" />
+                    <div class="hstack gap-1 mt-1 ps-1 pe-1">
+                        <button type="button" class="btn btn-ongaku-player btn-volume-mute btn-sm me-1" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-off"></i> </button>
+                        <input type="range" class="form-range-slider volume-range-slider" id="OngakuPlayer_Volume_Val" max="100" value="100" step="1" data-target="OngakuPlayer_Audio" />
+                        <button type="button" class="btn btn-ongaku-player btn-volume-max btn-sm ms-1" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-high"></i> </button>
                     </div>
                 </div>
             </div>
@@ -570,14 +704,14 @@
             <div class="box-standard ms-auto" id="TrackButtons_Box">
                 <div>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend btn-sm d-touch-none me-1"> <i class="fa-solid fa-indent"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-sm me-1"> <i class="fa-solid fa-star"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-track-favor-unfavor btn-sm me-1"> <i class="fa-solid fa-star"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward btn-sm me-1"> <i class="fa-solid fa-backward"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1"> <i class="fa-solid fa-play"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward btn-sm"> <i class="fa-solid fa-forward"></i> </button>
                 </div>
                 <div class="hstack gap-1 mt-1">
                     <small class="card-text text-muted ongaku-track-duration-current">0:00</small>
-                    <div class="ongaku-track-duration-line">
+                    <div class="ongaku-track-duration-line" id="OngakuPlayer_TrackDuration_Box">
                         <div class="ongaku-track-current-duration-line"></div>
                     </div>
                     <small class="card-text text-muted ongaku-track-duration-left">0:00</small>
@@ -604,23 +738,23 @@
                 </div>
                 <div class="hstack gap-1 mt-3 w-100">
                     <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
-                    <div class="ongaku-track-duration-line-enlarged">
+                    <div class="ongaku-track-duration-line-enlarged" id="OngakuPlayer_TrackDurationEnlarged_Box">
                         <div class="ongaku-track-current-duration-line-enlarged"></div>
                     </div>
                     <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
                 </div>
                 <div class="row box-standard text-center mt-3" id="TrackButtons_Enlarged_Box">
                     <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged"> <i class="fa-solid fa-star"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged btn-track-favor-unfavor"> <i class="fa-solid fa-star"></i> </button>
                     </div>
                     <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-backward"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward"> <i class="fa-solid fa-backward"></i> </button>
                     </div>
                     <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-play"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-ongaku-player-enlarged" id="OngakuPlayer_PlayPause_BtnFirstEnlarged"> <i class="fa-solid fa-play"></i> </button>
                     </div>
                     <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-forward"></i> </button>
+                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i> </button>
                     </div>
                 </div>
             </div>
@@ -640,69 +774,85 @@
             </div>
             <div class="hstack gap-1 text-center mt-3 w-100">
                 <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
-                <div class="ongaku-track-duration-line-enlarged">
+                <div class="ongaku-track-duration-line-enlarged" id="OngakuPlayer_TrackDurationEnlarged_Dublicate_Box">
                     <div class="ongaku-track-current-duration-line-enlarged"></div>
                 </div>
                 <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
             </div>
             <div class="box-standard text-center row mt-3" id="TrackButtons_Enlarged_Box">
                 <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged"> <i class="fa-solid fa-star"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged btn-track-favor-unfavor"> <i class="fa-solid fa-star"></i> </button>
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-backward"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward"> <i class="fa-solid fa-backward"></i> </button>
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-play"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-ongaku-player-enlarged" id="OngakuPlayer_PlayPause_BtnSecondEnlarged"> <i class="fa-solid fa-play"></i> </button>
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged"> <i class="fa-solid fa-forward"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i> </button>
                 </div>
             </div>
         </div>
 
-        <div class="box-standard mt-3 mt-sm-2">
-            <span class="h5">Continue Playing</span>
-            <div>
-                <small class="card-text text-muted">from <span id="OngakuPlayer_CurrentPlaylist_Span">undefined playlist</span></small>
-            </div>
-            <div class="ongaku-queue-box mt-3 mt-sm-2" id="OngakuPlayer_CurrentPlaylist_Box">
-                <div class="text-center">
-                    <h3 class="h3"> <i class="fa-solid fa-list"></i> </h3>
-                    <h5 class="h5">Nothing to Play</h5>
-                    <small class="card-text text-muted">no songs is queue to play</small>
+        <div class="box-standard">
+            <div class="box-standard mt-3 mt-sm-2" id="OngakuPlayer_MainAddLayer_Box">
+                <span class="h5">Continue Playing</span>
+                <div>
+                    <small class="card-text text-muted">from <span id="OngakuPlayer_CurrentPlaylist_Span">undefined playlist</span></small>
+                </div>
+                <div class="ongaku-queue-box mt-3 mt-sm-2" id="OngakuPlayer_CurrentPlaylist_Box">
+                    <div class="text-center">
+                        <h3 class="h3"> <i class="fa-solid fa-list"></i> </h3>
+                        <h5 class="h5">Nothing to Play</h5>
+                        <small class="card-text text-muted">no songs is queue to play</small>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="box-standard text-center mt-2">
-            <div class="hstack gap-1">
-                <button type="button" class="btn btn-ongaku-player"> <i class="fa-solid fa-volume-off"></i> </button>
-                <div class="w-100 ms-1 me-1">
-                    <input type="range" class="form-range-slider form-range-slider-xl volume-form-range-slider" min="0" max="100" value="40" />
+            <div class="box-standard" id="OngakuPlayer_NonMainAddLayer_Box" style="display: none;">
+            </div>
+
+            <div class="box-standard text-center mt-2">
+                <div class="hstack gap-1">
+                    <button type="button" class="btn btn-ongaku-player btn-volume-mute" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-off"></i> </button>
+                    <div class="w-100 ms-1 me-1">
+                        <input type="range" class="form-range-slider form-range-slider-xl volume-range-slider" min="0" max="100" value="100" data-target="OngakuPlayer_Audio" />
+                    </div>
+                    <button type="button" class="btn btn-ongaku-player btn-volume-max" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-high"></i> </button>
+                    <div class="dropdown">
+                        <button class="btn btn-ongaku-player" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                        <ul class="dropdown-menu shadow-sm p-1">
+                            <li><button type="button" class="dropdown-item">Add to a Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button></li>
+                            <li><button type="button" class="dropdown-item">Go to Album <span class="float-end ms-1"> <i class="fa-solid fa-record-vinyl"></i> </span></button></li>
+                            <li><button type="button" class="dropdown-item">Add to Queue <span class="float-end ms-1"> <i class="fa-solid fa-headphones"></i> </span></button></li>
+                        </ul>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-ongaku-player"> <i class="fa-solid fa-volume-high"></i> </button>
-                <div class="dropdown">
-                    <button class="btn btn-ongaku-player" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-                    <ul class="dropdown-menu shadow-sm p-1">
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-folder-plus"></i> Add to a Playlist</button></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-record-vinyl"></i> Go to Album</button></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-headphones"></i> Create Queue</button></li>
-                    </ul>
+            </div>
+            <div class="box-standard row mt-2">
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-badged btn-playback-rate w-100" data-target="OngakuPlayer_Audio" data-speed="1">1.0x</button>
                 </div>
-            </div>
-        </div>
-        <div class="box-standard row mt-2">
-            <div class="col">
-                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-repeat"></i> </button>
-            </div>
-            <div class="col">
-                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-shuffle"></i> </button>
-            </div>
-            <div class="col">
-                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-quote-right"></i> </button>
-            </div>
-            <div class="col">
-                <button type="button" class="btn btn-ongaku-player w-100"> <i class="fa-solid fa-circle-info"></i> </button>
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-audio-loop text-unchosen w-100" data-status="0"> <i class="fa-solid fa-repeat"></i> </button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-audio-shuffle text-unchosen w-100" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button>
+                </div>
+                <div class="col">
+                    <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form">
+                        <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" />
+                        <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" />
+                        <button type="submit" class="btn btn-ongaku-player btn-ongaku-player-additional super-disabled w-100" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button>
+                    </form>
+                </div>
+                <div class="col">
+                    <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form">
+                        <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" />
+                        <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" />
+                        <button type="submit" class="btn btn-ongaku-player btn-ongaku-player-additional super-disabled w-100" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -786,7 +936,7 @@
     </div>
 </div> *@
 
-<div class="box-lg-part shadow-sm" id="@* Primary_Container *@">
+<div class="box-lg-part shadow-sm" id="Primary_Container">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">
             <div class="dropdown">

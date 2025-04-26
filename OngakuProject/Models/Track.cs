@@ -43,9 +43,11 @@ namespace OngakuProject.Models
         public List<MoodTag>? MoodTags { get; set; } = new List<MoodTag>();
         public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
         public List<TrackArtist>? TrackArtists { get; set; }
-        [NotMapped]
-        public int NextTrackId { get; set; }
+        public List<TrackHistory>? TrackHistory { get; set; }
+        public List<Favorite>? Favorite { get; set; }
         [NotMapped]
         public string? MainArtistName { get; set; }
+        [NotMapped]
+        public bool IsFavorite { get; set; }
     }
 }

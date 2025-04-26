@@ -28,6 +28,7 @@ builder.Services.AddTransient<ITrack, TrackRep>();
 builder.Services.AddTransient<IPlaylist, PlaylistRep>();
 builder.Services.AddTransient<ICountry, CountryRep>();
 builder.Services.AddTransient<IGenre, GenreRep>();
+builder.Services.AddScoped<IMiscellaneous, MiscellaneousRep>();
 builder.Services.AddTransient<IMail, MailRep>();
 builder.Services.AddMemoryCache();
 

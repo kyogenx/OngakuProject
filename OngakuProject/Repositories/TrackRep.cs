@@ -4,6 +4,7 @@ using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Tiff.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace OngakuProject.Repositories
@@ -68,10 +69,9 @@ namespace OngakuProject.Repositories
             if (Model.Id > 0 && Model.MainVocalist != null)
             {
                 string[]?[] Strings = [Model.Producer ?? null, Model.Composer ?? null, Model.Arranger ?? null, Model.Lyricist ?? null, Model.MainVocalist ?? null, Model.FeaturedArtists ?? null, Model.MixingEngineer ?? null, Model.MasteringEngineer ?? null, Model.RecordingEngineer ?? null, Model.SoundDesigner ?? null, Model.Instrumentalist ?? null];
-                string[]? ReadyStrings = [];
-
                 if (Strings != null)
                 {
+                    TrackCredit? trackCreditSample = new TrackCredit();
                     for (int i = 0; i < Strings.Length; i++)
                     {
                         string? TempValue = "";
@@ -83,30 +83,67 @@ namespace OngakuProject.Repositories
                                 else TempValue += ", " + Strings[i]?[j];
                             }
                         }
-                        if(!String.IsNullOrWhiteSpace(TempValue))
+
+                        if (!String.IsNullOrWhiteSpace(TempValue))
                         {
-                            ReadyStrings.Append(TempValue);
+                            switch (i)
+                            {
+                                case 0:
+                                    trackCreditSample.MainVocalist = TempValue;
+                                    break;
+                                case 1:
+                                    trackCreditSample.Composer = TempValue;
+                                    break;
+                                case 2:
+                                    trackCreditSample.Lyricist = TempValue;
+                                    break;
+                                case 3:
+                                    trackCreditSample.Producer = TempValue;
+                                    break;
+                                case 4:
+                                    trackCreditSample.Arranger = TempValue;
+                                    break;
+                                case 5:
+                                    trackCreditSample.FeaturedArtists = TempValue;
+                                    break;
+                                case 6:
+                                    trackCreditSample.Instrumentalist = TempValue;
+                                    break;
+                                case 7:
+                                    trackCreditSample.MixingEngineer = TempValue;
+                                    break;
+                                case 8:
+                                    trackCreditSample.MasteringEngineer = TempValue;
+                                    break;
+                                case 9:
+                                    trackCreditSample.RecordingEngineer = TempValue;
+                                    break;
+                                case 10:
+                                    trackCreditSample.SoundDesigner = TempValue;
+                                    break;
+                                default:
+                                    trackCreditSample.MainVocalist = TempValue;
+                                    break;
+                            }
                         }
                     }
-                }
-
-                if(ReadyStrings is not null)
-                {
-                    bool CheckCreditsAvailability = await _context.TrackCredits.AsNoTracking().AnyAsync(t => t.TrackId == Model.Id && t.MainArtistId == Model.MainArtistId);
-                    if (CheckCreditsAvailability)
+                    if (trackCreditSample is not null)
                     {
-                        int Result = await _context.TrackCredits.AsNoTracking().Where(t => t.TrackId == Model.Id && t.MainArtistId == Model.MainArtistId).ExecuteUpdateAsync(t => t.SetProperty(t => t.Producer, ReadyStrings[0]).SetProperty(t => t.Composer, ReadyStrings[1]).SetProperty(t => t.Arranger, ReadyStrings[2]).SetProperty(t => t.Lyricist, ReadyStrings[3]).SetProperty(t => t.MainVocalist, ReadyStrings[4]).SetProperty(t => t.FeaturedArtists, ReadyStrings[5]).SetProperty(t => t.MixingEngineer, ReadyStrings[6]).SetProperty(t => t.MasteringEngineer, ReadyStrings[7]).SetProperty(t => t.RecordingEngineer, ReadyStrings[8]).SetProperty(t => t.SoundDesigner, ReadyStrings[9]).SetProperty(t => t.Instrumentalist, ReadyStrings[10]));
-                        if (Result > 0) return Model.Id;
-                    }
-                    else
-                    {
-                        //TrackCredit trackCreditSample=new TrackCredit()
-                        //{
-                        //    TrackId = Model.Id,
-                        //    MainArtistId = Model.MainArtistId,
+                        bool CheckCreditsAvailability = await _context.TrackCredits.AsNoTracking().AnyAsync(t => t.TrackId == Model.Id && t.MainArtistId == Model.MainArtistId);
+                        if (CheckCreditsAvailability)
+                        {
+                            int Result = await _context.TrackCredits.AsNoTracking().Where(t => t.TrackId == Model.Id && t.MainArtistId == Model.MainArtistId).ExecuteUpdateAsync(t => t.SetProperty(t => t.Producer, trackCreditSample.Producer).SetProperty(t => t.Composer, trackCreditSample.Composer).SetProperty(t => t.Arranger, trackCreditSample.Arranger).SetProperty(t => t.Lyricist, trackCreditSample.Arranger).SetProperty(t => t.MainVocalist, trackCreditSample.MainVocalist).SetProperty(t => t.FeaturedArtists, trackCreditSample.FeaturedArtists).SetProperty(t => t.MixingEngineer, trackCreditSample.MixingEngineer).SetProperty(t => t.MasteringEngineer, trackCreditSample.MasteringEngineer).SetProperty(t => t.RecordingEngineer, trackCreditSample.RecordingEngineer).SetProperty(t => t.SoundDesigner, trackCreditSample.SoundDesigner).SetProperty(t => t.Instrumentalist, trackCreditSample.Instrumentalist));
+                            if (Result > 0) return Model.Id;
+                        }
+                        else
+                        {
+                            trackCreditSample.TrackId = Model.Id;
+                            trackCreditSample.MainArtistId = Model.MainArtistId;
+                            await _context.AddAsync(trackCreditSample);
+                            await _context.SaveChangesAsync();
 
-                        //}
-                        return 1;
+                            return Model.Id;
+                        }
                     }
                 }
             }
@@ -281,12 +318,12 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
-        public async Task<Track?> GetTrackInfoAsync(int Id, bool IsForAuthor = false)
+        public async Task<Track?> GetTrackInfoAsync(int Id, int UserId = 0, bool IsForAuthor = false)
         {
             if(Id > 0)
             {
                 if (IsForAuthor) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, Status = t.Status, CoverImageUrl = t.CoverImageUrl, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, AddedAt = t.AddedAt }).FirstOrDefaultAsync();
-                else return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, CoverImageUrl = t.CoverImageUrl, UserId = t.UserId, User = t.User != null ? new User { Nickname = t.User.Nickname } : null, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null }).FirstOrDefaultAsync();
+                else return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, CoverImageUrl = t.CoverImageUrl, UserId = t.UserId, User = t.User != null ? new User { Nickname = t.User.Nickname } : null, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
             }
             return null;
         }
@@ -301,19 +338,15 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
-        public async Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId)
+        public async Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId, int UserId = 0)
         {
             if (Id > 0)
             {
-                Track? TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, TrackFileUrl = t.TrackFileUrl, NextTrackId = 0 }).FirstOrDefaultAsync();
-                if (TrackInfo is not null)
-                {
-                    if (PlaylistId > 0)
-                    {
-
-                    }
-                    else return TrackInfo;
-                }
+                Track? TrackInfo = null;
+                if (UserId > 0) TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, TrackFileUrl = t.TrackFileUrl, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
+                else TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, TrackFileUrl = t.TrackFileUrl, IsFavorite = false }).FirstOrDefaultAsync();
+                
+                if (TrackInfo is not null) return TrackInfo;
             }
             return null;
         }
@@ -327,6 +360,45 @@ namespace OngakuProject.Repositories
                 if (Result > 0) return CurrentStreams;
             }
             return -1;
+        }
+
+        public async Task<TrackCredit?> GetTrackCreditsAsync(int Id)
+        {
+            if (Id > 0) return await _context.TrackCredits.AsNoTracking().Where(t => t.TrackId == Id).Select(t => new TrackCredit { MainVocalist = t.MainVocalist, FeaturedArtists = t.FeaturedArtists, Lyricist = t.Lyricist, Composer = t.Composer, Arranger = t.Arranger, Instrumentalist = t.Instrumentalist, MasteringEngineer = t.MasteringEngineer, MixingEngineer = t.MixingEngineer, RecordingEngineer = t.RecordingEngineer, Producer = t.Producer, SoundDesigner = t.SoundDesigner }).FirstOrDefaultAsync();
+            else return null;
+        }
+
+        public async Task<int> UpdateLyricsOfTheTrackAsync(Lyrics_VM Model)
+        {
+            if(Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.Content))
+            {
+                int? HasLyrics = await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Model.Id).Select(t => t.Id).FirstOrDefaultAsync();
+                if(HasLyrics is not null)
+                {
+                    int Result = await _context.Lyrics.AsNoTracking().Where(t => t.Id == HasLyrics).ExecuteUpdateAsync(t => t.SetProperty(t => t.Content, Model.Content).SetProperty(t => t.LanguageId, Model.LanguageId));
+                    if (Result > 0) return HasLyrics.Value;
+                }
+                else
+                {
+                    Lyrics lyricsSample = new Lyrics
+                    {
+                        Content = Model.Content,
+                        LanguageId = Model.LanguageId,
+                        TrackId = Model.Id
+                    };
+                    await _context.AddAsync(lyricsSample);
+                    await _context.SaveChangesAsync();
+
+                    return lyricsSample.Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<Lyrics?> GetLyricsAsync(int Id)
+        {
+            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id).Select(t => new Lyrics { Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
+            else return null;
         }
     }
 }

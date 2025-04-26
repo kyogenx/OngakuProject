@@ -78,6 +78,30 @@ namespace OngakuProject.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> UpdateCredits(TrackCredits_VM Model)
+        {
+            string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Model.MainArtistId = _profile.ParseCurrentUserId(Id);
+            if (ModelState.IsValid)
+            {
+                int Result = await _track.UpdateCreditsOfTrackAsync(Model);
+                if (Result > 0) return Json(new { success = true, id = Result, result = Model });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateLyrics(Lyrics_VM Model)
+        {
+            string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Model.UserId = _profile.ParseCurrentUserId(UserIdStr);
+            int Result = await _track.UpdateLyricsOfTheTrackAsync(Model);
+
+            if (Result > 0) return Json(new { success = true, result = Model, id = Result });
+            else return Json(new { success = false });
+        }
+
+        [HttpPost]
         public async Task<IActionResult> UpdateStatus(int Id, int Status)
         {
             string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -93,8 +117,15 @@ namespace OngakuProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSingleInfo(int Id, bool IsForAuthor = false)
         {
-            Track? TrackInfo = await _track.GetTrackInfoAsync(Id, IsForAuthor);
-            if (TrackInfo is not null) return Json(new { success = true, isForAuthor = IsForAuthor, result = TrackInfo });
+            int UserId = 0;
+            if(User.Identity.IsAuthenticated)
+            {
+                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                UserId = _profile.ParseCurrentUserId(UserId_Str);
+            }
+
+            Track? TrackInfo = await _track.GetTrackInfoAsync(Id, UserId, IsForAuthor);
+            if (TrackInfo is not null) return Json(new { success = true, userId = UserId, isForAuthor = IsForAuthor, result = TrackInfo });
             else return Json(new { success = false });
         }
 
@@ -119,7 +150,13 @@ namespace OngakuProject.Controllers
         [HttpGet]
         public async Task<IActionResult> Load(int Id, int PlaylistId)
         {
-            Track? TrackResult = await _track.LoadTheTrackAsync(Id, PlaylistId);
+            int UserId = 0;
+            if (User.Identity.IsAuthenticated)
+            {
+                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                UserId = _profile.ParseCurrentUserId(UserId_Str);
+            }
+            Track? TrackResult = await _track.LoadTheTrackAsync(Id, PlaylistId, UserId);
             if (TrackResult is not null) return Json(new { success = true, playlistId = PlaylistId, result = TrackResult });
             else return Json(new { success = false });
         }
@@ -141,6 +178,22 @@ namespace OngakuProject.Controllers
                 }
             }
             return NotFound();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTrackCredits(int Id, byte Type)
+        {
+            TrackCredit? Result = await _track.GetTrackCreditsAsync(Id);
+            if (Result is not null) return Json(new { success = true, type = Type, id = Id, result = Result });
+            else return Json(new { success = false, id = Id, type = Type });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLyrics(int Id, byte Type)
+        {
+            Lyrics? Result = await _track.GetLyricsAsync(Id);
+            if (Result is not null) return Json(new { success = true, type = Type, id = Id, result = Result });
+            else return Json(new { success = false, id = Id, type = Type });
         }
     }
 }

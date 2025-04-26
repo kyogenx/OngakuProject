@@ -395,6 +395,25 @@ namespace OngakuProject.Migrations
                     b.ToTable("Labels");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.Language", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("LanguageCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Languages");
+                });
+
             modelBuilder.Entity("OngakuProject.Models.Lyrics", b =>
                 {
                     b.Property<int>("Id")
@@ -406,13 +425,23 @@ namespace OngakuProject.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Hints")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Language")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TrackId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("TrackId");
 
                     b.ToTable("Lyrics");
                 });
@@ -671,6 +700,35 @@ namespace OngakuProject.Migrations
                     b.HasIndex("TrackId");
 
                     b.ToTable("TrackCredits");
+                });
+
+            modelBuilder.Entity("OngakuProject.Models.TrackHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsListened")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ListenedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TrackId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TrackHistories");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.TrackPlaylist", b =>
@@ -1035,6 +1093,23 @@ namespace OngakuProject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OngakuProject.Models.Lyrics", b =>
+                {
+                    b.HasOne("OngakuProject.Models.Language", "Language")
+                        .WithMany("Lyrics")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OngakuProject.Models.Track", "Track")
+                        .WithMany()
+                        .HasForeignKey("TrackId");
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Track");
+                });
+
             modelBuilder.Entity("OngakuProject.Models.MoodTag", b =>
                 {
                     b.HasOne("OngakuProject.Models.Album", null)
@@ -1068,7 +1143,7 @@ namespace OngakuProject.Migrations
                         .HasForeignKey("LabelId");
 
                     b.HasOne("OngakuProject.Models.Lyrics", "Lyrics")
-                        .WithMany("Tracks")
+                        .WithMany()
                         .HasForeignKey("LyricsId");
 
                     b.HasOne("OngakuProject.Models.User", "User")
@@ -1116,6 +1191,25 @@ namespace OngakuProject.Migrations
                     b.HasOne("OngakuProject.Models.Track", "Track")
                         .WithMany()
                         .HasForeignKey("TrackId");
+
+                    b.Navigation("Track");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OngakuProject.Models.TrackHistory", b =>
+                {
+                    b.HasOne("OngakuProject.Models.Track", "Track")
+                        .WithMany("TrackHistory")
+                        .HasForeignKey("TrackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OngakuProject.Models.User", "User")
+                        .WithMany("History")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Track");
 
@@ -1220,9 +1314,9 @@ namespace OngakuProject.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.Lyrics", b =>
+            modelBuilder.Entity("OngakuProject.Models.Language", b =>
                 {
-                    b.Navigation("Tracks");
+                    b.Navigation("Lyrics");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Playlist", b =>
@@ -1236,12 +1330,16 @@ namespace OngakuProject.Migrations
                 {
                     b.Navigation("TrackArtists");
 
+                    b.Navigation("TrackHistory");
+
                     b.Navigation("TrackPlaylists");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.User", b =>
                 {
                     b.Navigation("Favorites");
+
+                    b.Navigation("History");
 
                     b.Navigation("TrackArtists");
 
