@@ -3,15 +3,18 @@ using OngakuProject.Data;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
+using System.Security.Cryptography.X509Certificates;
 
 namespace OngakuProject.Repositories
 {
     public class PlaylistRep : IPlaylist
     {
         private readonly Context _context;
-        public PlaylistRep(Context context)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public PlaylistRep(Context context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<int> AddToFavoritesAsync(Favorites_VM Model)
@@ -71,9 +74,13 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
-        public async Task<Playlist?> GetPlaylistInfoAsync(int Id)
+        public async Task<Playlist?> GetPlaylistInfoAsync(int Id, bool IsForAuthor = true)
         {
-            if (Id > 0) return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => new Playlist { Id = p.Id, Name = p.Name, CreatedAt = p.CreatedAt, Description = p.Description, PrivacyStatus = p.PrivacyStatus, Shortname = p.Shortname, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count : 0 }).FirstOrDefaultAsync();
+            if (Id > 0)
+            {
+                if (IsForAuthor) return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => new Playlist { Id = p.Id, Name = p.Name, CreatedAt = p.CreatedAt, Description = p.Description, PrivacyStatus = p.PrivacyStatus, Shortname = p.Shortname, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count : 0 }).FirstOrDefaultAsync();
+                else return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted && p.PrivacyStatus > 0).Select(p => new Playlist { Id = p.Id, Name = p.Name, CreatedAt = p.CreatedAt, Description = p.Description, Shortname = p.Shortname, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count : 0 }).FirstOrDefaultAsync();
+            }
             else return null;
         }
 
@@ -97,6 +104,201 @@ namespace OngakuProject.Repositories
         {
             if (Id > 0 && UserId > 0) return await _context.UserPlaylists.AsNoTracking().AnyAsync(up => up.UserId == UserId && up.PlaylistId == Id && !up.IsDeleted);
             return false;
+        }
+
+        public async Task<int> AddPlaylistAsync(int Id, int UserId)
+        {
+            if (Id > 0 && UserId > 0)
+            {
+                bool CheckPlaylistAvailability = await _context.UserPlaylists.AsNoTracking().AnyAsync(p => p.PlaylistId == Id && p.UserId == UserId && !p.IsDeleted);
+                if (CheckPlaylistAvailability) return 0;
+                else
+                {
+                    UserPlaylist userPlaylistSample = new UserPlaylist
+                    {
+                        PlaylistId = Id,
+                        UserId = UserId,
+                        SavedAt = DateTime.Now,
+                        PinOrder = 0
+                    };
+                    await _context.AddAsync(userPlaylistSample);
+                    await _context.SaveChangesAsync();
+
+                    return userPlaylistSample.Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<int> RemovePlaylistAsync(int Id, int UserId)
+        {
+            if(Id > 0 && UserId > 0)
+            {
+                int Result = await _context.UserPlaylists.AsNoTracking().Where(p => p.PlaylistId == Id && p.UserId == UserId && !p.IsDeleted).ExecuteUpdateAsync(p => p.SetProperty(p => p.IsDeleted, true));
+                if (Result > 0) return Id;
+            }
+            return 0;
+        }
+
+        public async Task<Playlist?> CreatePlaylistAsync(Playlist_VM Model)
+        {
+            if (!String.IsNullOrWhiteSpace(Model.Title))
+            {
+                string? FileRandName = null;
+                if (Model.ImageUrl is not null)
+                {
+                    FileRandName = string.Concat(Guid.NewGuid().ToString("N").AsSpan(2, 8), Path.GetExtension(Model.ImageUrl.FileName));
+                    using (FileStream fs = new FileStream(_webHostEnvironment.WebRootPath + "/PlaylistCovers/" + FileRandName, FileMode.Create))
+                    {
+                        await Model.ImageUrl.CopyToAsync(fs);
+                    }
+
+                }
+
+                Playlist playlistSample = new Playlist()
+                {
+                    Name = Model.Title,
+                    UserId = Model.UserId,
+                    ImageUrl = FileRandName,
+                    CreatedAt = DateTime.Now,
+                    Description = Model.Description,
+                    PrivacyStatus = Model.PrivacyStatus
+                };
+                await _context.Playlists.AddAsync(playlistSample);
+                await _context.SaveChangesAsync();
+                int Result = await AddPlaylistAsync(playlistSample.Id, Model.UserId);
+                playlistSample.TrueId = playlistSample.Id;
+                playlistSample.Id = Result;
+
+                return playlistSample;
+            }
+            else return null;
+        }
+
+        public async Task<string?> EditPlaylistShortnameAsync(int Id, int UserId, string? Shortname)
+        {
+            if(Id > 0 && UserId > 0 && !String.IsNullOrWhiteSpace(Shortname) && Shortname.Length <= 15)
+            {
+                bool IsFree = await CheckPlaylistShortnameAsync(Id, Shortname);
+                if(IsFree)
+                {
+                    int Result = await _context.Playlists.AsNoTracking().Where(s => s.Id == Id && s.UserId == UserId).ExecuteUpdateAsync(s => s.SetProperty(s => s.Shortname, Shortname));
+                    if (Result > 0) return Shortname;
+                }
+            }
+            return null;
+        }
+
+        public async Task<int> EditPlaylistAsync(Playlist_VM Model)
+        {
+            if (Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.Title))
+            {
+                int Result = await _context.Playlists.AsNoTracking().Where(p => p.Id == Model.Id && p.UserId == Model.UserId && !p.IsDeleted).ExecuteUpdateAsync(p => p.SetProperty(p => p.Name, Model.Title).SetProperty(t => t.Description, Model.Description).SetProperty(p => p.PrivacyStatus, Model.PrivacyStatus).SetProperty(p => p.Shortname, Model.Shortname));
+                if (Result > 0) return Model.Id;
+            }
+            return 0;
+        }
+
+        public async Task<string?> EditPlaylistImageAsync(int Id, IFormFile? FileUrl)
+        {
+            if(Id > 0)
+            {
+                if(FileUrl != null)
+                {
+                    int Result = 0;
+                    string? CurrentFileName = await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => p.ImageUrl).FirstOrDefaultAsync();
+                    if(CurrentFileName is not null)
+                    {
+                        if (File.Exists(_webHostEnvironment.WebRootPath + "/PlaylistCovers/" + CurrentFileName))
+                        {
+                            File.Delete(_webHostEnvironment.WebRootPath + "/PlaylistCovers/" + CurrentFileName);
+                            Result = 1;
+                        }
+                        else Result = 1;
+                    }
+                    else
+                    {
+                        CurrentFileName = string.Concat(Guid.NewGuid().ToString("N").AsSpan(2, 8), Path.GetExtension(FileUrl.FileName));
+                        Result = await _context.Playlists.AsNoTracking().Where(p => p.Id == Id).ExecuteUpdateAsync(p => p.SetProperty(p => p.ImageUrl, CurrentFileName));
+                    }
+
+                    if(Result > 0)
+                    {
+                        using (FileStream fs = new FileStream(_webHostEnvironment.WebRootPath + "/PlaylistCovers/" + CurrentFileName, FileMode.Create))
+                        {
+                            await FileUrl.CopyToAsync(fs);
+                            return CurrentFileName;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public async Task<int> AddTrackToPlaylistAsync(int Id, int PlaylistId, int UserId)
+        {
+            if(Id > 0 && PlaylistId > 0 && UserId > 0)
+            {
+                bool CheckPlaylistAndTrackAvailability = await _context.Playlists.AsNoTracking().AnyAsync(p => p.Id == PlaylistId && p.UserId == UserId && !p.IsDeleted);
+                if(CheckPlaylistAndTrackAvailability)
+                {
+                    CheckPlaylistAndTrackAvailability = await _context.TrackPlaylists.AsNoTracking().AnyAsync(tp => tp.TrackId == Id && tp.PlaylistId == PlaylistId && !tp.IsDeleted);
+                    if(!CheckPlaylistAndTrackAvailability)
+                    {
+                        TrackPlaylist trackPlaylistSample = new TrackPlaylist
+                        {
+                            TrackId = Id,
+                            PlaylistId = PlaylistId,
+                            AddedAt = DateTime.Now,
+                        };
+                        await _context.AddAsync(trackPlaylistSample);
+                        await _context.SaveChangesAsync();
+
+                        return trackPlaylistSample.TrackId;
+                    }
+                }
+            }
+            return 0;
+        }
+
+        public async Task<int> RemoveTrackFromPlaylistAsync(int Id, int PlaylistId, int UserId)
+        {
+            if(Id > 0 && PlaylistId > 0 && UserId > 0)
+            {
+                bool CheckPlaylistsAvailability = await _context.Playlists.AsNoTracking().AnyAsync(p => p.Id == PlaylistId && p.UserId == UserId && !p.IsDeleted);
+                if(CheckPlaylistsAvailability)
+                {
+                    int Result = await _context.TrackPlaylists.AsNoTracking().Where(tp => tp.TrackId == Id && tp.PlaylistId == PlaylistId && !tp.IsDeleted).ExecuteUpdateAsync(tp => tp.SetProperty(tp => tp.IsDeleted, true));
+                    if (Result > 0) return Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<bool> CheckPlaylistShortnameAsync(int Id, string? Shortname)
+        {
+            if (Shortname is not null)
+            {
+                if (Id > 0) return await _context.Playlists.AsNoTracking().AnyAsync(p => !p.IsDeleted && p.Id != Id && p.Shortname != null && p.Shortname.ToLower() == Shortname.ToLower());
+                else return await _context.Playlists.AsNoTracking().AnyAsync(p => !p.IsDeleted && p.Shortname != null && p.Shortname.ToLower() == Shortname.ToLower());
+            }
+            else return false;
+        }
+
+        public async Task<Playlist?> GetPlaylistInfoAsync(string? Shortname, bool IsForAuthor = true)
+        {
+            if (!String.IsNullOrWhiteSpace(Shortname))
+            {
+                if(IsForAuthor) return await _context.Playlists.AsNoTracking().Where(p => !p.IsDeleted && p.Shortname != null && p.Shortname.ToLower() == Shortname.ToLower()).Select(p => new Playlist { Id = p.Id, Name = p.Name, CreatedAt = p.CreatedAt, Description = p.Description, PrivacyStatus = p.PrivacyStatus, Shortname = p.Shortname, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count : 0 }).FirstOrDefaultAsync();
+                else return await _context.Playlists.AsNoTracking().Where(p => p.Shortname != null && p.Shortname.ToLower() == Shortname.ToLower() && !p.IsDeleted && p.PrivacyStatus > 0).Select(p => new Playlist { Id = p.Id, Name = p.Name, CreatedAt = p.CreatedAt, Description = p.Description, Shortname = p.Shortname, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count : 0 }).FirstOrDefaultAsync();
+            }
+            else return null;
+        }
+
+        public async Task<string?> GetPlaylistShortnameAsync(int Id)
+        {
+            if (Id > 0) return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => p.Shortname).FirstOrDefaultAsync();
+            else return null;
         }
     }
 }

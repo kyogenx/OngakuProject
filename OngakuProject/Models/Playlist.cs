@@ -14,7 +14,7 @@ namespace OngakuProject.Models
         public string? Description { get; set; }
         [MaxLength(100)]
         public string? ImageUrl { get; set; }
-        public byte PrivacyStatus { get; set; } = 2;
+        public byte PrivacyStatus { get; set; } = 2; //0 - Private; 1 - Only for subscribers; 2 - Public
         public DateTime? CreatedAt { get; set; }
         [Required]
         [ForeignKey("User")]
@@ -24,5 +24,7 @@ namespace OngakuProject.Models
         public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
         [NotMapped]
         public int SongsQty { get; set; }
+        [NotMapped]
+        public int TrueId { get; set; }
     }
 }

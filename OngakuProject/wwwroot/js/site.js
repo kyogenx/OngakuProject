@@ -16,7 +16,7 @@ let trackQueue = { songs: [], orderChanger: 1, autoPlay: false };
 let reserveQueue = [];
 
 //localItemFilter(); SearchForGenres_Form Update Favorites btn-show-field-box
-//imagePreviewer() type='file' UpdateTrackCredits_Form
+//imagePreviewer() type='file' UpdateTrackCredits_Form Playlists
 //SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form LoadTheTrack_Form
 
 window.onload = function () {
@@ -1554,6 +1554,55 @@ $(document).on("submit", "#UpdateTrackStatus_Form", function (event) {
     });
 });
 
+$(document).on("submit", "#CreateNewPlaylist_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let formData = new FormData();
+    let baseHtml = $("#CreatePlaylist_SbmtBtn").html();
+    const title = $("#CNP_Title_Val").val();
+    const privacyValue = $("#CNP_Privacy_Val").val();
+    const image = $("#CNP_ImageUrl_Val").get(0).files[0];
+
+    formData.append("title", title);
+    formData.append("imageUrl", image);
+    formData.append("privacyStatus", privacyValue);
+    buttonDisabler(false, "CreatePlaylist_SbmtBtn", "Processing...");
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            if (response.success) {
+                let divExists = document.getElementById("Playlists_Container");
+                if (divExists != null) { 
+                    let resultBox = playlistSampler(response.result.id, 0, response.result.title, response.result.imgUrl != null ? response.result.imgUrl : null, 0, true, response.result.trueId);
+                    if (resultBox != null) {
+                        let songsQty = $("#PlaylistsSongs_Qty_Span").text();
+                        let count = $("#PlaylistsQty_Span").text();
+
+                        if (songsQty == undefined) songsQty = 0;
+                        if (count != undefined) count = count == "One" ? 1 : parseInt(count);
+                        else count = 0;
+                        count++;
+                        $("#PlaylistsListed_Box").append(resultBox);
+                        if (parseInt(count) > 1) $("#PlaylistsStats_Span").html("<span class='fw-500'>" + count > 1 + "</span> playlists containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsQty + "</span> song(s)");
+                        else $("#PlaylistsStats_Span").html("<span class='fw-500'>One</span> playlist containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsTotalQty + "</span> song(s)");
+                    }
+                }
+                buttonUndisabler(false, "CreatePlaylist_SbmtBtn", baseHtml);
+                callAlert('<i class="fa-solid fa-check-double"></i>', null, null, "The playlist has been successfully created. You may now proceed to edit it and add songs as desired", 4, "Got It", -1, null);
+            }
+            else {
+                buttonDisabler(false, "CreatePlaylist_SbmtBtn", baseHtml);
+                callAlert('<i class="fa-solid fa-xmark" style="--fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, response.alert, 3.75, "Close", -1, null);
+            }
+        }
+    });
+});
+
 function playlistInfoSampler(playlistId, playlistTitle, playlistType, coverImageUrl, releaseDateAndTime, songsQty, mainArtistId, mainArtistName, mainArtistImgUrl, songs = [], openOnFinish = false) {
     createAContainer("PlaylistInfo", playlistTitle, '<div class="release-box-lg"> <div class="hstack gap-1"> <div class="release-img-box-lg" id="Playlist_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-lg" id="Playlist_Img" /> <div class="box-standard ms-1"> <div> <small class="card-text"> <span id="PlaylistInfo_Type_Span">Single</span> ∙ <span id="PlaylistInfo_TotalDuration_Span">3 min 46 sec</span> </small> <div></div> <span class="h1" id="PlaylistInfo_Name_Lbl">Release Name</span> <div class="btn-borderless-profile-tag mt-1"> <div class="hstack gap-1"> <div class="profile-avatar-sm bg-chosen-bright" id="PlaylistInfo_AuthorImg_Box">R</div> <img src="#" class="profile-avatar-img-sm" alt="This image cannot be displayed" id="PlaylistInfo_Author_Img" style="display: none;" /> <small id="PlaylistInfo_MainArtist_Span">Rammstein</small> </div> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1" id="PlaylistInfo_PlayPauseMain_Btn"> <i class="fa-solid fa-play"></i> Play </button> <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle </button> <div class="d-inline-block"><input type="hidden" id="PlaylistSongsQty_Val" value="0" /> <form method="get" action="/Playlists/IsFavorited" id="IsThePlaylistFavorited_Form"> <input type="hidden" name="Id" id="ITPF_Id_Val" value="0" /> <input type="hidden" name="UserId" id="ITPF_UserId_Val" value="0" /> </form> <form method="post" action="/Playlists/AddOrRemove" id="AddOrRemoveThePlaylist_Form"> <input type="hidden" name="TrackId" id="ARTP_Id_Val" value="0" /> <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTP_SbmtBtn"> <i class="fa-solid fa-check"></i> </button> </form> </div> </div> <div class="box-standard mt-1"> <small class="card-text text-muted"> <span id="PlaylistInfo_SongsQty_Span">0 songs</span> ∙ <span id="PlaylistInfo_ReleaseDate_Span">2025</span> </small> </div> </div> </div> </div> <div class="box-standard" id="PlaylistInfo_TrackBoxes_Box"> </div>', null, null);
     let releaseDate = new Date(releaseDateAndTime);
@@ -1959,10 +2008,10 @@ function regularToSecondsDuration(durationInMins = 0, seconds = 0) {
     return fullDuration;
 }
 
-function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor = false) {
+function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor = false, trueId = 0) {
     if (id != null && title != null) {
-        let playlistBox = $("<div class='playlist-box btn-get-playlist-info mb-1'></div>");
-        let playlistBoxStack = $('<div class="hstack gap-1"></div>');
+        let playlistBox = $("<div class='playlist-box mb-1'></div>");
+        let playlistBoxStack = $('<div class="btn-get-playlist-info hstack gap-1"></div>');
         let playlistImg;
         let playlistInfoBox = $("<div class='ms-1'></div>");
         let playlistNameTitle = $("<span class='h6'></h6>");
@@ -1970,40 +2019,51 @@ function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor =
         let playlistBadge = $("<span class='badge badge-standard'></span>");
         let playlistSongsQtySpan = $("<small class='card-text text-muted'></small>");
         let playlistStatsSpan = $("<span class='card-text'></span>");
-        let playlistDropdownBox = $("<div class='dropdown ms-auto'></div>");
-        let playlistDropdownBtn = $('<button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
-        let playlistDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
+        let playlistDropdownBox = $("<div class='dropdown ms-auto' data-untrack='true'></div>");
+        let playlistDropdownBtn = $('<button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" data-untrack="true" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let playlistDropdownUl = $("<ul class='dropdown-menu shadow-sm' data-untrack='true'></ul>");
         let playlistDropdownLi0 = $("<li></li>");
-        let playlistDropdownBtn0 = $("<button type='button' class='dropdown-item'>Reorder <span class='float-end'> <i class='fa-solid fa-sort'></i> </span></button>");
+        let playlistDropdownLi1 = $("<li></li>");
+        let playlistDropdownLi2 = $("<li></li>");
+        let playlistDropdownLi3 = $("<li></li>");
+        let playlistDropdownLi4 = $("<li></li>");
+        let playlistDropdownLi5 = $("<li></li>");
+        let playlistDropdownBtn0 = $("<button type='button' class='dropdown-item btn-sm'>Edit <span class='float-end'> <i class='fa-solid fa-pencil'></i> </span></button>");
+        let playlistDropdownBtn1 = $("<button type='button' class='dropdown-item btn-edit-playlist-shortname btn-sm'>Shortname <span class='float-end'> <i class='fa-solid fa-at'></i> </span</button>");
+        let playlistDropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Cover Image <span class='float-end'> <i class='fa-solid fa-panorama'></i> </span></button>");
+        let playlistDropdownBtn3 = $("<button type='button' class='dropdown-item'>Pin <span class='float-end'> <i class='fa-solid fa-thumbtack'></i> </span></button>");
+        let playlistDropdownBtn4 = $("<button type='button' class='dropdown-item'>Reorder <span class='float-end'> <i class='fa-solid fa-sort'></i> </span></button>");
+        let playlistDropdownBtn5 = $("<button type='button' class='dropdown-item text-danger'>Delete <span class='float-end'> <i class='fa-solid fa-trash-can'></i> </span></button>");
 
-        playlistBox.attr("id", id + "-GetPlaylistInfo_Box");
-        if (coverImageUrl != null) {
-            playlistImg = $("<img class='release-img-sm' alt='This image cannot be displayed yet' />");
-            playlistImg.attr("src", "/PlaylistCovers/" + coverImageUrl);
-        }
-        else {
-            switch (parseInt(type)) {
-                case 0:
-                    playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
-                    playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
-                    break;
-                case 1:
-                    playlistBadge.html(' <i class="fa-solid fa-record-vinyl"></i> Album');
-                    playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-record-vinyl"></i> </div>');
-                    break;
-                case 2:
-                    playlistBadge.html(' <i class="fa-solid fa-star"></i> Favorites');
-                    playlistImg = $('<div class="release-img-box-sm text-primary"> <i class="fa-solid fa-star"></i> </div>');
-                    break;
-                default:
-                    playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
-                    playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
-                    break;
-            }
+        if (isForAuthor && trueId > 0) playlistDropdownBtn1.attr("id", trueId + "-GetPlaylistShortname_Btn");
+        playlistBox.attr("id", id + "-PlaylistInfo_Box");
+        //playlistBoxStack.attr("id", id + "-GetPlaylistInfo_Box");
+
+        playlistImg = $("<img class='release-img-sm' alt='This image cannot be displayed yet' />");
+        playlistImg.attr("src", "/PlaylistCovers/" + coverImageUrl);
+
+        switch (parseInt(type)) {
+            case 0:
+                playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+                if (coverImageUrl == null) playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
+                break;
+            case 1:
+                playlistBadge.html(' <i class="fa-solid fa-record-vinyl"></i> Album');
+                if (coverImageUrl == null)  playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-record-vinyl"></i> </div>');
+                break;
+            case 2:
+                playlistBadge.html(' <i class="fa-solid fa-star"></i> Favorites');
+                if (coverImageUrl == null)  playlistImg = $('<div class="release-img-box-sm text-primary"> <i class="fa-solid fa-star"></i> </div>');
+                break;
+            default:
+                playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+                if (coverImageUrl == null)  playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
+                break;
         }
 
         playlistNameTitle.html(title);
-        playlistSongsQtySpan.text(parseInt(songsQty) > 1 ? " ∙ " + songsQty + " songs" : " ∙ One song");
+        if (songsQty > 0) playlistSongsQtySpan.text(parseInt(songsQty) > 1 ? " ∙ " + songsQty + " songs" : " ∙ One song");
+        else playlistSongsQtySpan.text(" ∙ No Songs");
          
         playlistStatsSpan.append(playlistBadge);
         playlistStatsSpan.append(playlistSongsQtySpan);
@@ -2014,7 +2074,17 @@ function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor =
         playlistBoxStack.append(playlistInfoBox);
         if (isForAuthor) {
             playlistDropdownLi0.append(playlistDropdownBtn0);
+            playlistDropdownLi1.append(playlistDropdownBtn1);
+            playlistDropdownLi2.append(playlistDropdownBtn2);
+            playlistDropdownLi3.append(playlistDropdownBtn3);
+            playlistDropdownLi4.append(playlistDropdownBtn4);
+            playlistDropdownLi5.append(playlistDropdownBtn5);
             playlistDropdownUl.append(playlistDropdownLi0);
+            playlistDropdownUl.append(playlistDropdownLi1);
+            playlistDropdownUl.append(playlistDropdownLi2);
+            playlistDropdownUl.append(playlistDropdownLi3);
+            playlistDropdownUl.append(playlistDropdownLi4);
+            playlistDropdownUl.append(playlistDropdownLi5);
             playlistDropdownBox.append(playlistDropdownBtn);
             playlistDropdownBox.append(playlistDropdownUl);
             playlistBoxStack.append(playlistDropdownBox);
@@ -2033,18 +2103,19 @@ $(document).on("submit", "#GetPlaylists_Form", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
-            createSmContainer("Playlists", "Playlists ∙ <span id='PlaylistsQty_Span'>0</span>", "<div class='box-standard' id='PlaylistsListed_Box'></div>", null, null, false);
+            //btn-box-switcher-member
+            createSmContainer("Playlists", "Playlists ∙ <span id='PlaylistsQty_Span'>0</span>", "<div class='d-none' id='PlaylistSettingForms_Box'><form method='get' action='/Playlists/GetShortname' id='GetPlaylistShortname_Form'><input type='hidden' name='Id' id='GPS_Id_Val' value='0' /></form></div><div class='box-standard' id='PlaylistsListed_Box'></div><div class='box-standard mt-2' id='PlaylistsStatsInfoMain_Box'></div>", null, null, false);
             $("#PlaylistsListed_Box").empty();
             $("#PlaylistsQty_Span").text(response.count + 1);
             let songsTotalQty = response.favoriteSongsQty;
-            let statsFullInfoBox = $("<div class='box-standard text-center mt-1 p-1'></div>");
-            let statsFullInfoSpan = $("<small class='card-text text-muted'></small>");
-            let favoriteElement = playlistSampler("fvr", 2, "Favorites", null, response.favoriteSongsQty, true);
+            let statsFullInfoBox = $("<div class='box-standard text-center mt-1 p-1' id='PlaylistsStats_Box'></div>");
+            let statsFullInfoSpan = $("<small class='card-text text-muted' id='PlaylistsStats_Span'></small>");
+            let favoriteElement = playlistSampler("fvr", 2, "Favorites", null, response.favoriteSongsQty, true, 0);
             if (favoriteElement != null) $("#PlaylistsListed_Box").append(favoriteElement);
 
             if (response.count > 0) {
                 $.each(response.result, function (index) {
-                    let element = playlistSampler(response.result[index].id, response.result[index].albumId == null ? 0 : 1, response.result[index].playlist.name, response.result[index].playlist.imageUrl, response.result[index].playlist.songsQty, true);
+                    let element = playlistSampler(response.result[index].id, response.result[index].albumId == null ? 0 : 1, response.result[index].playlist.name, response.result[index].playlist.imageUrl, response.result[index].playlist.songsQty, true, response.result[index].playlistId);
                     if (element != null) {
                         $("#PlaylistsListed_Box").append(element);
                         songsTotalQty += response.result[index].playlist.songsQty;
@@ -2052,16 +2123,40 @@ $(document).on("submit", "#GetPlaylists_Form", function (event) {
                 });
             }
 
-            if (parseInt(response.count + 1) > 1) statsFullInfoSpan.html("<span class='fw-500'>" + parseInt(response.count + 1) > 1 + "</span> playlists containing <span class='fw-500'>" + songsTotalQty + "</span> song(s)");
-            else statsFullInfoSpan.html("<span class='fw-500'>One</span> playlist containing <span class='fw-500'>" + songsTotalQty + "</span> song(s)");
+            if (parseInt(response.count + 1) > 1) statsFullInfoSpan.html("<span class='fw-500' id='PlaylistsQty_Span'>" + parseInt(response.count + 1) + "</span> playlists containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsTotalQty + "</span> song(s)");
+            else statsFullInfoSpan.html("<span class='fw-500' id='PlaylistsQty_Span'>One</span> playlist containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsTotalQty + "</span> song(s)");
             statsFullInfoBox.append(statsFullInfoSpan);
-            $("#PlaylistsListed_Box").append(statsFullInfoBox);
+            $("#PlaylistsStatsInfoMain_Box").append(statsFullInfoBox);
             setTimeout(function () {
                 callASmContainer(false, "Playlists_Container");
             }, 150);
         }
         else callAlert('<i class="fa-solid fa-bars-staggered"></i>', null, null, "Playlists are temporarily unavailable", 4, "Okay", -1, null);
     });
+});
+
+$(document).on("submit", "#GetPlaylistShortname_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            //createSmContainer("EditPlaylistShortname", "Edit Shortname", '')
+            displayCorrector(currentWindowSize, false);
+            setTimeout(function () {
+                slideSmContainers(null, "EditPlaylistShortname_Container");
+            }, 150);
+        }
+    });
+});
+
+$(document).on("mousedown", ".btn-edit-playlist-shortname", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        $("#GPS_Id_Val").val(trueId);
+        $("#GetPlaylistShortname_Form").submit();
+    }
 });
 
 $(document).on("submit", "#GetSingleInfo_Form", function (event) {
@@ -2176,7 +2271,8 @@ $(document).on("mousedown", ".btn-track-favor-unfavor", function () {
 
 $(document).on("mousedown", ".btn-get-playlist-info", function () {
     let trueId = getTrueId($(this).attr("id"), false);
-    if (trueId != undefined) {
+    let isUntrackable = $(this).attr("data-untrack");
+    if ((trueId != undefined) && (isUntrackable == undefined || isUntrackable == false)) {
         if (trueId === "fvr") $("#GetFavorites_Form").submit();
         else {
             trueId = parseInt(trueId);
@@ -2664,6 +2760,7 @@ $(document).on("mousedown", ".btn-box-switcher-member", function () {
     if (description != undefined) {
         let targetId = $(this).attr('data-target');
         if (targetId != undefined) $("#" + targetId + "-Warn").html(description);
+        $("#" + targetId + "-Preview_Span").html($(this).html());
     }
 });
 
@@ -2972,14 +3069,30 @@ $(document).on("input", "input[type='file']", function () {
         }
 
         let isMultiple = $(this).attr("multiple");
+        let dataPreview = $(this).attr("data-preview");
         let orderTarget = $(this).attr("data-order-target");
         if (isMultiple != undefined) {
-            if (!areAudio) imagePreviewer(files, trigger != undefined ? trigger : null, orderTarget, true, true);
+            if (!areAudio) imagePreviewer(files, trigger != undefined ? trigger : null, orderTarget, true, true, dataPreview);
             else audioPreviewer(files, trigger != undefined ? trigger : null, orderTarget, true, true);
         }
         else {
-            if (!areAudio) imagePreviewer(files, trigger != undefined ? trigger : null, orderTarget, false, true);
+            if (!areAudio) imagePreviewer(files, trigger != undefined ? trigger : null, orderTarget, false, true, dataPreview);
             else audioPreviewer(files, trigger != undefined ? trigger : null, orderTarget, false, true);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-input-file-emptier", function () {
+    let target = $(this).attr("data-target");
+    let thisId = $(this).attr("id");
+    if (target != undefined && thisId != undefined) {
+        thisId = getTrueId(thisId, false);
+        $("#" + target).val(null);
+        if (thisId != undefined) {
+            $("#" + thisId).fadeOut(0);
+            $("#" + thisId + "_Box").fadeIn(0);
+            $("#" + thisId).attr("src", "#");
+            $(this).addClass("super-disabled");
         }
     }
 });
@@ -3305,7 +3418,7 @@ function fileRenewer(targetId, newFilesArr, acceptableFilesLength, updateTheWidg
     if (updateTheWidget == null) $("#" + targetId).change();
 }
 
-function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = true, openPreviewBox = true) {
+function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = true, openPreviewBox = true, previewBox = null) {
     let isArray = Array.isArray(images) ? true : false;
     let imagesLength = 0;
     let imagesCodeLength = 0;
@@ -3366,15 +3479,32 @@ function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = tr
                 displayCorrector(currentWindowSize, false);
                 callAContainer(false, "ImagePreview_Container");
             }
+            
+            if (previewBox != null || previewBox != undefined) {
+                $("#" + previewBox).attr("src", window.URL.createObjectURL(images[0][0]));
+                $("#" + previewBox).fadeIn(0);
+                $("#" + previewBox + "_Box").fadeOut(0);
+                $("#" + previewBox + "-BtnRemove").removeClass("super-disabled");
+            }
+            else {
+                $("#" + previewBox).attr("src", "#");
+                $("#" + previewBox).fadeOut(0);
+                $("#" + previewBox + "_Box").fadeIn(0);
+                $("#" + previewBox + "-BtnRemove").addClass("super-disabled");
+            }
         }
         else {
             $('.btn-save-images').addClass("super-disabled");
             $('.btn-add-more-images').addClass("super-disabled");
             $('.btn-delete-all-images').addClass("super-disabled");
             uncallAContainer(false, "ImagePreview_Container");
+            $("#" + previewBox).attr("src", "#");
+            $("#" + previewBox).fadeOut(0);
+            $("#" + previewBox + "_Box").fadeIn(0);
+            $("#" + previewBox + "-BtnRemove").addClass("super-disabled");
         }
 
-        if (saveTargetFormId != null) {
+        if (saveTargetFormId != null || saveTargetFormId != undefined) {
             $(".btn-save-images").attr("id", saveTargetFormId + "-SaveImages_Btn");
             $(".btn-save-images").removeClass("super-disabled");
             $(".btn-save-images").text('Save');
@@ -3530,7 +3660,8 @@ $(document).on("mousedown", ".btn-ongaku-player-backward", function () {
         let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
         if (currentTime <= 3.5) {
             trackQueue.orderChanger = -1;
-            let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger);
+/*            audioEdit("OngakuPlayer_Audio", null, null, 1, null);*/
+            let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger, trackQueue.autoPlay);
             if (trackId != null) audioChange("OngakuPlayer_Audio", playlistId, trackId);
         }
         else audioEdit("OngakuPlayer_Audio", 100, 1, false, 0);
@@ -3542,7 +3673,7 @@ $(document).on("mousedown", ".btn-ongaku-player-forward", function () {
     let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
     if (playlistId != undefined && trackId != undefined) {
         trackQueue.orderChanger = 1;
-        let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger);
+        let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger, trackQueue.autoPlay);
         if (trackId != null) audioChange("OngakuPlayer_Audio", playlistId, trackId);
     }
 });
@@ -3565,8 +3696,9 @@ $("audio").on("ended", function () {
     if (thisId != undefined) {
         trackQueue.orderChanger = trackQueue.orderChanger < 0 ? 1 : trackQueue.orderChanger;
         let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
-        let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger);
+        let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger, trackQueue.autoPlay);
         if (trackId != null) audioChange("OngakuPlayer_Audio", playlistId, trackId);
+        else audioPause("OngakuPlayer_Audio");
     }
 });
 
@@ -3795,25 +3927,22 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
         if (loop != null || loop != undefined) {
             loop = parseInt(loop);
             loop = loop == undefined ? 0 : loop;
+
             switch (parseInt(loop)) {
                 case 0:
-                    if (trackQueue.length > 0) {
-                        $(".btn-audio-loop").addClass("text-unchosen");
-                        $(".btn-audio-loop").removeClass("text-chosen");
-                        $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
-                        trackQueue.autoPlay = false;
-                        trackQueue.orderChanger = 1;
-                    }
+                    $(".btn-audio-loop").addClass("text-unchosen");
+                    $(".btn-audio-loop").removeClass("text-chosen");
+                    $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
+                    trackQueue.autoPlay = false;
+                    trackQueue.orderChanger = 1;
                     break;
                 case 1:
-                    if (trackQueue.songs.length > 0) {
-                        trackQueue.autoPlay = true;
-                        trackQueue.orderChanger = 1;
-                        $(".btn-audio-loop").addClass("text-chosen");
-                        $(".btn-audio-loop").removeClass("text-unchosen");
-                        $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
-                        break;
-                    }
+                    trackQueue.autoPlay = true;
+                    trackQueue.orderChanger = 1;
+                    $(".btn-audio-loop").addClass("text-chosen");
+                    $(".btn-audio-loop").removeClass("text-unchosen");
+                    $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
+                    break;
                 case 2:
                     $(".btn-audio-loop").addClass("text-chosen");
                     $(".btn-audio-loop").removeClass("text-unchosen");
@@ -3824,11 +3953,11 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
                     }
                     break;
                 default:
+                    $(".btn-audio-loop").addClass("text-unchosen");
+                    $(".btn-audio-loop").removeClass("text-chosen");
                     $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
-                    if (trackQueue.songs.length > 0) {
-                        trackQueue.autoPlay = false;
-                        trackQueue.orderChanger = 1;
-                    }
+                    trackQueue.autoPlay = false;
+                    trackQueue.orderChanger = 1;
                     break;
             }
             $(".btn-audio-loop").attr("data-status", loop);
@@ -3837,13 +3966,13 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
     }
 }
 
-function getTrackFromQueue(songsArr = [], trackIndex = 0, trackOrderChange = 1) {
+function getTrackFromQueue(songsArr = [], trackIndex = 0, trackOrderChange = 1, autoPlayOn = true) {
     if (songsArr != null) {
         trackIndex = trackIndex + trackOrderChange;
         trackIndex = trackIndex < 0 ? 0 : trackIndex;
-        trackIndex = trackIndex > songsArr.length - 1 ? songsArr.length - 1 : trackIndex;
-
-        if (trackIndex != undefined) {
+        if (!autoPlayOn) trackIndex = trackIndex > songsArr.length - 1 ? null : trackIndex;
+        else trackIndex = trackIndex > songsArr.length - 1 ? 0 : trackIndex;
+        if (trackIndex != null) {
             if (songsArr[trackIndex] != undefined) {
                 trackOrderInQueue = trackIndex;
                 return songsArr[trackIndex];
@@ -3854,7 +3983,7 @@ function getTrackFromQueue(songsArr = [], trackIndex = 0, trackOrderChange = 1) 
             }
         }
         else {
-            trackOrderInQueue = songsArr.length - 1;
+            trackOrderInQueue = 0;
             return null;
         }
     }
@@ -4104,6 +4233,35 @@ $(document).on("keyup", ".form-control-guard", function () {
                 else updateWithInput($(this).attr("id"), updateWidth[i], null);
             }
         } 
+    }
+});
+
+$(document).on("keyup", ".form-control-checker", function () {
+    let formBtn = $(this).attr("data-change");
+    let baseHtml = $(this).attr("data-form-base-html");
+
+    baseHtml = baseHtml == undefined ? "Not Defined" : baseHtml;
+    if (formBtn != undefined) {
+        let value = $(this).val();
+        let target = $(this).attr("data-form-target");
+        let form = $(this).attr("data-form");
+        if (value != "" && target != undefined && form != undefined) {
+            $("#" + target).val(value);
+            buttonDisabler(false, formBtn, "Checking...");
+            let result = waitCounter(formBtn, 4).then(function () {
+                if (result) {
+                    buttonDisabler(false, formBtn, baseHtml);
+                    //$("#" + form).submit();
+                    //"file"
+                }
+                else buttonDisabler(false, formBtn, baseHtml);
+            });
+        }
+        else {
+            clearInterval(intervalValue);
+            console.log(formBtn, baseHtml);
+            buttonDisabler(false, formBtn, baseHtml);
+        }
     }
 });
 

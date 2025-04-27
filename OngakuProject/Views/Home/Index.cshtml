@@ -27,9 +27,12 @@
             <input type="hidden" name="Id" id="GPI_Id_Val" value="0" />
             <input type="hidden" name="UserId" value="@UserInfo.Id" />
         </form>
+        <form method="get" asp-controller="Playlists" asp-action="CheckShortnameAvailability" id="CheckShortnameAvailability_Form">
+            <input type="hidden" name="Id" id="CSA_Id_Val" value="0" />
+            <input type="hidden" name="Shortname" id="CSA_Shortname_Val" />
+        </form>
         <form method="post" action="/Playlists/AddOrRemoveTheTrackAsFavorite" id="AddOrRemoveTheTrackAsFavorite_Form">
             <input type="hidden" name="TrackId" id="ARTAF_Id_Val" value="0" />
-            @* <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTAF_SbmtBtn"> <i class="fa-solid fa-star"></i> </button> *@
         </form>
     </div>
 
@@ -67,6 +70,47 @@
             </div>
         </div>
     </div> *@
+
+    <div class="box-sm-part-inner shadow-sm" id="EditPlaylistShortname_Container">
+        <div class="box-sm-part-header p-2">
+            <div class="box-standard">
+                <div class="hstack gap-1" id="EditPlaylistShortname_Container-Header_Box">
+                    <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Back</button>
+                    <span class="h5 ms-1 pt-1">Edit Playlist Shortname</span>
+                    <button type="button" class="btn btn-standard btn-close-sm-container btn-sm ms-auto" id="EditPlaylistShortname_Container-Close_Btn">Done</button>
+                </div>
+            </div>
+        </div>
+        <div class="box-standard mt-2 p-1">
+            <div class="box-bordered bg-light text-center p-2">
+                <h2 class="h2"> <i class="fa-solid fa-at"></i> </h2>
+                <h4 class="h4">Shortname</h4>
+                <small class="card-text text-muted">Edit the short name of your playlist to make it easier for other users to find and access it directly via its link (this feature is only available for public playlists)</small>
+            </div>
+            <div class="box-standard mt-2">
+                <div class="d-none">
+                    <form method="get" action="/Playlists/CheckShortnameAvailability" id="CheckShortnameAvailability_Form">
+                        <input type="hidden" name="Id" id="CSA_Id_Val" value="0" />
+                        <input type="hidden" name="Shortname" id="CSA_Shortname_Val" value="0" />
+                    </form>
+                </div>
+                <form method="post" action="/Playlists/EditPlaylistShortname" id="EditPlaylistShortname_Form">
+                    <div>
+                        <input type="hidden" name="Id" id="EPS_Id_Val" value="0" />
+                        <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Shortname makes it easier to find your playlist (<span class='fw-500'>if public</span>) via its link, like: ongaku.com/playlists/plist/<span class='fw-500'>shortname</span>"> <i class="fa-solid fa-circle-info"></i> </button>
+                        <label class="form-label fw-500 ms-1">Shortname</label>
+                        <input type="text" class="form-control form-control-guard form-control-restricted form-control-checker" id="EPS_Shortname_Val" data-form="CheckShortnameAvailability_Form" data-form-target="CSA_Shortname_Val" data-form-base-html="Save Changes" name="Shortname" maxlength="15" placeholder="Set a shortname for your playlist" data-min-length="3" data-change="EditPlaylistShortname_SbmtBtn" data-update="EPS_Shortname_Val-Warn" data-base-value="(unavailable)" />
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted"> <i class="fa-solid fa-link"></i> Link: onugaku.com/playlists/plist/<span class="fw-500" id="EPS_Shortname_Val-Warn"></span></small>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditPlaylistShortname_SbmtBtn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="box-lg-part shadow-sm" id="EditTrackLyrics_Container">
@@ -329,6 +373,91 @@
             <span class="h6" id="ETCP_MainVocalists_Span-Header">Main Vocalist</span>
             <br />
             <small class="card-text" id="ETCP_MainVocalists_Span">Undefined</small>
+        </div>
+    </div>
+</div>
+<div class="box-lg-part shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="CreatePlaylist_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="CreatePlaylist_Container-Header_Lbl">Create Playlist</span>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="CreatePlaylist_Box">
+        <div class="playlist-box">
+            <div class="hstack gap-1">
+                <div>
+                    <img src="#" class="release-img-sm" alt="This image cannot be displayed" id="CreatePlaylistPreview_Img" style="display: none;" />
+                    <div class="release-img-box-sm" id="CreatePlaylistPreview_Img_Box"> <i class="fa-solid fa-wave-square"></i> </div>
+                </div>
+                <div class="ms-1">
+                    <span class="h6" id="CreatePlaylistPreview_Name_Lbl">Playlist Name</span>
+                    <div>
+                        <small class="badge-standard badge-sm" id="CreatePlaylistPreview_Type_Span"> <i class="fa-solid fa-wave-square"></i> Playlist</small>
+                        <small class="card-text text-muted" id="CreatePlaylistPreview_Separator_Span"> ∙ </small>
+                        <small class="card-text text-muted" id="CNP_Privacy_Val-Preview_Span">Private</small>
+                        <small class="card-text text-muted" id="CreatePlaylistPreview_SongsQty_Span"> ∙ No Songs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-1">
+            <form method="post" action="/Playlists/Create" id="CreateNewPlaylist_Form">
+                <div>
+                    <label class="form-label fw-500 ms-1">Title</label>
+                    <input type="text" class="form-control form-control-guard" name="Title" id="CNP_Title_Val" data-min-length="1" data-target="CreatePlaylist_SbmtBtn" data-update="CreatePlaylistPreview_Name_Lbl" placeholder="Set a name for your playlist" maxlength="90" />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Title is displayed to everyone when the playlist is <small class="badge-standard badge-sm"> <i class="fa-solid fa-lock-open"></i> Public</small></small>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-500 ms-1">Privacy</label>
+                    <div class="box-switcher row mt-1 ms-1 me-1">
+                        <input type="file" class="d-none" id="CNP_ImageUrl_Val" name="ImageUrl" accept="image/png, image/gif, image/jpeg" data-preview="CreatePlaylistPreview_Img" />
+                        <input type="hidden" name="Privacy" id="CNP_Privacy_Val" value="2" />
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="CNP_Privacy_Val" data-value="2" data-description="This playlist is visible to everyone" id="CNP_Privacy_Val-0_Btn">Public</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="CNP_Privacy_Val" data-value="1" data-description="Visible to you and your subscribers only" id="CNP_Privacy_Val-1_Btn">Semi-Private</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="CNP_Privacy_Val" data-value="0" data-description="Only you can see this playlist" id="CNP_Privacy_Val-2_Btn">Private</button>
+                        </div>
+                    </div>
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted" id="CNP_Privacy_Val-Warn">This playlist is visible to everyone</small>
+                    </div>
+                </div>
+@*                 <div class="mt-3">
+                    <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Shortname makes it easier to find your playlist (<span class='fw-500'>if public</span>) via its link, like: ongaku.com/playlists/plist/<span class='fw-500'>shortname</span>"> <i class="fa-solid fa-circle-info"></i> </button>
+                    <label class="form-label fw-500 ms-1">Shortname</label>
+                    <input type="text" class="form-control form-control-guard form-control-restricted form-control-checker" id="CNP_Shortname_Val" data-form="CheckShortnameAvailability_Form" data-form-target="CSA_Shortname_Val" data-form-base-html="Create Playlist" name="Shortname" maxlength="15" placeholder="Set a shortname for your playlist" data-min-length="3" data-change="CreatePlaylist_SbmtBtn" />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Shortname is optional. A random one will be set if left empty</small>
+                </div> *@
+                <div class="box-bordered mt-3 p-2">
+                    <label class="form-label fw-500 ms-1 me-1">Cover Image</label>
+                    <small class="badge-standard badge-sm me-1">.jpg</small>
+                    <small class="badge-standard badge-sm me-1">.png</small>
+                    <small class="badge-standard badge-sm">.webp</small>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-sm me-1" onmousedown="$('#CNP_ImageUrl_Val').mousedown();" id="CreatePlaylistPreview_Img-Btn"> <i class="fa-solid fa-paperclip"></i> Choose an Image</button>
+                        <button type="button" class="btn btn-standard-bordered btn-input-file-emptier btn-sm text-danger super-disabled" data-target="CNP_ImageUrl_Val" id="CreatePlaylistPreview_Img-BtnRemove"> <i class="fa-solid fa-xmark"></i> Remove Image</button>
+                    </div>
+                    <div class="mt-2">
+                        <small class="card-text text-muted">Only <span class="fw-500">.jpg (.jpeg)</span>, <span class="fw-500">.png</span> or <span class="fw-500">.webp</span> image formats are accepted</small>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-sticky-at-bottom super-disabled mx-auto text-light bg-dark fw-500 shadow-sm mt-2 w-100 opacity-100" id="CreatePlaylist_SbmtBtn">Create Playlist</button>
+                <div class="box-bordered text-center mt-2 p-2">
+                    <small class="card-text text-muted">You can edit other details like <span class="fw-500">title</span>, <span class="fw-500">privacy</span>, <span class="fw-500">cover image</span>, <span class="fw-500">description</span>, and more at any time</small>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -936,7 +1065,7 @@
     </div>
 </div> *@
 
-<div class="box-lg-part shadow-sm" id="Primary_Container">
+<div class="box-lg-part shadow-sm" id="@* Primary_Container *@">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">
             <div class="dropdown">

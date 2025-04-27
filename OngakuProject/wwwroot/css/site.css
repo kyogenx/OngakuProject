@@ -702,12 +702,17 @@ body {
     width: 19px;
 }
 
+.dropdown {
+    width: auto;
+    z-index: 100000;
+}
 .dropdown-menu {
+    z-index: 100000;
     border-radius: 10px;
-    max-width: 290px;
+    width: auto;
     padding: 6px;
     border: 1px solid #f0f0f0;
-    background-color: rgba(248, 249, 250, 0.7);
+    background-color: rgba(248, 249, 250, 0.95);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
@@ -964,7 +969,7 @@ body {
     border-radius: 10px;
     display: flex;
     justify-content: center;
-    position: sticky;
+    position: sticky !important;
     transition: all ease 0.24s;
 }
 .btn-sticky-at-bottom:hover,

@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\PlaylistCovers\" />
     <Folder Include="wwwroot\TrackCovers\" />
     <Folder Include="wwwroot\Tracks\" />
     <Folder Include="wwwroot\ProfileImages\" />

@@ -22,6 +22,35 @@ namespace OngakuProject.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> Create(Playlist_VM Model)
+        {
+            if (ModelState.IsValid && User.Identity.IsAuthenticated)
+            {
+                string? UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.UserId = _profile.ParseCurrentUserId(UserId);
+
+                Playlist? Result = await _playlist.CreatePlaylistAsync(Model);
+                if (Result is not null) {
+                    Model.ImgUrl = Result.ImageUrl;
+                    return Json(new { success = true, result = Model, id = Result.Id });
+                }
+                else return Json(new { success = false, alert = "Something’s not right with your playlist details. Please review and resubmit" });
+            }
+            return Json(new { sucess = false, alert = "Sign in to manage your playlists" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditShortname(int Id, string? Shortname)
+        {
+            string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(UserId_Str);
+
+            string? Result = await _playlist.EditPlaylistShortnameAsync(Id, UserId, Shortname);
+            if (Result != null) return Json(new { success = true, result = Result, id = Id });
+            else return Json(new { success = false });
+        }
+
+        [HttpPost]
         public async Task<IActionResult> AddToFavorites(Favorites_VM Model)
         {
             if(User.Identity.IsAuthenticated)
@@ -99,6 +128,20 @@ namespace OngakuProject.Controllers
                 return Json(new { success = true, result = PlaylistInfo });
             }
             else return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetShortname(int Id)
+        {
+            string? Shortname = await _playlist.GetPlaylistShortnameAsync(Id);
+            return Json(new { success = true, result = Shortname });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckShortnameAvailability(int Id, string? Shortname)
+        {
+            bool Result = await _playlist.CheckPlaylistShortnameAsync(Id, Shortname);
+            return Json(new { success = Result });
         }
     }
 }
