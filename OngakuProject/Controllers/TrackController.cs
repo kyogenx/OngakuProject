@@ -53,16 +53,16 @@ namespace OngakuProject.Controllers
             else return Json(new { success = false, alert = "You need to sign in before uploading a track" });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> UpdateCreditsInfo(TrackCredits_VM Model)
-        {
-            if (ModelState.IsValid)
-            {
-                int Result = await _track.UpdateCreditsOfTrackAsync(Model);
-                if (Result > 0) return Json(new { success = true, result = Model, id = Result });
-            }
-            return Json(new { success = false });
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> UpdateCreditsInfo(TrackCredits_VM Model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        int Result = await _track.UpdateCreditsAsync(Model);
+        //        if (Result > 0) return Json(new { success = true, result = Model, id = Result });
+        //    }
+        //    return Json(new { success = false });
+        //}
 
         [HttpPost]
         public async Task<IActionResult> UpdateCoverImage(TrackURL_VM Model)
@@ -84,7 +84,7 @@ namespace OngakuProject.Controllers
             Model.MainArtistId = _profile.ParseCurrentUserId(Id);
             if (ModelState.IsValid)
             {
-                int Result = await _track.UpdateCreditsOfTrackAsync(Model);
+                int Result = await _track.UpdateCreditsAsync(Model);
                 if (Result > 0) return Json(new { success = true, id = Result, result = Model });
             }
             return Json(new { success = false });
@@ -95,9 +95,20 @@ namespace OngakuProject.Controllers
         {
             string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Model.UserId = _profile.ParseCurrentUserId(UserIdStr);
-            int Result = await _track.UpdateLyricsOfTheTrackAsync(Model);
+            int Result = await _track.UpdateLyricsAsync(Model);
 
             if (Result > 0) return Json(new { success = true, result = Model, id = Result });
+            else return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteLyrics(int Id)
+        {
+            string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int UserId = _profile.ParseCurrentUserId(UserIdStr);
+            int Result = await _track.DeleteLyricsAsync(Id, UserId);
+
+            if (Result > 0) return Json(new { success = true, id = Result });
             else return Json(new { success = false });
         }
 
@@ -112,21 +123,6 @@ namespace OngakuProject.Controllers
                 if (Result != -1) return Json(new { success = true, id = Id, status = Status, updatedStatus = Result });
             }
             return Json(new { success = false });
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetSingleInfo(int Id, bool IsForAuthor = false)
-        {
-            int UserId = 0;
-            if(User.Identity.IsAuthenticated)
-            {
-                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                UserId = _profile.ParseCurrentUserId(UserId_Str);
-            }
-
-            Track? TrackInfo = await _track.GetTrackInfoAsync(Id, UserId, IsForAuthor);
-            if (TrackInfo is not null) return Json(new { success = true, userId = UserId, isForAuthor = IsForAuthor, result = TrackInfo });
-            else return Json(new { success = false });
         }
 
         [HttpGet]
@@ -145,6 +141,21 @@ namespace OngakuProject.Controllers
                 }
             }
             return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSingleInfo(int Id, bool IsForAuthor = false)
+        {
+            int UserId = 0;
+            if (User.Identity.IsAuthenticated)
+            {
+                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                UserId = _profile.ParseCurrentUserId(UserId_Str);
+            }
+
+            Track? TrackInfo = await _track.GetTrackInfoAsync(Id, UserId, IsForAuthor);
+            if (TrackInfo is not null) return Json(new { success = true, userId = UserId, isForAuthor = IsForAuthor, result = TrackInfo });
+            else return Json(new { success = false });
         }
 
         [HttpGet]
@@ -183,7 +194,7 @@ namespace OngakuProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTrackCredits(int Id, byte Type)
         {
-            TrackCredit? Result = await _track.GetTrackCreditsAsync(Id);
+            TrackCredit? Result = await _track.GetCreditsAsync(Id);
             if (Result is not null) return Json(new { success = true, type = Type, id = Id, result = Result });
             else return Json(new { success = false, id = Id, type = Type });
         }

@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OngakuProject.Data;
@@ -20,6 +21,9 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(Opt =>
 }).AddEntityFrameworkStores<Context>().AddRoles<IdentityRole<int>>().AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
 builder.Services.AddDbContext<Context>(Opt => Opt.UseSqlServer(builder.Configuration.GetConnectionString("Database")));
 
+builder.Services.AddHangfire(Opt => Opt.UseSqlServerStorage(builder.Configuration.GetConnectionString("Database")));
+builder.Services.AddHangfireServer();
+
 builder.Services.AddTransient(typeof(IBase<>), typeof(BaseRep<>));
 builder.Services.AddTransient<IAccount, AccountRep>();
 builder.Services.AddTransient<IUser, UserRep>();
@@ -28,6 +32,7 @@ builder.Services.AddTransient<ITrack, TrackRep>();
 builder.Services.AddTransient<IPlaylist, PlaylistRep>();
 builder.Services.AddTransient<ICountry, CountryRep>();
 builder.Services.AddTransient<IGenre, GenreRep>();
+builder.Services.AddTransient<ISearch, SearchRep>();
 builder.Services.AddScoped<IMiscellaneous, MiscellaneousRep>();
 builder.Services.AddTransient<IMail, MailRep>();
 builder.Services.AddMemoryCache();
@@ -48,6 +53,7 @@ app.UseRouting();
 app.UseStaticFiles();
 app.UseAuthorization();
 app.UseAuthentication();
+app.UseHangfireDashboard();
 
 app.MapStaticAssets();
 

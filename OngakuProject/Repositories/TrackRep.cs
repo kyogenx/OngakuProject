@@ -64,7 +64,7 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
-        public async Task<int> UpdateCreditsOfTrackAsync(TrackCredits_VM Model)
+        public async Task<int> UpdateCreditsAsync(TrackCredits_VM Model)
         {
             if (Model.Id > 0 && Model.MainVocalist != null)
             {
@@ -322,7 +322,7 @@ namespace OngakuProject.Repositories
         {
             if(Id > 0)
             {
-                if (IsForAuthor) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, Status = t.Status, CoverImageUrl = t.CoverImageUrl, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, AddedAt = t.AddedAt }).FirstOrDefaultAsync();
+                if (IsForAuthor) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, Status = t.Status, CoverImageUrl = t.CoverImageUrl, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, AddedAt = t.AddedAt, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
                 else return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, CoverImageUrl = t.CoverImageUrl, UserId = t.UserId, User = t.User != null ? new User { Nickname = t.User.Nickname } : null, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
             }
             return null;
@@ -362,21 +362,29 @@ namespace OngakuProject.Repositories
             return -1;
         }
 
-        public async Task<TrackCredit?> GetTrackCreditsAsync(int Id)
+        public async Task<TrackCredit?> GetCreditsAsync(int Id)
         {
             if (Id > 0) return await _context.TrackCredits.AsNoTracking().Where(t => t.TrackId == Id).Select(t => new TrackCredit { MainVocalist = t.MainVocalist, FeaturedArtists = t.FeaturedArtists, Lyricist = t.Lyricist, Composer = t.Composer, Arranger = t.Arranger, Instrumentalist = t.Instrumentalist, MasteringEngineer = t.MasteringEngineer, MixingEngineer = t.MixingEngineer, RecordingEngineer = t.RecordingEngineer, Producer = t.Producer, SoundDesigner = t.SoundDesigner }).FirstOrDefaultAsync();
             else return null;
         }
 
-        public async Task<int> UpdateLyricsOfTheTrackAsync(Lyrics_VM Model)
+        public async Task<int> UpdateLyricsAsync(Lyrics_VM Model)
         {
             if(Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.Content))
             {
-                int? HasLyrics = await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Model.Id).Select(t => t.Id).FirstOrDefaultAsync();
+                Lyrics? HasLyrics = await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Model.Id && !t.IsDeleted).Select(t => new Lyrics {Id = t.Id, IsDeleted = t.IsDeleted}).FirstOrDefaultAsync();
                 if(HasLyrics is not null)
                 {
-                    int Result = await _context.Lyrics.AsNoTracking().Where(t => t.Id == HasLyrics).ExecuteUpdateAsync(t => t.SetProperty(t => t.Content, Model.Content).SetProperty(t => t.LanguageId, Model.LanguageId));
-                    if (Result > 0) return HasLyrics.Value;
+                    if(HasLyrics.IsDeleted)
+                    {
+                        int Result = await _context.Lyrics.AsNoTracking().Where(t => t.Id == HasLyrics.Id).ExecuteUpdateAsync(t => t.SetProperty(t => t.Content, Model.Content).SetProperty(t => t.LanguageId, Model.LanguageId).SetProperty(t => t.IsDeleted, false));
+                        if (Result > 0) return HasLyrics.Id;
+                    }
+                    else
+                    {
+                        int Result = await _context.Lyrics.AsNoTracking().Where(t => t.Id == HasLyrics.Id).ExecuteUpdateAsync(t => t.SetProperty(t => t.Content, Model.Content).SetProperty(t => t.LanguageId, Model.LanguageId));
+                        if (Result > 0) return HasLyrics.Id;
+                    }
                 }
                 else
                 {
@@ -395,10 +403,96 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
+        public async Task<int> DeleteLyricsAsync(int Id, int UserId)
+        {
+            if (Id > 0 && UserId > 0)
+            {
+                bool CheckTrackAvailability = await _context.Tracks.AsNoTracking().AnyAsync(t => !t.IsDeleted && t.Id == Id && t.UserId == UserId);
+                if (CheckTrackAvailability)
+                {
+                    int Result = await _context.Lyrics.AsNoTracking().Where(l => l.TrackId == Id && !l.IsDeleted).ExecuteUpdateAsync(l => l.SetProperty(l => l.IsDeleted, true));
+                    if (Result > 0) return Id;
+                }
+            }
+            return 0;
+        }
+
         public async Task<Lyrics?> GetLyricsAsync(int Id)
         {
-            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id).Select(t => new Lyrics { Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).Select(t => new Lyrics { Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
             else return null;
+        }
+
+        public async Task<int> AddToFavoritesAsync(Favorites_VM Model)
+        {
+            int WasTheTrackAddedBefore = await _context.Favorites.AsNoTracking().Where(t => t.UserId == Model.UserId && t.TrackId == Model.TrackId && !t.IsDeleted).Select(t => t.Id).FirstOrDefaultAsync();
+            if (WasTheTrackAddedBefore > 0)
+            {
+                int Result = await _context.Favorites.AsNoTracking().Where(t => t.Id == WasTheTrackAddedBefore).ExecuteUpdateAsync(t => t.SetProperty(t => t.IsDeleted, false).SetProperty(t => t.Order, 0).SetProperty(t => t.AddedAt, DateTime.Now));
+                if (Result > 0) return WasTheTrackAddedBefore;
+            }
+            else
+            {
+                Favorite favoriteSample = new Favorite
+                {
+                    AddedAt = DateTime.Now,
+                    TrackId = Model.TrackId,
+                    UserId = Model.UserId,
+                    Order = 0
+                };
+                await _context.AddAsync(favoriteSample);
+                await _context.SaveChangesAsync();
+
+                return Model.TrackId;
+            }
+            return 0;
+        }
+
+        public async Task<int> RemoveFromFavoritesAsync(int Id, int UserId)
+        {
+            if (Id > 0 && UserId > 0)
+            {
+                int Result = await _context.Favorites.Where(f => f.TrackId == Id && f.UserId == UserId && !f.IsDeleted).ExecuteUpdateAsync(f => f.SetProperty(f => f.IsDeleted, true));
+                if (Result > 0) return Id;
+            }
+            return 0;
+        }
+
+        public async Task<int> AddToPlaylistAsync(TrackManagement_VM Model)
+        {
+            if (Model.PlaylistIds != null)
+            {
+                Model.PlaylistIds = Model.PlaylistIds.Distinct().ToList();
+                int CheckpointQty = await _context.Users.AsNoTracking().Where(u => u.Id == Model.UserId && u.UserPlaylists != null).SelectMany(u => u.UserPlaylists).Where(u => Model.PlaylistIds.Contains(u.PlaylistId)).Distinct().CountAsync();
+                if (CheckpointQty == Model.PlaylistIds.Count)
+                {
+                    List<TrackPlaylist>? TrackPlaylists = new List<TrackPlaylist>();
+                    foreach (var item in Model.PlaylistIds)
+                    {
+                        if (item.HasValue)
+                        {
+                            TrackPlaylist trackPlaylistSample = new TrackPlaylist
+                            {
+                                PlaylistId = item.Value,
+                                AddedAt = DateTime.Now,
+                                Order = 0,
+                                TrackId = Model.Id,
+                            };
+                            TrackPlaylists.Add(trackPlaylistSample);
+                        }
+                    }
+                    await _context.AddRangeAsync(TrackPlaylists);
+                    await _context.SaveChangesAsync();
+
+                    return Model.Id;
+                }
+            }
+            return 0;
+        }
+
+        public Task<int> RemoveFromPlaylistAsync(int Id, int PlaylistId, int UserId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

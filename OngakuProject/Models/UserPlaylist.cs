@@ -17,5 +17,7 @@ namespace OngakuProject.Models
         public User? User { get; set; }
         public Album? Album { get; set; }
         public Playlist? Playlist { get; set; }
+        [NotMapped]
+        public bool IsTrackInPlaylist { get; set; }
     }
 }

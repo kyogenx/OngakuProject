@@ -10,13 +10,25 @@
     <link rel="stylesheet" href="~/OngakuProject.styles.css" asp-append-version="true" />
 </head>
 <body>
+@*     <div class="side-navbar shadow-sm">
+        <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Home"> <i class="fa-solid fa-house"></i> </button>
+        <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Search"> <i class="fa-solid fa-magnifying-glass"></i> </button>
+        <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Chats & Reels"> <i class="fa-regular fa-comments"></i> </button>
+        <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Library" onmousedown="$('#GetPlaylists_Form').submit();"> <i class="fa-solid fa-bars-staggered"></i> </button>
+        <div class="bottom-0 mt-2">
+            <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Notifications"> <i class="fa-regular fa-bell"></i> </button>
+            <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Switch to Dark Mode" disabled> <i class="fa-regular fa-sun"></i> </button>
+            <button type="button" class="btn btn-side-navbar btn-tooltip w-100" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Help & Support"> <i class="fa-solid fa-question"></i> </button>
+        </div>
+    </div> *@
+
     <div class="bottom-navbar shadow-sm">
         <div class="row">
             <div class="col">
                 <a asp-controller="Home" asp-action="Index" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-house"></i> <br />Home</a>
             </div>
             <div class="col">
-                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-magnifying-glass"></i> <br />Search</button>
+                <button type="button" class="btn btn-bottom-navbar btn-create-container btn-sm w-100" id="Search_Container-BtnCreate"> <i class="fa-solid fa-magnifying-glass"></i> <br />Search</button>
             </div>
             <div class="col">
                 <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-comments"></i> <br />Chats</button>
@@ -25,6 +37,7 @@
                 @if(User.Identity.IsAuthenticated) 
                 {
                     <form method="get" asp-controller="Playlists" asp-action="Get" id="GetPlaylists_Form">
+                        <input type="hidden" name="Type" id="GetPlaylists_Type_Val" value="0" />
                         <button type="submit" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
                     </form>
                 }

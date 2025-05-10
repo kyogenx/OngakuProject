@@ -5,6 +5,7 @@
 }
 
 <div class="box-sm-part shadow-sm">
+    <div class="div-vertical-swiper"></div>
     <div class="d-none">
         <form method="get" asp-controller="User" asp-action="Search" id="SearchForUsers_Form">
             <input type="hidden" name="Type" id="SearchForUsers_Type_Val" value="1" />
@@ -35,6 +36,30 @@
             <input type="hidden" name="TrackId" id="ARTAF_Id_Val" value="0" />
         </form>
     </div>
+
+    @* <div class="box-sm-part-inner" id="Proposal_Container">
+        <div class="box-standard p-2" id="Proposal_Box">
+            <div class="box-standard text-center p-1">
+                <h2 class="h2" id="Proposal_Icon_Lbl"> <i class="fa-solid fa-question"></i> </h2>
+                <h4 class="h4" id="Proposal_Header_Lbl">Proposal Header</h4>
+                <small class="card-text text-muted white-space-on" id="Proposal_Description_Span">Proposal description (short)</small>
+            </div>
+            <div class="row mt-3">
+                <div class="col" id="ProposalSubmit_Box">
+                    <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="ProposalSubmit_Btn">Submit</button>
+                    <div class="box-standard" id="ProposalForForms_Box" style="display: none;"></div>
+                </div>
+                <div class="col" id="ProposalCancel_Box">
+                    <button type="button" class="btn btn-standard-bolded btn-close-sm-part-container bg-chosen-bright w-100" id="Proposal_Container-BtnClose"> <i class="fa-regular fa-circle-xmark"></i> Cancel</button>
+                </div>
+            </div>
+            <div class="box-bordered text-center mt-2 p-2">
+                <span class="h6">Time Left</span>
+                <br />
+                <small class="card-text text-muted" id="Proposal_Timer_Span">01:00</small>
+            </div>
+        </div>
+    </div> *@
 
     @* <div class="box-standard p-1">
         <div class="playlist-box">
@@ -70,49 +95,7 @@
             </div>
         </div>
     </div> *@
-
-    <div class="box-sm-part-inner shadow-sm" id="EditPlaylistShortname_Container">
-        <div class="box-sm-part-header p-2">
-            <div class="box-standard">
-                <div class="hstack gap-1" id="EditPlaylistShortname_Container-Header_Box">
-                    <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Back</button>
-                    <span class="h5 ms-1 pt-1">Edit Playlist Shortname</span>
-                    <button type="button" class="btn btn-standard btn-close-sm-container btn-sm ms-auto" id="EditPlaylistShortname_Container-Close_Btn">Done</button>
-                </div>
-            </div>
-        </div>
-        <div class="box-standard mt-2 p-1">
-            <div class="box-bordered bg-light text-center p-2">
-                <h2 class="h2"> <i class="fa-solid fa-at"></i> </h2>
-                <h4 class="h4">Shortname</h4>
-                <small class="card-text text-muted">Edit the short name of your playlist to make it easier for other users to find and access it directly via its link (this feature is only available for public playlists)</small>
-            </div>
-            <div class="box-standard mt-2">
-                <div class="d-none">
-                    <form method="get" action="/Playlists/CheckShortnameAvailability" id="CheckShortnameAvailability_Form">
-                        <input type="hidden" name="Id" id="CSA_Id_Val" value="0" />
-                        <input type="hidden" name="Shortname" id="CSA_Shortname_Val" value="0" />
-                    </form>
-                </div>
-                <form method="post" action="/Playlists/EditPlaylistShortname" id="EditPlaylistShortname_Form">
-                    <div>
-                        <input type="hidden" name="Id" id="EPS_Id_Val" value="0" />
-                        <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Shortname makes it easier to find your playlist (<span class='fw-500'>if public</span>) via its link, like: ongaku.com/playlists/plist/<span class='fw-500'>shortname</span>"> <i class="fa-solid fa-circle-info"></i> </button>
-                        <label class="form-label fw-500 ms-1">Shortname</label>
-                        <input type="text" class="form-control form-control-guard form-control-restricted form-control-checker" id="EPS_Shortname_Val" data-form="CheckShortnameAvailability_Form" data-form-target="CSA_Shortname_Val" data-form-base-html="Save Changes" name="Shortname" maxlength="15" placeholder="Set a shortname for your playlist" data-min-length="3" data-change="EditPlaylistShortname_SbmtBtn" data-update="EPS_Shortname_Val-Warn" data-base-value="(unavailable)" />
-                    </div>
-                    <div class="mt-1 ms-1">
-                        <small class="card-text text-muted"> <i class="fa-solid fa-link"></i> Link: onugaku.com/playlists/plist/<span class="fw-500" id="EPS_Shortname_Val-Warn"></span></small>
-                    </div>
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditPlaylistShortname_SbmtBtn">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
-
 <div class="box-lg-part shadow-sm" id="EditTrackLyrics_Container">
     <div class="box-lg-part-header p-2">
         <div class="div-swiper mx-auto" id="EditTrackLyrics_Container-Swiper"></div>
@@ -120,6 +103,12 @@
             <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
             <div class="ms-2">
                 <span class="h5" id="EditTrackLyrics_Container-Header_Lbl">Edit Lyrics</span>
+            </div>
+            <div class="ms-auto" id="DeleteTrackLyrics_Box" style="display: none;">
+                <form method="post" action="/Track/DeleteLyrics" id="DeleteTrackLyrics_Form">
+                    <input type="hidden" name="Id" id="DTL_Id_Val" value="0" />
+                    <button type="submit" class="btn btn-standard btn-sm text-danger super-disabled" id="DeleteTrackLyrics_SbmtBtn"> <i class="fa-solid fa-trash-can"></i> Delete</button>
+                </form>
             </div>
         </div>
         <div class="box-bordered mt-1 p-1">
@@ -376,7 +365,8 @@
         </div>
     </div>
 </div>
-<div class="box-lg-part shadow-sm" id="Primary_Container">
+
+<div class="box-lg-part shadow-sm" id="@* Primary_Container *@">
     <div class="box-lg-part-header p-2">
         <div class="div-swiper mx-auto" id="CreatePlaylist_Container-Swiper"></div>
         <div class="hstack gap-1">
@@ -784,7 +774,7 @@
     <div class="ongaku-player-bg-box" id="OngakuPlayerBackground_Box">
         <div class="box-hidden-on-left" id="OngakuPlayerNotMainPart_Box">
             <div class="hstack gap-1">
-                <div>
+                <div class="text-truncate">
                     <span class="ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Lbl">Track Name</span>
                     <div>
                         <small class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistsDublicate_Span">Artists</small>
@@ -824,10 +814,10 @@
                 <div class="ongaku-player-album-box mx-auto" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div>
                 <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" />
             </div>
-            <div class="box-standard ms-1" id="TrackDetailsPart_Box">
-                <span class="h6 ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackName_Lbl">Track Name</span>
+            <div class="box-standard text-truncate ms-1" id="TrackDetailsPart_Box">
+                <span class="h6 ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Track Name</span>
                 <div>
-                    <small class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_Artists_Span">Artists</small>
+                    <small class="ongaku-artist-name-lbl text-muted" id="OngakuPlayer_Artists_Span">Artists</small>
                 </div>
             </div>
             <div class="box-standard ms-auto" id="TrackButtons_Box">
@@ -1065,7 +1055,79 @@
     </div>
 </div> *@
 
-<div class="box-lg-part shadow-sm" id="@* Primary_Container *@">
+@* <div class="box-lg-part shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto"></div>
+        <div class="hstack gap-1 mt-1">
+            <div class="box-standard">
+                <button type="button" class="btn btn-standard-bolded btn-tooltip btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Search settings"> <i class="fa-solid fa-sliders"></i> </button>
+            </div>
+            <div class="w-100">
+                <form class="search-form" method="get" action="/Search/Find" data-keyword="MainSearch" id="FindOnSearch_Form">
+                    <div class="form-control-search-container w-100">
+                        <span class="card-text text-muted"> <i class="fa-solid fa-magnifying-glass"></i> </span>
+                        <input type="text" class="form-control form-control-search form-control-guard" data-keyword="MainSearch" id="FindOnSearch_Form-Keyword_Val" name="Keyword" data-min-length="1" data-target="SubmitSearch_Btn" placeholder="What are we looking for..." maxlength="150" />
+                    </div>
+                </form>
+            </div>
+            <button type="button" class="btn btn-standard-bolded btn-submit-the-search btn-sm super-disabled text-primary ms-auto" id="SubmitSearch_Btn" data-keyword="MainSearch">Search</button>
+        </div>
+        <div class="box-top-hidden x-row-sliding-only-box" id="SearchFilters_Box">
+            <button type="button" class="btn btn-filter btn-form-filter btn-sm" id="SearchFormFilter_Btn-0" data-keyword="MainSearch">All</button>
+            <button type="button" class="btn btn-filter btn-form-filter btn-sm" id="SearchFormFilter_Btn-1" data-keyword="MainSearch">Artists</button>
+            <button type="button" class="btn btn-filter btn-form-filter btn-sm" id="SearchFormFilter_Btn-2" data-keyword="MainSearch">Playlists</button>
+            <button type="button" class="btn btn-filter btn-form-filter btn-sm" id="SearchFormFilter_Btn-3" data-keyword="MainSearch">Tracks</button>
+            <button type="button" class="btn btn-filter btn-form-filter btn-sm" id="SearchFormFilter_Btn-4" data-keyword="MainSearch">Albums</button>
+            <button type="button" class="btn btn-filter btn-form-filter btn-sm" id="SearchFormFilter_Btn-5" data-keyword="MainSearch">Audiobooks</button>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="Search_Box">
+        <div class="box-standard row mt-5" id="SearchResult_FirstStep_Box">
+            <div class="col col-6 col-lg-5">
+                <div class="box-standard" id="BestSearch_Box">
+                    <div class="hstack gap-1">
+                        <h6 class="h6 search-title-label"> <i class="fa-regular fa-star"></i> Best Match</h6>
+                    </div>
+                    <div class="box-standard" id="BestSearchResult_Box">
+
+                    </div>                    
+                </div>
+            </div>
+            <div class="col col-6 col-lg-7">
+                <div class="box-standard" id="PlaylistsSearch_Box">
+                    <div class="hstack gap-1">
+                        <h6 class="h6 search-title-label">Playlists ∙ <span class="card-text" id="PlaylistsQty_Span"></span> <i class="fa-solid fa-angle-right"></i> </h6>
+                    </div>
+                    <div class="x-row-sliding-only-box" id="PlaylistsSearchResult_Box">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+@* <div class="best-search-result-box">
+    <div class="standard-search-result-img-box"> <i class="fa-solid fa-wave-square"></i> </div>
+    <div class="mt-1">
+        <span class="h6 standard-search-result-header">Playlist</span>
+        <div class="bottom-element">
+            <small class="card-text text-muted">Playlist/Artist/Track</small>
+        </div>
+    </div>
+</div> *@
+
+@* <div class="standard-search-result-box">
+    <div class="standard-search-result-img-box"> <i class="fa-solid fa-wave-square"></i> </div>
+    <div class="mt-1">
+        <span class="h6 standard-search-result-header">Playlist Name, Playlist Name, Playlist Name</span>
+        <div class="bottom-element">
+            <small class="card-text text-muted">15 songs</small>
+        </div>
+    </div>
+</div> *@
+
+<div class="box-lg-part shadow-sm" id="Primary_Container">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">
             <div class="dropdown">
@@ -1105,7 +1167,85 @@
             }
         </div>
     </div>
-    <div class="box-lg-part-body mt-5" id="Primary_Box">       
+    <div class="box-lg-part-body mt-5" id="Primary_Box">
+@*         <div class="hstack gap-1 mt-1">
+            <h6 class="h6" id="ATP_ChosenPlaylistsQty_Lbl">No Chosen Playlist</h6>
+            <div class="ms-auto">
+                <form method="post" action="/Playlists/AddToPlaylist" id="AddToPlaylist_Form">
+                    <input type="hidden" name="Id" id="ATP_Id_Val" />
+                    <div class="d-none" id="ATP_ChosenPlaylists_Box">
+                        
+                    </div>
+                    <button type="submit" class="btn btn-standard-bolded btn-sm super-disabled" id="AddToPlaylist_SbmtBtn">Save</button>
+                </form>
+            </div>
+        </div> *@
+@*         <div class="box-standard p-1">
+            <div class="form-control-search-container">
+                <span class="card-text text-muted"> <i class="fa-solid fa-magnifying-glass"></i> </span>
+                <input type="text" class="form-control form-control-search" id="ATP_PlaylistsSearch_Val" maxlength="100" placeholder="Find in Playlists" />
+            </div>
+            <div class="box-standard mt-2">
+                <h6 class="h6">Available Playlists</h6>
+                <div class="box-standard mt-1" id="AvailablePlaylists_Box">
+                </div>
+            </div>
+        </div> *@
+
+@*         <button type="button" class="btn btn-standard btn-pre-delete-the-playlist btn-sm text-danger"> <i class="fa-regular fa-trash-can"></i> Delete</button> *@   
+@* <div class="mt-1">
+            <div class="d-none">
+                <form method="post" action="/Playlists/Delete" id="DeleteThePlaylist_Form">
+                    <input type="hidden" name="Id" id="DTP_Id_Val" value="0" />
+                </form>
+            </div>
+            <form method="post" action="/Playlists/Edit" id="EditPlaylist_Form">
+                <div>
+                    <span class="form-label fw-500 ms-1">Title</span>
+                    <div class="mt-1">
+                        <input type='hidden' name='Id' id='EP_Id_Val' value='0' />
+                        <input type="text" class="form-control form-control-guard" name="Title" id="EP_Title_Val" maxlength="90" data-min-length="1" data-target="EditPlaylist_SbmtBtn" placeholder="Set a name for this playlist" />
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500 ms-1">Description</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-sm"><i class="fa-solid fa-font"></i> Chars: <span id="EPD_Counter_Span">0/360</span></button>
+                    </div>
+                    <div class="mt-1">
+                        <textarea class="form-control form-control-guard form-textarea" rows="1" id="EP_Description_Val" data-length-display="EPD_Counter_Span" maxlength="360" name="Description" placeholder="Set a description for this playlist"></textarea>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Description is optional for playlists</small>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-500 ms-1">Privacy</label>
+                    <div class="box-switcher row mt-1 ms-1 me-1">
+                        <input type="hidden" name="Privacy" id="EP_Privacy_Val" value="0" />
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="EP_Privacy_Val" data-value="2" data-description="This playlist is visible to everyone" id="EP_Privacy_Val-0_Btn">Public</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="EP_Privacy_Val" data-value="1" data-description="Visible to you and your subscribers only" id="EP_Privacy_Val-1_Btn">Semi-Private</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-box-switcher-member btn-box-switcher-member-active btn-change-the-value btn-sm" data-switcher-internal-id="0" data-target="EP_Privacy_Val" data-value="0" data-description="Only you can see this playlist" id="EP_Privacy_Val-2_Btn">Private</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="EP_Privacy_Val-Warn">Only you can see this playlist</small>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditPlaylist_SbmtBtn">Save Changes</button>
+                </div>
+            </form>
+            <div class="box-bordered text-center mt-2 p-2">
+                <small class="card-text text-muted">Additional details — including the <span class="fw-500">cover image</span>, <span class="fw-500">shortname</span>, <span class="fw-500">pinning</span>, and <span class="fw-500">unpinning</span> — must be modified outside of this container</small>
+            </div>
+        </div> *@
+       
 @*         <div class="box-bordered mt-2 p-2" id="ReleaseInfo_CreditsInfo_Box">
             <small class="card-text text-muted">
                 Released
@@ -1116,6 +1256,5 @@
                 <span class="card-text fw-500" id="ReleaseInfo_LabelInfo_Span">Rammstein (no label)</span>
             </small>
         </div> *@
-
     </div>
 </div>

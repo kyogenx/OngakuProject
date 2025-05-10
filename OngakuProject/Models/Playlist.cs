@@ -22,6 +22,7 @@ namespace OngakuProject.Models
         public User? User { get; set; }
         public List<UserPlaylist>? UserPlaylists { get; set; } = new List<UserPlaylist>();
         public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
+
         [NotMapped]
         public int SongsQty { get; set; }
         [NotMapped]
