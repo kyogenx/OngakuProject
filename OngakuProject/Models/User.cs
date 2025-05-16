@@ -33,6 +33,7 @@ namespace OngakuProject.Models
         public List<Playlist>? Playlists { get; set; }
         public List<Favorite>? Favorites { get; set; }
         public List<TrackHistory>? History { get; set; }
+        public List<UserListener>? UserListeners { get; set; }
         public List<UserPlaylist>? UserPlaylists { get; set; } = new List<UserPlaylist>();
         [NotMapped]
         public int ImgId { get; set; }

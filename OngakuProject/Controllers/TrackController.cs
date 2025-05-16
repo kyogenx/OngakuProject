@@ -15,14 +15,16 @@ namespace OngakuProject.Controllers
         private readonly ITrack _track;
         private readonly IProfile _profile;
         private readonly IGenre _genre;
+        private readonly ITrackAnalytic _trackAnalytic;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public TrackController(Context context, ITrack track, IProfile profile, IGenre genre, IWebHostEnvironment webHostEnvironment)
+        public TrackController(Context context, ITrack track, IProfile profile, IGenre genre, ITrackAnalytic trackAnalytic, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _track = track;
             _profile = profile;
             _genre = genre;
+            _trackAnalytic = trackAnalytic;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -168,7 +170,11 @@ namespace OngakuProject.Controllers
                 UserId = _profile.ParseCurrentUserId(UserId_Str);
             }
             Track? TrackResult = await _track.LoadTheTrackAsync(Id, PlaylistId, UserId);
-            if (TrackResult is not null) return Json(new { success = true, playlistId = PlaylistId, result = TrackResult });
+            if (TrackResult is not null)
+            {
+                await _trackAnalytic.AddTrackListenQueueAsync(UserId, Id);
+                return Json(new { success = true, playlistId = PlaylistId, result = TrackResult });
+            }
             else return Json(new { success = false });
         }
 
@@ -183,7 +189,6 @@ namespace OngakuProject.Controllers
                     FileStream? FileInfo = System.IO.File.OpenRead(PathInfo);
                     if (FileInfo is not null)
                     {
-                        await _track.UpdateStreamsQtyAsync(Id);
                         return File(FileInfo, "audio/mpeg", enableRangeProcessing: true);
                     }
                 }

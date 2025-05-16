@@ -19,7 +19,6 @@ namespace OngakuProject.Models
         public int Tempo { get; set; } //BPM
         public bool Mode { get; set; } //0 - minor; 1 - major
         public int Key { get; set; } //Stats for recommendations
-        public int StreamsQty { get; set; }
         public byte Status { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ReleasedAt { get; set; }
@@ -44,7 +43,10 @@ namespace OngakuProject.Models
         public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
         public List<TrackArtist>? TrackArtists { get; set; }
         public List<TrackHistory>? TrackHistory { get; set; }
+        public List<DailyStreamAggregation>? DailyStreamAggregations { get; set; }
         public List<Favorite>? Favorite { get; set; }
+        [NotMapped]
+        public int StreamsQty { get; set; }
         [NotMapped]
         public string? MainArtistName { get; set; }
         [NotMapped]

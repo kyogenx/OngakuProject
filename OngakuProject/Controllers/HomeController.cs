@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OngakuProject.Data;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
+using OngakuProject.Repositories;
+using OngakuProject.ViewModels;
 
 namespace OngakuProject.Controllers
 {
@@ -14,20 +17,24 @@ namespace OngakuProject.Controllers
         private readonly Context _context;
         private readonly IProfile _profile;
         private readonly IGenre _genre;
+        private readonly ITrackAnalytic _trackAnalytic;
+        private readonly IBackgroundWorker _backgroundWorker;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger, Context context, IProfile profile, IGenre genre)
+        public HomeController(ILogger<HomeController> logger, Context context, IBackgroundWorker backgroundWorker, IProfile profile, IGenre genre, ITrackAnalytic trackAnalytic)
         {
             _logger = logger;
             _context = context;
             _profile = profile;
             _genre = genre;
+            _trackAnalytic = trackAnalytic;
+            _backgroundWorker = backgroundWorker;
         }
 
         public async Task<IActionResult> Index()
         {
             User? UserInfo = null;
-            if(User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
                 string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 int UserId = _profile.ParseCurrentUserId(Id);

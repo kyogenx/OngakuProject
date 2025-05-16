@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OngakuProject.Data;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
+using System.Security.Claims;
 
 namespace OngakuProject.Controllers
 {
@@ -10,11 +11,15 @@ namespace OngakuProject.Controllers
     {
         private readonly Context _context;
         private readonly IUser _user;
+        private readonly IProfile _profile;
+        private readonly IArtistInfo _artistInfo;
 
-        public UserController(Context context, IUser user)
+        public UserController(Context context, IArtistInfo artistInfo, IUser user, IProfile profile)
         {
-            _context = context;
             _user = user;
+            _profile = profile;
+            _context = context;
+            _artistInfo = artistInfo;
         }
 
         [HttpGet]

@@ -44,7 +44,7 @@ namespace OngakuProject.Repositories
 
         public async Task<GenreStats_VM?> GetGenreStatsAsync(int Id)
         {
-            if (Id > 0) return await _context.Genres.AsNoTracking().Where(g => g.Id == Id && !g.IsDeleted).Select(g => new GenreStats_VM { Id = Id, Name = g.Name, Popularity = g.Popularity, TracksQty = g.Tracks != null ? g.Tracks.Count : 0, MonthlyListenersQty = g.Tracks != null ? g.Tracks.Sum(g => g.StreamsQty) : 0 }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Genres.AsNoTracking().Where(g => g.Id == Id && !g.IsDeleted).Select(g => new GenreStats_VM { Id = Id, Name = g.Name, Popularity = g.Popularity, TracksQty = g.Tracks != null ? g.Tracks.Count : 0 }).FirstOrDefaultAsync();
             else return null;
         }
     }

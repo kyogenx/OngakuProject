@@ -16,6 +16,7 @@ namespace OngakuProject.ViewModels
         [MaxLength(360, ErrorMessage = "Playlist's description cannot contain more than 360 characers")]
         public string? Description { get; set; }
         public byte PrivacyStatus { get; set; } = 2;
+        public bool IsEditable { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime? CreatedAt { get; set; }
         [Required(ErrorMessage = "User information is required")]

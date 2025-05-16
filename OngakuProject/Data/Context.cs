@@ -14,6 +14,8 @@ namespace OngakuProject.Data
         public DbSet<Track> Tracks { get; set; }
         public DbSet<Album> Albums { get; set; }
         public DbSet<Disc> Discs { get; set; }
+        public DbSet<TrackHistory> TrackHistories { get; set; }
+        public DbSet<DailyStreamAggregation> DailyStreamAggregations { get; set; }
         public DbSet<Label> Labels { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Lyrics> Lyrics { get; set; }
@@ -26,6 +28,6 @@ namespace OngakuProject.Data
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<TrackPlaylist> TrackPlaylists { get; set; }
         public DbSet<UserPlaylist> UserPlaylists { get; set; }
-        public DbSet<TrackHistory> TrackHistories { get; set; }
+        public DbSet<UserListener> UserListeners { get; set; }
     }
 }

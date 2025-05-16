@@ -3,7 +3,6 @@ using OngakuProject.Data;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
-using System.Security.Cryptography.X509Certificates;
 
 namespace OngakuProject.Repositories
 {
@@ -38,13 +37,13 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
-        public async Task<Playlist?> GetPlaylistEditInfoAsync(int Id)
+        public async Task<Playlist?> GetEditInfoAsync(int Id)
         {
             if (Id > 0) return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => new Playlist { Id = Id, Name = p.Name, Description = p.Description, PrivacyStatus = p.PrivacyStatus }).FirstOrDefaultAsync();
             else return null;
         }
 
-        public IQueryable<Track?>? GetPlaylistTracks(int Id, int UserId = 0, int Skip = 0, int Take = 30)
+        public IQueryable<Track?>? GetTracks(int Id, int UserId = 0, int Skip = 0, int Take = 30)
         {
             if (Id > 0)
             {
@@ -54,28 +53,41 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
-        public IQueryable<UserPlaylist>? GetPlaylists(int Id, bool IsForEditing = false)
+        public IQueryable<UserPlaylist>? Get(int Id, bool ForTrackManagement = false)
         {
             if (Id > 0)
             {
-                if (!IsForEditing) return _context.UserPlaylists.AsNoTracking().Where(p => p.UserId == Id && !p.IsDeleted).OrderByDescending(p => p.PinOrder).Select(p => new UserPlaylist { Id = p.Id, PinOrder = p.PinOrder, PlaylistId = p.PlaylistId, AlbumId = p.AlbumId, Playlist = p.Playlist != null ? new Playlist { Name = p.Playlist.Name, ImageUrl = p.Playlist.ImageUrl, SongsQty = p.Playlist.TrackPlaylists != null ? p.Playlist.TrackPlaylists.Count : 0 } : new Playlist { Name = p.Album!.Title, ImageUrl = p.Album.CoverImageUrl, SongsQty = p.Album.Tracks != null ? p.Album.Tracks.Count : 0 } });
-                else return _context.UserPlaylists.AsNoTracking().Where(p => p.UserId == Id && !p.IsDeleted).OrderByDescending(p => p.PinOrder).Select(p => new UserPlaylist { Id = p.Id, Playlist = p.Playlist != null ? new Playlist { ImageUrl = p.Playlist.ImageUrl, Name = p.Playlist.Name } : null, PlaylistId = p.PlaylistId });
+                if(!ForTrackManagement) return _context.UserPlaylists.AsNoTracking().Where(p => p.UserId == Id && !p.IsDeleted).OrderByDescending(p => p.PinOrder).Select(p => new UserPlaylist { Id = p.Id, PlaylistId = p.PlaylistId, PinOrder = p.PinOrder, Playlist = p.Playlist != null ? new Playlist { Name = p.Playlist.Name, IsEditable = p.Playlist.IsEditable, UserId = p.Playlist.UserId, ImageUrl = p.Playlist.ImageUrl, SongsQty = p.Playlist.TrackPlaylists != null ? p.Playlist.TrackPlaylists.Count(tp => !tp.IsDeleted) : 0 } : null });
+                else return _context.UserPlaylists.AsNoTracking().Where(p => (p.UserId == Id && !p.IsDeleted) && (p.Playlist != null && (p.Playlist.IsEditable || p.Playlist.UserId == Id))).Select(p => new UserPlaylist { Id = p.Id, PlaylistId = p.PlaylistId, Playlist = p.Playlist != null ? new Playlist { Name = p.Playlist.Name, ImageUrl = p.Playlist.ImageUrl } : null });
             }
             else return null;
         }
 
-        public async Task<bool> IsPlaylistSavedAsync(int Id, int UserId)
+        public async Task<DateTime?> GetPlaylistLastUpdateDateAsync(int Id, int UserId = 0)
+        {
+            if (Id == 0 && UserId != 0) return await _context.Favorites.AsNoTracking().Where(f => f.UserId == UserId).OrderByDescending(f => f.Id).Select(f => f.AddedAt).FirstOrDefaultAsync();
+            else if (Id != 0) return await _context.TrackPlaylists.AsNoTracking().Where(tp => tp.PlaylistId == Id && !tp.IsDeleted).OrderByDescending(tp => tp.Id).Select(tp => tp.AddedAt).FirstOrDefaultAsync();
+            else return null;
+        }
+
+        public IQueryable<Playlist>? GetToEdit(int Id)
+        {
+            if (Id > 0) return _context.Playlists.AsNoTracking().Where(p => p.UserId == Id && !p.IsDeleted).OrderByDescending(p => p.CreatedAt).Select(p => new Playlist { Id = p.Id, Name = p.Name, ImageUrl = p.ImageUrl, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count(tp => !tp.IsDeleted) : 0 });
+            else return null;
+        }
+
+        public async Task<bool> IsSavedAsync(int Id, int UserId)
         {
             if (Id > 0 && UserId > 0) return await _context.UserPlaylists.AsNoTracking().AnyAsync(up => up.UserId == UserId && up.PlaylistId == Id && !up.IsDeleted);
             return false;
         }
 
-        public async Task<int> AddAsync(int Id, int UserId)
+        public async Task<(int, int)?> AddAsync(int Id, int UserId)
         {
             if (Id > 0 && UserId > 0)
             {
                 bool CheckPlaylistAvailability = await _context.UserPlaylists.AsNoTracking().AnyAsync(p => p.PlaylistId == Id && p.UserId == UserId && !p.IsDeleted);
-                if (CheckPlaylistAvailability) return 0;
+                if (CheckPlaylistAvailability) return null;
                 else
                 {
                     UserPlaylist userPlaylistSample = new UserPlaylist
@@ -88,10 +100,10 @@ namespace OngakuProject.Repositories
                     await _context.AddAsync(userPlaylistSample);
                     await _context.SaveChangesAsync();
 
-                    return userPlaylistSample.Id;
+                    return (Id, userPlaylistSample.Id);
                 }
             }
-            return 0;
+            return null;
         }
 
         public async Task<int> RemoveAsync(int Id, int UserId)
@@ -130,9 +142,9 @@ namespace OngakuProject.Repositories
                 };
                 await _context.Playlists.AddAsync(playlistSample);
                 await _context.SaveChangesAsync();
-                int Result = await AddAsync(playlistSample.Id, Model.UserId);
+                (int, int)? Result = await AddAsync(playlistSample.Id, Model.UserId);
                 playlistSample.TrueId = playlistSample.Id;
-                playlistSample.Id = Result;
+                playlistSample.Id = Result.Value.Item1;
 
                 return playlistSample;
             }
@@ -143,7 +155,7 @@ namespace OngakuProject.Repositories
         {
             if(Id > 0 && UserId > 0 && !String.IsNullOrWhiteSpace(Shortname) && Shortname.Length <= 15)
             {
-                bool CheckAvailability = await CheckPlaylistShortnameAsync(Id, Shortname);
+                bool CheckAvailability = await CheckShortnameAsync(Id, Shortname);
                 if(!CheckAvailability)
                 {
                     int Result = await _context.Playlists.AsNoTracking().Where(s => s.Id == Id && s.UserId == UserId).ExecuteUpdateAsync(s => s.SetProperty(s => s.Shortname, Shortname));
@@ -157,7 +169,7 @@ namespace OngakuProject.Repositories
         {
             if (Model.Id > 0 && !String.IsNullOrWhiteSpace(Model.Title))
             {
-                int Result = await _context.Playlists.AsNoTracking().Where(p => p.Id == Model.Id && p.UserId == Model.UserId && !p.IsDeleted).ExecuteUpdateAsync(p => p.SetProperty(p => p.Name, Model.Title).SetProperty(t => t.Description, Model.Description).SetProperty(p => p.PrivacyStatus, Model.PrivacyStatus));
+                int Result = await _context.Playlists.AsNoTracking().Where(p => p.Id == Model.Id && p.UserId == Model.UserId && !p.IsDeleted).ExecuteUpdateAsync(p => p.SetProperty(p => p.Name, Model.Title).SetProperty(t => t.Description, Model.Description).SetProperty(p => p.PrivacyStatus, Model.PrivacyStatus).SetProperty(p => p.IsEditable, Model.IsEditable));
                 if (Result > 0) return Model.Id;
             }
             return 0;
@@ -229,20 +241,20 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
-        public async Task<int> AddTrackToPlaylistAsync(int Id, int PlaylistId, int UserId)
+        public async Task<int> AddTrackToAsync(TrackManagement_VM Model)
         {
-            if(Id > 0 && PlaylistId > 0 && UserId > 0)
+            if(Model.Id > 0 && Model.PlaylistId > 0 && Model.UserId > 0)
             {
-                bool CheckPlaylistAndTrackAvailability = await _context.Playlists.AsNoTracking().AnyAsync(p => p.Id == PlaylistId && p.UserId == UserId && !p.IsDeleted);
-                if(CheckPlaylistAndTrackAvailability)
+                bool CheckPlaylistAvailability = await _context.Playlists.AsNoTracking().AnyAsync(p => p.Id == Model.PlaylistId && p.UserId == Model.UserId && !p.IsDeleted);
+                if(CheckPlaylistAvailability)
                 {
-                    CheckPlaylistAndTrackAvailability = await _context.TrackPlaylists.AsNoTracking().AnyAsync(tp => tp.TrackId == Id && tp.PlaylistId == PlaylistId && !tp.IsDeleted);
-                    if(!CheckPlaylistAndTrackAvailability)
+                    TrackPlaylist? CheckTrackAvailability = await _context.TrackPlaylists.AsNoTracking().Where(tp => tp.TrackId == Model.Id && tp.PlaylistId == Model.PlaylistId).Select(tp => new TrackPlaylist { IsDeleted = tp.IsDeleted }).FirstOrDefaultAsync();
+                    if(CheckTrackAvailability is null)
                     {
                         TrackPlaylist trackPlaylistSample = new TrackPlaylist
                         {
-                            TrackId = Id,
-                            PlaylistId = PlaylistId,
+                            TrackId = Model.Id,
+                            PlaylistId = Model.PlaylistId,
                             AddedAt = DateTime.Now,
                         };
                         await _context.AddAsync(trackPlaylistSample);
@@ -250,26 +262,34 @@ namespace OngakuProject.Repositories
 
                         return trackPlaylistSample.TrackId;
                     }
+                    else
+                    {
+                        if(CheckTrackAvailability.IsDeleted)
+                        {
+                            int Result = await _context.TrackPlaylists.AsNoTracking().Where(t => t.PlaylistId == Model.PlaylistId && t.TrackId == Model.Id).ExecuteUpdateAsync(t => t.SetProperty(t => t.IsDeleted, false));
+                            if (Result > 0) return Result;
+                        }
+                    }
                 }
             }
             return 0;
         }
 
-        public async Task<int> RemoveTrackFromPlaylistAsync(int Id, int PlaylistId, int UserId)
+        public async Task<int> RemoveTrackFromAsync(TrackManagement_VM Model)
         {
-            if(Id > 0 && PlaylistId > 0 && UserId > 0)
+            if(Model.Id > 0 && Model.PlaylistId > 0 && Model.UserId > 0)
             {
-                bool CheckPlaylistsAvailability = await _context.Playlists.AsNoTracking().AnyAsync(p => p.Id == PlaylistId && p.UserId == UserId && !p.IsDeleted);
+                bool CheckPlaylistsAvailability = await _context.Playlists.AsNoTracking().AnyAsync(p => p.Id == Model.PlaylistId && p.UserId == Model.UserId && !p.IsDeleted);
                 if(CheckPlaylistsAvailability)
                 {
-                    int Result = await _context.TrackPlaylists.AsNoTracking().Where(tp => tp.TrackId == Id && tp.PlaylistId == PlaylistId && !tp.IsDeleted).ExecuteUpdateAsync(tp => tp.SetProperty(tp => tp.IsDeleted, true));
-                    if (Result > 0) return Id;
+                    int Result = await _context.TrackPlaylists.AsNoTracking().Where(tp => tp.TrackId == Model.Id && tp.PlaylistId == Model.PlaylistId && !tp.IsDeleted).ExecuteUpdateAsync(tp => tp.SetProperty(tp => tp.IsDeleted, true));
+                    if (Result > 0) return Model.Id;
                 }
             }
             return 0;
         }
 
-        public async Task<bool> CheckPlaylistShortnameAsync(int Id, string? Shortname)
+        public async Task<bool> CheckShortnameAsync(int Id, string? Shortname)
         {
             if (Shortname is not null)
             {
@@ -279,7 +299,7 @@ namespace OngakuProject.Repositories
             else return false;
         }
 
-        public async Task<Playlist?> GetPlaylistInfoAsync(int Id, bool IsForAuthor = true)
+        public async Task<Playlist?> GetInfoAsync(int Id, bool IsForAuthor = true)
         {
             if (Id > 0)
             {
@@ -289,7 +309,7 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
-        public async Task<Playlist?> GetPlaylistInfoAsync(string? Shortname, bool IsForAuthor = true)
+        public async Task<Playlist?> GetInfoAsync(string? Shortname, bool IsForAuthor = true)
         {
             if (!String.IsNullOrWhiteSpace(Shortname))
             {
@@ -299,7 +319,13 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
-        public async Task<string?> GetPlaylistShortnameAsync(int Id)
+        public async Task<Playlist?> GetAftersaveInfoAsync(int Id)
+        {
+            if (Id > 0) return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => new Playlist { Id = Id, Name = p.Name, ImageUrl = p.ImageUrl, SongsQty = p.TrackPlaylists != null ? p.TrackPlaylists.Count(tp => !tp.IsDeleted) : 0, IsEditable = p.IsEditable, UserId = p.UserId, PrivacyStatus = p.PrivacyStatus }).FirstOrDefaultAsync();
+            else return null;
+        }
+
+        public async Task<string?> GetShortnameAsync(int Id)
         {
             if (Id > 0) return await _context.Playlists.AsNoTracking().Where(p => p.Id == Id && !p.IsDeleted).Select(p => p.Shortname).FirstOrDefaultAsync();
             else return null;

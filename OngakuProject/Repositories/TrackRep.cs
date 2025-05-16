@@ -322,8 +322,8 @@ namespace OngakuProject.Repositories
         {
             if(Id > 0)
             {
-                if (IsForAuthor) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, Status = t.Status, CoverImageUrl = t.CoverImageUrl, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, AddedAt = t.AddedAt, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
-                else return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, StreamsQty = t.StreamsQty, CoverImageUrl = t.CoverImageUrl, UserId = t.UserId, User = t.User != null ? new User { Nickname = t.User.Nickname } : null, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
+                if (IsForAuthor) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, Status = t.Status, CoverImageUrl = t.CoverImageUrl, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, AddedAt = t.AddedAt, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
+                else return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).OrderByDescending(t => t.ReleasedAt).Select(t => new Track { HasExplicit = t.HasExplicit, TrackFileUrl = t.TrackFileUrl, Id = Id, Title = t.Title, ReleasedAt = t.ReleasedAt, CoverImageUrl = t.CoverImageUrl, UserId = t.UserId, User = t.User != null ? new User { Nickname = t.User.Nickname } : null, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Id = g.Id, Name = g.Name }).ToList() : null, TrackArtists = t.TrackArtists != null ? t.TrackArtists.Select(tr => new TrackArtist { Id = tr.Id, ArtistName = tr.User != null ? tr.User.Nickname : null }).ToList() : null, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
             }
             return null;
         }
@@ -349,17 +349,6 @@ namespace OngakuProject.Repositories
                 if (TrackInfo is not null) return TrackInfo;
             }
             return null;
-        }
-
-        public async Task<int> UpdateStreamsQtyAsync(int TrackId)
-        {
-            if(TrackId > 0)
-            {
-                int CurrentStreams = await _context.Tracks.AsNoTracking().Where(t => t.Id == TrackId && !t.IsDeleted && t.Status == 3).Select(t => t.StreamsQty).FirstOrDefaultAsync() + 1;
-                int Result = await _context.Tracks.AsNoTracking().Where(t => t.Id == TrackId && !t.IsDeleted && t.Status == 3).ExecuteUpdateAsync(t => t.SetProperty(t => t.StreamsQty, CurrentStreams));
-                if (Result > 0) return CurrentStreams;
-            }
-            return -1;
         }
 
         public async Task<TrackCredit?> GetCreditsAsync(int Id)
@@ -456,43 +445,6 @@ namespace OngakuProject.Repositories
                 if (Result > 0) return Id;
             }
             return 0;
-        }
-
-        public async Task<int> AddToPlaylistAsync(TrackManagement_VM Model)
-        {
-            if (Model.PlaylistIds != null)
-            {
-                Model.PlaylistIds = Model.PlaylistIds.Distinct().ToList();
-                int CheckpointQty = await _context.Users.AsNoTracking().Where(u => u.Id == Model.UserId && u.UserPlaylists != null).SelectMany(u => u.UserPlaylists).Where(u => Model.PlaylistIds.Contains(u.PlaylistId)).Distinct().CountAsync();
-                if (CheckpointQty == Model.PlaylistIds.Count)
-                {
-                    List<TrackPlaylist>? TrackPlaylists = new List<TrackPlaylist>();
-                    foreach (var item in Model.PlaylistIds)
-                    {
-                        if (item.HasValue)
-                        {
-                            TrackPlaylist trackPlaylistSample = new TrackPlaylist
-                            {
-                                PlaylistId = item.Value,
-                                AddedAt = DateTime.Now,
-                                Order = 0,
-                                TrackId = Model.Id,
-                            };
-                            TrackPlaylists.Add(trackPlaylistSample);
-                        }
-                    }
-                    await _context.AddRangeAsync(TrackPlaylists);
-                    await _context.SaveChangesAsync();
-
-                    return Model.Id;
-                }
-            }
-            return 0;
-        }
-
-        public Task<int> RemoveFromPlaylistAsync(int Id, int PlaylistId, int UserId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

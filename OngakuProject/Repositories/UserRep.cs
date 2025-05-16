@@ -13,9 +13,9 @@ namespace OngakuProject.Repositories
             _context = context;
         }
 
-        public async Task<User?> FindUserAsync(int Id)
+        public async Task<User?> GetUserInfoAsync(int Id)
         {
-            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id && u.IsVisible).Select(u => new User { Id = Id, Nickname = u.Nickname, Searchname = u.Searchname, RealName = u.RealName, ImgUrl = u.ImgUrl, Webpage = u.Webpage, Description = u.Description, CountryId = u.CountryId, LastSeenAt = u.LastSeenAt, WhoCanChat = u.WhoCanChat, WhoCanDownload = u.WhoCanDownload, WhoCanSeeLastSeenInfo = u.WhoCanSeeLastSeenInfo }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id && u.IsVisible).Select(u => new User { Id = Id, Nickname = u.Nickname, RealName = u.RealName, CountryId = u.CountryId, Country = u.Country != null ? new Country { Name = u.Country.Name } : null, Searchname = u.Searchname, ImgUrl = u.ImgUrl, LastSeenAt = u.LastSeenAt, Description = u.Description, WhoCanChat = u.WhoCanChat, WhoCanDownload = u.WhoCanDownload, WhoCanSeeLastSeenInfo = u.WhoCanSeeLastSeenInfo, Webpage = u.Webpage }).FirstOrDefaultAsync();
             else return null;
         }
 

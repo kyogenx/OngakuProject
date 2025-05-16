@@ -17,7 +17,7 @@ let reserveQueue = [];
 //localItemFilter(); SearchForGenres_Form Update Favorites btn-show-field-box
 //imagePreviewer() type='file' UpdateTrackCredits_Form Playlists .div-swiper
 //SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form LoadTheTrack_Form GetPlaylists
-//FUNCTION TERRITORY
+//FUNCTION TERRITORY playlistInfoSampler();
 
 window.onload = function () {
     displayCorrector(currentWindowSize, true);
@@ -1453,7 +1453,7 @@ $(document).on("submit", "#CreateNewPlaylist_Form", function (event) {
             if (response.success) {
                 let divExists = document.getElementById("Playlists_Container");
                 if (divExists != null) { 
-                    let resultBox = playlistSampler(response.result.id, 0, response.result.title, response.result.imgUrl != null ? response.result.imgUrl : null, 0, true, 0, response.result.trueId);
+                    let resultBox = playlistSampler(response.result.id, response.result.title, response.result.imgUrl != null ? response.result.imgUrl : null, 0, 0, response.result.trueId, response.userId, response.userId, true);
                     if (resultBox != null) {
                         let songsQty = $("#PlaylistsSongs_Qty_Span").text();
                         let count = $("#PlaylistsQty_Span").text();
@@ -1609,38 +1609,62 @@ $(document).on("mousedown", ".btn-close-sm-part-container", function () {
     }
 });
 
-$(document).on("submit", "#RemoveThisPlaylist_Form", function (event) {
+$(document).on("submit", "#SaveOrRemoveThePlaylist_Form", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
     let data = $(this).serialize();
+    buttonDisabler(true, "btn-save-the-playlist", null);
     buttonDisabler(true, "btn-remove-the-playlist", null);
     buttonDisabler(true, "btn-pre-remove-the-playlist", null);
 
     $.post(url, data, function (response) {
         if (response.success) {
-            let statsFullInfoSpan = $("<small class='card-text text-muted' id='PlaylistsStats_Span'></small>");
-            let playlistId = $("#" + response.id + "-RemoveThePlaylist_Btn").attr("data-user-playlist-id");
-            let playlistsQty = parseInt($("#PlaylistsQty_Span").html());
-            let songsQty = $("#PlaylistsSongs_Qty_Span").text();
-            playlistsQty = (isNaN(playlistsQty) ? 1 : playlistsQty);
-            playlistsQty--;
+            if (!response.isSaved) {
+                let statsFullInfoSpan = $("<small class='card-text text-muted' id='PlaylistsStats_Span'></small>");
+                let playlistsQty = parseInt($("#PlaylistsQty_Span").html());
+                let songsQty = $("#PlaylistsSongs_Qty_Span").text();
+                playlistsQty = (isNaN(playlistsQty) ? 1 : playlistsQty);
+                playlistsQty--;
+                $("#PlaylistsStats_Box").empty();
+                if (playlistsQty > 1) statsFullInfoSpan.html("<span class='fw-500' id='PlaylistsQty_Span'>" + playlistsQty + "</span> playlists containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsQty + "</span> song(s)");
+                else statsFullInfoSpan.html("<span class='fw-500' id='PlaylistsQty_Span'>One</span> playlist containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsQty + "</span> song(s)");
+                $("#PlaylistsHeaderQty_Span").text(playlistsQty);
+                $("#PlaylistsStats_Box").append(statsFullInfoSpan);
 
-            $("#PlaylistsStats_Box").empty();
-            if (playlistsQty > 1) statsFullInfoSpan.html("<span class='fw-500' id='PlaylistsQty_Span'>" + playlistsQty + "</span> playlists containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsQty + "</span> song(s)");
-            else statsFullInfoSpan.html("<span class='fw-500' id='PlaylistsQty_Span'>One</span> playlist containing <span class='fw-500' id='PlaylistsSongs_Qty_Span'>" + songsQty + "</span> song(s)");
-            $("#PlaylistsHeaderQty_Span").text(playlistsQty);
-            $("#PlaylistsStats_Box").append(statsFullInfoSpan);
-
-            uncallAProposal();
-            buttonUndisabler(true, "btn-remove-the-playlist", null);
-            buttonUndisabler(true, "btn-pre-remove-the-playlist", null);
-            setTimeout(function () {
-                animahider(false, playlistId + "-PlaylistInfo_Box");
+                $(".btn-save-the-playlist").fadeIn(0);
+                $(".btn-save-the-playlist").attr("data-id", response.id);
+                $(".btn-save-the-playlist").removeClass("super-disabled");
+                $(".btn-remove-the-playlist").fadeOut(0);
+                $(".btn-remove-the-playlist").attr("data-id", 0);
+                $(".btn-remove-the-playlist").addClass("super-disabled");
+                uncallAProposal();
+                buttonUndisabler(true, "btn-remove-the-playlist", null);
+                buttonUndisabler(true, "btn-pre-remove-the-playlist", null);
                 setTimeout(function () {
-                    $("#" + playlistId + "-PlaylistInfo_Box").remove();
-                }, 750);
-                callAlert('<i class="fa-regular fa-circle-check fa-spin" style="--fa-animation-delay: 0.35s; --fa-animation-duration: 0.25s; --fa-animation-iteration-count: 2;"></i>', null, null, "Playlist removed successfully", 3.5, "Got It", -1, null);
-            }, 350);
+                    animahider(false, response.id + "-PlaylistInfo_Box");
+                    setTimeout(function () {
+                        $("#" + response.id + "-PlaylistInfo_Box").remove();
+                    }, 750);
+                    callAlert('<i class="fa-regular fa-circle-check fa-spin" style="--fa-animation-delay: 0.35s; --fa-animation-duration: 0.25s; --fa-animation-iteration-count: 2;"></i>', null, null, "Playlist removed successfully", 3.5, "Got It", -1, null);
+                }, 350);
+            }
+            else {
+                //playlistInfoSampler();
+                let savedPlaylist = playlistSampler(response.id, response.playlist.name, response.playlist.imageUrl, response.playlist.songsQty, 0, response.playlist.id, response.userId, response.playlist.userId, true);
+                if (savedPlaylist != null) {
+                    $(".btn-save-the-playlist").fadeOut(0);
+                    $(".btn-save-the-playlist").attr("data-id", 0);
+                    $(".btn-save-the-playlist").addClass("super-disabled");
+                    $(".btn-remove-the-playlist").fadeIn(0);
+                    $(".btn-remove-the-playlist").attr("data-id", response.id);
+                    $(".btn-remove-the-playlist").removeClass("super-disabled");
+                    $("#PlaylistsListed_Box").append(savedPlaylist);
+                }
+                buttonUndisabler(true, "btn-save-the-playlist", null);
+                setTimeout(function () {
+                    callAlert('<i class="fa-regular fa-circle-check fa-spin" style="--fa-animation-delay: 0.35s; --fa-animation-duration: 0.25s; --fa-animation-iteration-count: 2;"></i>', null, null, "Playlist saved successfully", 3.5, "Got It", -1, null);
+                }, 350);
+            }
         }
         else callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, "Removing playlists is temporarily unavailable", 3.75, "Close", -1, null);
     });
@@ -1656,7 +1680,6 @@ $(document).on("submit", "#DeleteThePlaylist_Form", function (event) {
     $.post(url, data, function (response) {
         uncallAProposal();
         if (response.success) {
-            let playlistId = $("#" + response.id + "-RemoveThePlaylist_Btn").attr("data-user-playlist-id");
             let statsFullInfoSpan = $("<small class='card-text text-muted' id='PlaylistsStats_Span'></small>");
             let playlistsQty = parseInt($("#PlaylistsQty_Span").html());
             let songsQty = $("#PlaylistsSongs_Qty_Span").text();
@@ -1669,7 +1692,7 @@ $(document).on("submit", "#DeleteThePlaylist_Form", function (event) {
             $("#PlaylistsHeaderQty_Span").text(playlistsQty);
             $("#PlaylistsStats_Box").append(statsFullInfoSpan);
             setTimeout(function () {
-                animahider(false, playlistId + "-PlaylistInfo_Box");
+                animahider(false, response.id + "-PlaylistInfo_Box");
                 callAlert('<i class="fa-solid fa-wave-square"></i>', null, null, "Playlist successfully deleted", 3.5, "Got It", -1, null);
             }, 450);
             setTimeout(function () {
@@ -1715,18 +1738,18 @@ $(document).on("submit", "#GetPlaylists_Form", function (event) {
     $.get(url, data, function (response) {
         if (response.success) {
             if (response.type == 0) {
-                createSmContainer("Playlists", "Playlists ∙ <span id='PlaylistsHeaderQty_Span'>0</span>", "<div class='d-none' id='PlaylistSettingForms_Box'><div class='d-none'><form method='get' action='/Playlists/GetEditInfo' id='GetEditInfo_Form'><input type='hidden' name='Id' id='GEI_Id_Val' value='0' /></form><form method='post' action='/Playlists/EditCoverImage' id='EditPlaylistsCoverImage_Form'> <input type='hidden' name='Id' id='EPCI_Id_Val' value='0' /> <input type='file' name='ImageUrl' id='EPCI_ImageUrl_Val' data-trigger='EditPlaylistsCoverImage_Form' accept='image/png, image/gif, image/jpeg' /> </form> </div> <form method='get' action='/Playlists/GetShortname' id='GetPlaylistShortname_Form'><input type='hidden' name='Id' id='GPS_Id_Val' value='0' /></form><form method='post' action='/Playlists/Pin' id='PinThePlaylist_Form'> <input type='hidden' name='Id' id='PTP_Id_Val' value='0' /> </form> <form method='post' action='/Playlists/Unpin' id='UnpinThePlaylist_Form'> <input type='hidden' name='Id' id='UnTP_Id_Val' value='0' /> </form>    <form method='post' action='/Playlists/Remove' id='RemoveThisPlaylist_Form'> <input type='hidden' name='Id' id='RTP_Id_Val' value='0' /> </form></div><div class='box-standard' id='PlaylistsListed_Box'></div><div class='box-standard mt-2' id='PlaylistsStatsInfoMain_Box'></div>", null, null, false);
+                createSmContainer("Playlists", "Playlists ∙ <span id='PlaylistsHeaderQty_Span'>0</span>", "<div class='d-none' id='PlaylistSettingForms_Box'><div class='d-none'><form method='get' action='/Playlists/GetEditInfo' id='GetEditInfo_Form'><input type='hidden' name='Id' id='GEI_Id_Val' value='0' /></form><form method='post' action='/Playlists/EditCoverImage' id='EditPlaylistsCoverImage_Form'> <input type='hidden' name='Id' id='EPCI_Id_Val' value='0' /> <input type='file' name='ImageUrl' id='EPCI_ImageUrl_Val' data-trigger='EditPlaylistsCoverImage_Form' accept='image/png, image/gif, image/jpeg' /> </form> </div> <form method='get' action='/Playlists/GetShortname' id='GetPlaylistShortname_Form'><input type='hidden' name='Id' id='GPS_Id_Val' value='0' /></form><form method='post' action='/Playlists/Pin' id='PinThePlaylist_Form'> <input type='hidden' name='Id' id='PTP_Id_Val' value='0' /> </form> <form method='post' action='/Playlists/Unpin' id='UnpinThePlaylist_Form'> <input type='hidden' name='Id' id='UnTP_Id_Val' value='0' /> </form> </div><div class='box-standard' id='PlaylistsListed_Box'></div><div class='box-standard mt-2' id='PlaylistsStatsInfoMain_Box'></div>", null, null, false);
                 $("#PlaylistsListed_Box").empty();
                 $("#PlaylistsHeaderQty_Span").text(response.count + 1);
                 let songsTotalQty = response.favoriteSongsQty;
                 let statsFullInfoBox = $("<div class='box-standard text-center mt-1 p-1' id='PlaylistsStats_Box'></div>");
                 let statsFullInfoSpan = $("<small class='card-text text-muted' id='PlaylistsStats_Span'></small>");
-                let favoriteElement = playlistSampler("fvr", 2, "Favorites", null, response.favoriteSongsQty, true, 2, "fvr");
+                //playlistInfoSampler(); GetFavorites
+                let favoriteElement = favoriteSampler(response.favoriteSongsQty);
                 if (favoriteElement != null) $("#PlaylistsListed_Box").append(favoriteElement);
-
                 if (response.count > 0) {
                     $.each(response.result, function (index) {
-                        let element = playlistSampler(response.result[index].id, response.result[index].albumId == null ? 0 : 1, response.result[index].playlist.name, response.result[index].playlist.imageUrl, response.result[index].playlist.songsQty, true, response.result[index].pinOrder, response.result[index].playlistId);
+                        let element = playlistSampler(response.result[index].id, response.result[index].playlist.name, response.result[index].playlist.imageUrl, response.result[index].playlist.songsQty, response.result[index].pinOrder, response.result[index].playlistId, response.userId, response.result[index].playlist.userId, true);
                         if (element != null) {
                             $("#PlaylistsListed_Box").append(element);
                             songsTotalQty += response.result[index].playlist.songsQty;
@@ -1745,7 +1768,7 @@ $(document).on("submit", "#GetPlaylists_Form", function (event) {
             else {
                 let trackId = $("#GetPlaylists_Type_Val").attr("data-track-id");
                 if (response.result.length > 0 && trackId != undefined) {
-                    createHeadlessContainer("TrackManagement", '<div class="hstack gap-1 mt-1"> <h6 class="h6" id="ATP_ChosenPlaylistsQty_Lbl">No Chosen Playlist</h6> <div class="ms-auto"> <form method="post" action="/Playlists/AddToPlaylist" id="AddToPlaylist_Form"> <input type="hidden" name="Id" id="ATP_Id_Val" /> <div class="d-none" id="ATP_ChosenPlaylists_Box"> </div> <button type="submit" class="btn btn-standard-bolded btn-sm super-disabled" id="AddToPlaylist_SbmtBtn">Save</button> </form> </div> </div>', '<div class="box-standard p-1"> <div class="form-control-search-container"> <span class="card-text text-muted"> <i class="fa-solid fa-magnifying-glass"></i> </span> <input type="text" class="form-control form-control-search" id="ATP_PlaylistsSearch_Val" maxlength="100" placeholder="Find in Playlists" /> </div> <div class="box-standard mt-2"> <h6 class="h6">Available Playlists</h6> <div class="box-standard mt-1" id="AvailablePlaylists_Box"> </div> </div> </div>', false);
+                    createHeadlessContainer("TrackManagement", '<div class="hstack gap-1 mt-1"> <h6 class="h6" id="ATP_ChosenPlaylistsQty_Lbl">No Chosen Playlist</h6> <div class="ms-auto"> <form method="post" action="/Playlists/AddTo" id="AddToPlaylist_Form"> <input type="hidden" name="Id" id="ATP_Id_Val" /> <div class="d-none" id="ATP_ChosenPlaylists_Box"> </div> <button type="submit" class="btn btn-standard-bolded btn-sm super-disabled" id="AddToPlaylist_SbmtBtn">Save</button> </form> </div> </div>', '<div class="box-standard p-1"> <div class="form-control-search-container"> <span class="card-text text-muted"> <i class="fa-solid fa-magnifying-glass"></i> </span> <input type="text" class="form-control form-control-search" id="ATP_PlaylistsSearch_Val" maxlength="100" placeholder="Find in Playlists" /> </div> <div class="box-standard mt-2"> <h6 class="h6">Available Playlists</h6> <div class="box-standard mt-1" id="AvailablePlaylists_Box"> </div> </div> </div>', false);
                     $("#AvailablePlaylists_Box").empty();
                     $(".track-adding-to-favorites-val").remove();
                     $("#ATP_ChosenPlaylistsQty_Lbl").text("No Chosen Playlist");
@@ -1858,11 +1881,21 @@ $(document).on("mousedown", ".btn-pre-remove-the-playlist", function () {
     }
 });
 
+$(document).on("mousedown", ".btn-save-the-playlist", function () {
+    let thisId = $(this).attr("data-id");
+    if (thisId != undefined) {
+        $("#SORTP_Id_Val").val(thisId);
+        $("#SaveOrRemoveThePlaylist_Form").attr("action", "/Playlists/Save");
+        $("#SaveOrRemoveThePlaylist_Form").submit();
+    }
+});
+
 $(document).on("mousedown", ".btn-remove-the-playlist", function () {
     let thisId = $(this).attr("data-id");
     if (thisId != undefined) {
-        $("#RTP_Id_Val").val(thisId);
-        $("#RemoveThisPlaylist_Form").submit();
+        $("#SORTP_Id_Val").val(thisId);
+        $("#SaveOrRemoveThePlaylist_Form").attr("action", "/Playlists/Remove");
+        $("#SaveOrRemoveThePlaylist_Form").submit();
     }
     else {
         uncallAProposal();
@@ -1903,6 +1936,16 @@ $(document).on("mousedown", ".btn-edit-playlist-shortname", function () {
     }
 });
 
+$(document).on("mousedown", ".btn-remove-from-playlist", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    let playlistId = $(this).attr("data-playlist-id");
+    if (trueId != undefined && playlistId != undefined) {
+        $("#RFP_Id_Val").val(trueId);
+        $("#RFP_PlaylistId_Val").val(playlistId);
+        $("#RemoveFromPlaylist_Form").submit();
+    }
+});
+
 $(document).on("submit", "#GetSingleInfo_Form", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
@@ -1936,10 +1979,15 @@ $(document).on("submit", "#GetFavorites_Form", function (event) {
         if (response.success) {
             if (response.result != null) {
                 let songsArr = [];
+                let userId = $("#CSA_Id_Val").val();
+                let nickname = $("#CurrentUserNickname_Val").val();
+                let imageUrl = $("#CurrentUserProfile_Img").attr("src");
+                imageUrl = imageUrl == undefined ? $("#CurrentUserProfile_Img").html() : imageUrl;
+
                 for (let i = 0; i < response.result.length; i++) {
                     songsArr.push(response.result[i].track);
                 }
-                playlistInfoSampler(response.userId, -256, "Favorite Songs", 3, null, new Date(), response.count, 0, "You", null, songsArr, false);
+                favoritesInfoSampler(response.count, songsArr, response.lastUpdatedAt);
                 setTimeout(function () {
                     slideContainers(null, "PlaylistInfo_Container");
                 }, 150);
@@ -1962,8 +2010,16 @@ $(document).on("submit", "#AddToPlaylist_Form", function (event) {
     $.post(url, data, function (response) {
         uncallAContainer(false, "TrackManagement_Container");
         if (response.success) {
+            let songsQty = parseInt($("#" + response.playlistId + "-PlaylistInfo_Box").attr("data-tracks-qty")) + 1;
+            $("#" + response.playlistId + "-PlaylistInfo_Box").attr("data-tracks-qty", songsQty);
+
             $("#ATP_Id_Val").val(0);
             buttonUndisabler(false, "AddToPlaylist_SbmtBtn", baseHtml);
+            $("#" + response.id + "-PlaylistInfo_Box").attr("data-tracks-qty", songsQty);
+            if (songsQty <= 0) $("#" + response.playlistId + "-PlaylistSongsQty_Span").html(" ∙ No Songs");
+            else if (songsQty == 1) $("#" + response.playlistId + "-PlaylistSongsQty_Span").html(" ∙ One Song");
+            else $("#" + response.playlistId + "-PlaylistSongsQty_Span").html(" ∙ " + songsQty + " Songs");
+
             setTimeout(function () {
                 callAlert('<i class="fa-regular fa-circle-check fa-beat-fade" style="--fa-animation-duration: 0.5s; --fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2;"></i>', null, null, "Track added to your selected playlist(s)", 3.5, "Close", -1, null);
             }, 350);
@@ -1974,6 +2030,131 @@ $(document).on("submit", "#AddToPlaylist_Form", function (event) {
             }, 350);
         }
     });
+});
+
+$(document).on("submit", "#RemoveFromPlaylist_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let songsQty = parseInt($("#" + response.playlistId + "-PlaylistInfo_Box").attr("data-tracks-qty"));
+            songsQty = isNaN(songsQty) ? 0 : --songsQty;
+            if (songsQty > 0) {
+                hideBySlidingToLeft(false, null, response.id + "-TrackMain_Box");
+                setTimeout(function () {
+                    $("#" + response.result + "-TrackMain_Box").remove();
+                }, 750);
+            }
+            else {
+                hideBySlidingToLeft(false, null, response.result + "-TrackMain_Box");
+                setTimeout(function () {
+                    $("#PlaylistInfo_TrackBoxes_Box").empty();
+                    $("#PlaylistInfo_TrackBoxes_Box").html('<div class="box-bordered text-center p-2 mt-1"> <h2 class="h2"> <i class="fa-regular fa-folder-open"></i> </h2> <h5 class="h5">Your Playlist is Empty</h5> <small class="card-text text-muted">Looks like there is nothing here yet! Start adding your favorite songs and create the perfect playlist</small> </div>');
+                    $(".btn-play-pause-track-lg").removeAttr();
+                    $(".btn-play-pause-track-lg").attr("data-id", 0);
+                    $(".btn-audio-shuffle").addClass("super-disabled");
+                    $(".btn-play-pause-track-lg").addClass("super-disabled");
+                }, 750);
+            }
+            $("#" + response.playlistId + "-PlaylistInfo_Box").attr("data-tracks-qty", songsQty);
+            if (songsQty <= 0) {
+                $("#PlaylistInfo_SongsQty_Span").html("No Songs");
+                $("#" + response.playlistId + "-PlaylistSongsQty_Span").html(" ∙ No Songs");
+            }
+            else if (songsQty == 1) {
+                $("#PlaylistInfo_SongsQty_Span").html("<span class='fw-500'>One</span> Songs");
+                $("#" + response.playlistId + "-PlaylistSongsQty_Span").html(" ∙ One Song");
+            }
+            else {
+                $("#PlaylistInfo_SongsQty_Span").html("<span class='fw-500'>" + songsQty + "</span> Songs");
+                $("#" + response.playlistId + "-PlaylistSongsQty_Span").html(" ∙ " + songsQty + " Songs");
+            }
+            callAlert('<i class="fa-regular fa-circle-check fa-spin" style="--fa-animation-delay: 0.35s; --fa-animation-iteration-count: 1; --fa-animation-duration: 0.25s;"></i>', null, null, "Song deleted from playlist", 3.5, "Close", -1, null);
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, "Song removal failed due to an error", 3.75, "Close", -1, null);
+    });
+});
+
+$(document).on("submit", "#GetArtistInfo_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            createHeadlessContainer("ArtistInfo", null, '<div class="artist-page-avatar-box" id="ArtistAvatar_Box"> <div class="artist-page-avatar-content"> <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1> <span class="card-text avatar-page-stats"><span id="ArtistMonthlyListeners_Span">56.5M</span> <span id="ArtistMonthlyListenersText_Span">monthly listeners</span></span> </div> </div> <div class="box-standard mt-2"> <div class="release-box-lg mt-1" id="ArtistLastRelease_Box"> <div class="hstack gap-1"> <div class="release-img-box-standard" id="ALR_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" /> <div class="ms-1"> <div class="box-forced-top pt-2"> <small class="card-text">Released <span class="fw-500" id="ALR_ReleaseDate_Span">Fri, 16 May</span></small> </div> <div class="box-forced-bottom pb-2"> <span class="badge-standard badge-sm"> <i class="fa-solid fa-certificate"></i> Latest Release</span> <div class="mt-1"> <span class="h5" id="ALR_Title_Lbl">Popular Release</span> <br /> <small class="card-text text-muted" id="ALR_Artists_Span">Main Artist feat. Artists</small> </div> </div> </div> </div> </div> <div class="box-standard mt-2"> <h5 class="h5 ms-1">Popular Songs <small class="card-text text-muted"> <i class="fa-solid fa-angle-right"></i> </small></h5> <div class="box-standard row mt-2" id="PopularSongs_Row"> </div> </div>', false);
+
+            $("#ArtistInfo_Box").css("padding", "0");
+            $("#ArtistName_Lbl").html(response.result.nickname);
+            if (response.result.imgUrl != null) {
+                $(".avatar-page-title").css("color", "#fdfdfd");
+                $(".avatar-page-stats").css("color", "#fdfdfd");
+                $("#ArtistAvatar_Box").css("background-image", "url('/ProfileImages/" + response.result.imgUrl + "')");
+            }
+            else {
+                $(".avatar-page-title").css("color", "#2b2b2b");
+                $(".avatar-page-stats").css("color", "#2b2b2b");
+                $("#ArtistAvatar_Box").css("background-image", "none");
+            }
+            if (response.result.monthlyListeners <= 0) {
+                $("#ArtistMonthlyListeners_Span").html("No");
+                $("#ArtistMonthlyListenersText_Span").text("monthly listeners");
+            }
+            else if (response.result.monthlyListeners == 1) {
+                $("#ArtistMonthlyListeners_Span").html("One");
+                $("#ArtistMonthlyListenersText_Span").text("monthly listener");
+            }
+            else {
+                $("#ArtistMonthlyListeners_Span").html(response.result.monthlyListeners.toLocaleString());
+                $("#ArtistMonthlyListenersText_Span").text("monthly listeners");
+            }
+
+            if (response.latestRelease != null) {
+                let artistNames = response.result.nickname;
+                if (response.latestRelease.coverImageUrl != null) {
+                    $("#ALR_Img_Box").fadeOut(0);
+                    $("#ALR_Img").attr("src", "/TrackCovers/" + response.latestRelease.coverImageUrl);
+                    $("#ALR_Img").fadeIn(0);
+                }
+                else {
+                    $("#ALR_Img").fadeOut(0);
+                    $("#ALR_Img").attr("src", "#");
+                    $("#ALR_Img_Box").fadeIn(0);
+                }
+                console.log(response.latestRelease);
+                $("#ALR_Title_Lbl").html(response.latestRelease.title);
+                $("#ALR_ReleaseDate_Span").html(dateAndTimeFormation(userLocale, response.latestRelease.addedAt)[0]);
+                if (response.latestRelease.trackArtists != null) {
+                    artistNames += " feat. ";
+                    for (let i = 0; i < response.latestRelease.trackArtists.length; i++) {
+                        if (i == 0) artistNames += response.latestRelease.trackArtists[i].artistName;
+                        else artistNames += ", " + response.latestRelease.trackArtists[i].artistName;
+                    }
+                }
+                $("#ALR_Artists_Span").html(artistNames);
+                $("#ArtistLastRelease_Box").fadeIn(0);
+            }
+            else {
+                $("#ArtistLastRelease_Box").fadeOut(0);
+            }
+
+            displayCorrector(currentWindowSize, false);
+            setTimeout(function () {
+                callAContainer(false, "ArtistInfo_Container", false);
+            }, 150);
+        }
+        else callAlert('<i class="fa-solid fa-user-slash"></i>', null, null, "Artist info is temporarily inaccessible", 3.75, "Close", -1, null);
+    });
+});
+
+$(document).on("mousedown", ".get-artist-info", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        $("#GetArtistInfo_Id_Val").val(trueId);
+        $("#GetArtistInfo_Form").submit();
+    }
 });
 
 $(document).on("mousedown", ".btn-get-library", function () {
@@ -1989,44 +2170,63 @@ $(document).on("mousedown", ".btn-get-library", function () {
 $(document).on("mousedown", ".btn-mark-the-playlist", function () {
     let playlistId = getTrueId($(this).attr("id"), false);
     if (playlistId != undefined) {
-        chooseOrUnchoosePlaylist(playlistId, false);
+        chooseOrUnchoosePlaylist(playlistId, false, false);
     }
 });
 $(document).on("mousedown", ".btn-unmark-the-playlist", function () {
     let playlistId = getTrueId($(this).attr("id"), false);
     if (playlistId != undefined) {
-        chooseOrUnchoosePlaylist(playlistId, true);
+        chooseOrUnchoosePlaylist(playlistId, true, false);
     }
 });
 
-function chooseOrUnchoosePlaylist(playlistId, isChosen = false) {
+function chooseOrUnchoosePlaylist(playlistId, isChosen = false, isMultiple = false) {
     if (playlistId > 0) {
         let allChosenPlaylists;
-        if (isChosen) {
-            let checkInputAvailability = document.getElementById(playlistId + "-ATP_InputId_Val");
-            if (checkInputAvailability != null) {
+        let checkInputAvailability;
+        if (isMultiple) {
+            if (isChosen) {
                 $("#" + playlistId + "-ATP_InputId_Val").remove();
                 $("#" + playlistId + "-MarkThePlaylist_Box").removeClass("bg-chosen-bright");
                 $("#" + playlistId + "-MarkThePlaylist_Box").removeClass("btn-unmark-the-playlist");
                 $("#" + playlistId + "-MarkThePlaylist_Box").addClass("btn-mark-the-playlist");
                 $("#" + playlistId + "-MarkThePlaylist_Status_Span").html(' <i class="fa-regular fa-circle"></i> Not Chosen');
-                allChosenPlaylists = document.getElementsByClassName("btn-unmark-the-playlist");
             }
-        }
-        else {
-            let checkInputAvailability = document.getElementById(playlistId + "-ATP_InputId_Val");
+            else {
+                $("#" + playlistId + "-MarkThePlaylist_Box").removeClass("btn-unmark-the-playlist");
+                $("#" + playlistId + "-MarkThePlaylist_Box").addClass("bg-chosen-bright btn-mark-the-playlist");
+                $("#" + playlistId + "-MarkThePlaylist_Status_Span").html(' <i class="fa-regular fa-circle-check"></i> Chosen');
+                checkInputAvailability = document.getElementById(playlistId + "-ATP_InputId_Val");
+            }
+
             if (checkInputAvailability == null) {
                 let inputVal = $("<input type='hidden' class='track-adding-to-favorites-val' />");
                 inputVal.val(playlistId);
-                inputVal.attr("name", "PlaylistIds");
+                inputVal.attr("name", "PlaylistId");
                 inputVal.attr("id", playlistId + "-ATP_InputId_Val");
                 $("#ATP_ChosenPlaylists_Box").append(inputVal);
                 $("#" + playlistId + "-MarkThePlaylist_Box").removeClass("btn-mark-the-playlist");
                 $("#" + playlistId + "-MarkThePlaylist_Box").addClass("btn-unmark-the-playlist bg-chosen-bright");
                 $("#" + playlistId + "-MarkThePlaylist_Status_Span").html(' <i class="fa-regular fa-circle-check"></i> Chosen');
-                allChosenPlaylists = document.getElementsByClassName("btn-unmark-the-playlist");
             }
         }
+        else {
+            $("#ATP_ChosenPlaylists_Box").empty();
+            $(".btn-unmark-the-playlist").removeClass("bg-chosen-bright");
+            $(".btn-unmark-the-playlist").addClass("btn-mark-the-playlist");
+            $(".btn-unmark-the-playlist").removeClass("btn-unmark-the-playlist");
+            $(".playlist-status-text").html(' <i class="fa-regular fa-circle"></i> Not Chosen');
+            $("#" + playlistId + "-MarkThePlaylist_Box").removeClass("btn-mark-the-playlist");
+            $("#" + playlistId + "-MarkThePlaylist_Box").addClass("bg-chosen-bright btn-unmark-the-playlist");
+            $("#" + playlistId + "-MarkThePlaylist_Status_Span").html(' <i class="fa-regular fa-circle-check"></i> Chosen');
+
+            let inputVal = $("<input type='hidden' class='track-adding-to-favorites-val' />");
+            inputVal.val(playlistId);
+            inputVal.attr("name", "PlaylistId");
+            inputVal.attr("id", playlistId + "-ATP_InputId_Val");
+            $("#ATP_ChosenPlaylists_Box").append(inputVal);
+        }
+        allChosenPlaylists = document.getElementsByClassName("btn-unmark-the-playlist");
 
         if (allChosenPlaylists != undefined && allChosenPlaylists.length > 0) {
             buttonUndisabler(false, "AddToPlaylist_SbmtBtn", "Save");
@@ -2051,8 +2251,7 @@ $(document).on("submit", "#GetPlaylistInfo_Form", function (event) {
         if (response.success) { 
             let imageUrl = $("#" + response.result.id + "-PlaylistInfo_Img").attr("src");
             imageUrl = imageUrl == undefined ? null : imageUrl;
-
-            playlistInfoSampler(response.userId, response.result.id, response.result.name, 0, imageUrl, new Date(response.result.createdAt), response.result.songsQty, response.result.userId, response.result.user.nickname, response.result.user.imgUrl, null, false);
+            playlistInfoSampler(response.result.id, response.result.name, imageUrl, new Date(response.result.createdAt), response.result.songsQty, response.userId, response.result.userId, response.result.user.nickname, response.result.user.imgUrl, null, response.isSaved);
             displayCorrector(currentWindowSize, false);
             setTimeout(function () {
                 slideContainers(null, "PlaylistInfo_Container");
@@ -2073,16 +2272,13 @@ $(document).on("submit", "#GetPlaylistTracks_Form", function (event) {
     $.get(url, data, function (response) {
         if (response.success) {
             let fullSkipQty = response.result.length + response.skip;
-            if (response.skip > 0) {
-                songsApplier(0, response.result, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span", true);
-            }
-            else {
-                songsApplier(0, response.result, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span", false);
-            }
+            if (response.skip > 0) playlistSongsApplier(response.id, response.result, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span", true, response.skip);
+            else playlistSongsApplier(response.id, response.result, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span", false, 0);
             $("#GPT_Skip_Val").val(fullSkipQty);
         }
         else {
-
+            $("#GPT_Skip_Val").val(0);
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, "Playlist is currently unavailable", 3.75, "Close", -1, null);
         }
     });
 });
@@ -2359,9 +2555,7 @@ $(document).on("mousedown", ".btn-track-favor-unfavor", function () {
 
 $(document).on("dblclick", ".btn-get-playlist-info", function () {
     let trueId = getTrueId($(this).attr("id"), false);
-    let isUntrackable = $(this).attr("data-untrack");
-    if ((trueId != undefined) && (isUntrackable == undefined || isUntrackable == false)) {
-        console.log(trueId);
+    if (trueId != undefined || trueId != null) {
         if (trueId === "fvr") $("#GetFavorites_Form").submit();
         else {
             trueId = parseInt(trueId);
@@ -4341,7 +4535,35 @@ function regularToSecondsDuration(durationInMins = 0, seconds = 0) {
     return fullDuration;
 }
 
-function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor = false, pinOrder = 0, trueId = 0) {
+function favoriteSampler(songsQty) {
+    let playlistBox = $("<div class='playlist-box btn-get-playlist-info mb-1'></div>");
+    let playlistBoxStack = $('<div class="hstack gap-1"></div>');
+    let playlistImg = $("<div class='release-img-box-sm text-primary'> <i class='fa-solid fa-star'></i> </div>")
+    let playlistInfoBox = $("<div class='ms-1'></div>");
+    let playlistNameTitle = $("<span class='h6'>Favorite Songs</h6>");
+    let playlistInfoSeparator = $("<br/>");
+    let playlistBadge = $("<span class='badge badge-standard'> <i class='fa-solid fa-star text-primary'></i> Favorites</span>");
+    let playlistSongsQtySpan = $("<small class='card-text text-muted'></small>");
+    let playlistStatsSpan = $("<span class='card-text'></span>");
+
+    if (songsQty <= 0) playlistSongsQtySpan.text(" ∙ No Songs");
+    else if (songsQty == 1) playlistSongsQtySpan.text(" ∙ One Song");
+    else playlistSongsQtySpan.text(" ∙ " + songsQty + " Songs");
+    playlistBox.attr("id", "fvr-Playlist_Box");
+
+    playlistStatsSpan.append(playlistBadge);
+    playlistStatsSpan.append(playlistSongsQtySpan);
+    playlistInfoBox.append(playlistNameTitle);
+    playlistInfoBox.append(playlistInfoSeparator);
+    playlistInfoBox.append(playlistStatsSpan);
+    playlistBoxStack.append(playlistImg);
+    playlistBoxStack.append(playlistInfoBox);
+    playlistBox.append(playlistBoxStack);
+
+    return playlistBox;
+}
+
+function playlistSampler(id, title, coverImageUrl, songsQty, pinOrder = 0, trueId = 0, currentUserId = 0, authorId = 0, editable = false) {
     if (id != null && title != null) {
         let playlistBox = $("<div class='playlist-box mb-1'></div>");
         let playlistBoxStack = $('<div class="btn-get-playlist-info hstack gap-1"></div>');
@@ -4349,89 +4571,20 @@ function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor =
         let playlistInfoBox = $("<div class='ms-1'></div>");
         let playlistNameTitle = $("<span class='h6'></h6>");
         let playlistInfoSeparator = $("<br/>");
-        let playlistBadge = $("<span class='badge badge-standard'></span>");
+        let playlistBadge = $("<span class='badge badge-standard'> <i class='fa-solid fa-wave-square'></i> Playlist</span>");
         let playlistSongsQtySpan = $("<small class='card-text text-muted'></small>");
         let playlistStatsSpan = $("<span class='card-text'></span>");
-        let playlistDropdownBox = $("<div class='dropdown ms-auto' data-untrack='true'></div>");
-        let playlistDropdownBtn = $('<button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" data-untrack="true" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
-        let playlistDropdownUl = $("<ul class='dropdown-menu shadow-sm' data-untrack='true'></ul>");
-        let playlistDropdownLi0 = $("<li></li>");
-        let playlistDropdownLi1 = $("<li></li>");
-        let playlistDropdownLi2 = $("<li></li>");
-        let playlistDropdownLi3 = $("<li></li>");
-        let playlistDropdownLi4 = $("<li></li>");
-        let playlistDropdownLi5 = $("<li></li>");
-        let playlistDropdownBtn0 = $("<button type='button' class='dropdown-item btn-edit-playlist btn-sm'>Edit <span class='float-end ms-1'> <i class='fa-solid fa-pencil'></i> </span</button>");
-        let playlistDropdownBtn1 = $("<button type='button' class='dropdown-item btn-edit-playlist-shortname btn-sm'>Shortname <span class='float-end ms-1'> <i class='fa-solid fa-at'></i> </span</button>");
-        let playlistDropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Cover Image <span class='float-end ms-1'> <i class='fa-solid fa-panorama'></i> </span></button>");
-        let playlistDropdownBtn3 = $("<button type='button' class='dropdown-item'>Pin <span class='float-end ms-1'> <i class='fa-solid fa-thumbtack'></i> </span></button>");
-        let playlistDropdownBtn4 = $("<button type='button' class='dropdown-item'>Reorder <span class='float-end ms-1'> <i class='fa-solid fa-sort'></i> </span></button>");
-        let playlistDropdownBtn5 = $("<button type='button' class='dropdown-item btn-pre-remove-the-playlist'>Remove <span class='float-end ms-1'> <i class='fa-solid fa-folder-minus'></i> </span></button>");
 
         playlistNameTitle.html(title);
         playlistNameTitle.attr("id", trueId + "-PlaylistTitle_Lbl");
         if (songsQty > 0) playlistSongsQtySpan.text(parseInt(songsQty) > 1 ? " ∙ " + songsQty + " songs" : " ∙ One song");
         else playlistSongsQtySpan.text(" ∙ No Songs");
-        //playlistInfoSampler
-        if (isForAuthor && trueId > 0) {
-            $("#EPCI_Id_Val").val(trueId);
-            $("#GetEditInfo_SbmtBtn").attr("type", "submit");
-            $("#GetEditInfo_SbmtBtn").removeClass("super-disabled");
-            playlistDropdownBtn0.attr("id", trueId + "-EditPlaylist_Btn");
-            playlistDropdownBtn1.attr("id", trueId + "-GetPlaylistShortname_Btn");
-            playlistDropdownBtn2.attr("id", trueId + "-EditPlaylistCoverImage_Btn");
-            playlistDropdownBtn2.attr("onmousedown", '$("#EPCI_ImageUrl_Val").mousedown();');
-            playlistDropdownBtn0.fadeIn(0);
-            playlistDropdownBtn1.fadeIn(0);
-            playlistDropdownBtn2.fadeIn(0);
-        }
-        else {
-            $("#EPCI_Id_Val").val(0);
-            playlistDropdownBtn0.removeAttr("id");
-            playlistDropdownBtn1.removeAttr("id");
-            playlistDropdownBtn2.removeAttr("id");
-            playlistDropdownBtn2.removeAttr("onmousedown");
-            playlistDropdownBtn0.fadeOut(0);
-            playlistDropdownBtn1.fadeOut(0);
-            playlistDropdownBtn2.fadeOut(0);
-        }
 
-        playlistDropdownBtn3.removeClass("super-disabled");
-        playlistDropdownBtn3.attr("id", id + "-PinOrUnpinThePlaylist_Btn");
-        playlistDropdownBtn5.attr("id", trueId + "-RemoveThePlaylist_Btn");
-        playlistDropdownBtn5.attr("data-user-playlist-id", id);
-
-        switch (parseInt(pinOrder)) {
-            case 0:
-                playlistDropdownBtn3.html('Pin <span class="float-end"> <i class="fa-solid fa-thumbtack"></i> </span>');
-                playlistDropdownBtn3.addClass("btn-pin-the-playlist");
-                playlistDropdownBtn3.removeClass("btn-unpin-the-playlist");
-                break;
-            case 1:
-                let isPinnedIcon = $("<small class='card-text text-muted'>Pinned ∙ </small>");
-                isPinnedIcon.attr("id", id + "-PlaylistPinned_Span");
-                playlistStatsSpan.append(isPinnedIcon);
-
-                playlistDropdownBtn3.html('Unpin <span class="float-end"> <i class="fa-solid fa-thumbtack-slash"></i> </span>');
-                playlistDropdownBtn3.addClass("btn-unpin-the-playlist");
-                playlistDropdownBtn3.removeClass("btn-pin-the-playlist");
-                break;
-            case 2:
-                playlistDropdownBtn3.fadeOut(0);
-                playlistDropdownBtn3.removeAttr("id");
-                playlistDropdownBtn3.addClass("super-disabled");
-                playlistDropdownBtn3.removeClass("btn-pin-the-playlist");
-                playlistDropdownBtn3.removeClass("btn-unpin-the-playlist");
-                break;
-            default:
-                playlistDropdownBtn3.html('Pin <span class="float-end"> <i class="fa-solid fa-thumbtack"></i> </span>');
-                playlistDropdownBtn3.addClass("btn-pin-the-playlist");
-                playlistDropdownBtn3.removeClass("btn-unpin-the-playlist");
-                break;
-        }
-
+        playlistBox.attr("data-tracks-qty", songsQty);
         playlistBox.attr("id", trueId + "-PlaylistInfo_Box");
+        playlistStatsSpan.attr("id", trueId + "-PlaylistStats_Span");
         playlistBoxStack.attr("id", trueId + "-GetPlaylistInfo_Box");
+        playlistSongsQtySpan.attr("id", trueId + "-PlaylistSongsQty_Span");
 
         if (coverImageUrl != null) {
             playlistImg = $("<img class='release-img-sm' alt='This image cannot be displayed yet' />");
@@ -4443,26 +4596,6 @@ function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor =
         }
         playlistImg.attr("id", trueId + "-PlaylistInfo_Img");
 
-        switch (parseInt(type)) {
-            case 0:
-                playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
-                if (coverImageUrl == null) playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
-                break;
-            case 1:
-                playlistBadge.html(' <i class="fa-solid fa-record-vinyl"></i> Album');
-                if (coverImageUrl == null) playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-record-vinyl"></i> </div>');
-                break;
-            case 2:
-                playlistBadge.html(' <i class="fa-solid fa-star"></i> Favorites');
-                if (coverImageUrl == null) playlistImg = $('<div class="release-img-box-sm text-primary"> <i class="fa-solid fa-star"></i> </div>');
-                break;
-            default:
-                playlistBadge.html(' <i class="fa-solid fa-wave-square"></i> Playlist');
-                if (coverImageUrl == null) playlistImg = $('<div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>');
-                break;
-        }
-        playlistStatsSpan.attr("id", id + "-PlaylistStats_Span");
-
         playlistStatsSpan.append(playlistBadge);
         playlistStatsSpan.append(playlistSongsQtySpan);
         playlistInfoBox.append(playlistNameTitle);
@@ -4470,24 +4603,99 @@ function playlistSampler(id, type, title, coverImageUrl, songsQty, isForAuthor =
         playlistInfoBox.append(playlistStatsSpan);
         playlistBoxStack.append(playlistImg);
         playlistBoxStack.append(playlistInfoBox);
-        if (isForAuthor) {
+        playlistBox.append(playlistBoxStack);
+
+        let playlistDropdownBox = $("<div class='dropdown ms-auto' data-untrack='true'></div>");
+        let playlistDropdownUl = $("<ul class='dropdown-menu shadow-sm' data-untrack='true'></ul>");
+        let playlistDropdownBtn = $('<button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" data-untrack="true" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let playlistDropdownLi5 = $("<li></li>");
+        let playlistDropdownBtn5 = $("<button type='button' class='dropdown-item btn-pre-remove-the-playlist text-danger'>Remove <span class='float-end ms-1'> <i class='fa-solid fa-folder-minus'></i> </span></button>");
+        playlistDropdownBtn5.attr("id", trueId + "-RemoveThePlaylist_Btn");
+
+        if (editable && authorId == currentUserId) {
+            let playlistDropdownLi0 = $("<li></li>");
+            let playlistDropdownLi1 = $("<li></li>");
+            let playlistDropdownLi2 = $("<li></li>");
+            let playlistDropdownLi3 = $("<li></li>");
+            let playlistDropdownLi4 = $("<li></li>");
+
+            let playlistDropdownBtn0 = $("<button type='button' class='dropdown-item btn-edit-playlist btn-sm'>Edit <span class='float-end ms-1'> <i class='fa-solid fa-pencil'></i> </span</button>");
+            let playlistDropdownBtn1 = $("<button type='button' class='dropdown-item btn-edit-playlist-shortname btn-sm'>Shortname <span class='float-end ms-1'> <i class='fa-solid fa-at'></i> </span</button>");
+            let playlistDropdownBtn2 = $("<button type='button' class='dropdown-item btn-sm'>Cover Image <span class='float-end ms-1'> <i class='fa-solid fa-panorama'></i> </span></button>");
+            let playlistDropdownBtn3 = $("<button type='button' class='dropdown-item'>Pin <span class='float-end ms-1'> <i class='fa-solid fa-thumbtack'></i> </span></button>");
+            let playlistDropdownBtn4 = $("<button type='button' class='dropdown-item'>Reorder <span class='float-end ms-1'> <i class='fa-solid fa-sort'></i> </span></button>");
+
+            if (trueId > 0) {
+                $("#EPCI_Id_Val").val(trueId);
+                $("#GetEditInfo_SbmtBtn").attr("type", "submit");
+                $("#GetEditInfo_SbmtBtn").removeClass("super-disabled");
+                playlistDropdownBtn0.attr("id", trueId + "-EditPlaylist_Btn");
+                playlistDropdownBtn1.attr("id", trueId + "-GetPlaylistShortname_Btn");
+                playlistDropdownBtn2.attr("id", trueId + "-EditPlaylistCoverImage_Btn");
+                playlistDropdownBtn2.attr("onmousedown", '$("#EPCI_ImageUrl_Val").mousedown();');
+                playlistDropdownBtn0.fadeIn(0);
+                playlistDropdownBtn1.fadeIn(0);
+                playlistDropdownBtn2.fadeIn(0);
+            }
+            else {
+                $("#EPCI_Id_Val").val(0);
+                playlistDropdownBtn0.removeAttr("id");
+                playlistDropdownBtn1.removeAttr("id");
+                playlistDropdownBtn2.removeAttr("id");
+                playlistDropdownBtn2.removeAttr("onmousedown");
+                playlistDropdownBtn0.fadeOut(0);
+                playlistDropdownBtn1.fadeOut(0);
+                playlistDropdownBtn2.fadeOut(0);
+            }
+
+            playlistDropdownBtn3.removeClass("super-disabled");
+            playlistDropdownBtn3.attr("id", id + "-PinOrUnpinThePlaylist_Btn");
+
+            switch (parseInt(pinOrder)) {
+                case 0:
+                    playlistDropdownBtn3.html('Pin <span class="float-end"> <i class="fa-solid fa-thumbtack"></i> </span>');
+                    playlistDropdownBtn3.addClass("btn-pin-the-playlist");
+                    playlistDropdownBtn3.removeClass("btn-unpin-the-playlist");
+                    break;
+                case 1:
+                    let isPinnedIcon = $("<small class='card-text text-muted'>Pinned ∙ </small>");
+                    isPinnedIcon.attr("id", id + "-PlaylistPinned_Span");
+                    playlistStatsSpan.append(isPinnedIcon);
+
+                    playlistDropdownBtn3.html('Unpin <span class="float-end"> <i class="fa-solid fa-thumbtack-slash"></i> </span>');
+                    playlistDropdownBtn3.addClass("btn-unpin-the-playlist");
+                    playlistDropdownBtn3.removeClass("btn-pin-the-playlist");
+                    break;
+                case 2:
+                    playlistDropdownBtn3.fadeOut(0);
+                    playlistDropdownBtn3.removeAttr("id");
+                    playlistDropdownBtn3.addClass("super-disabled");
+                    playlistDropdownBtn3.removeClass("btn-pin-the-playlist");
+                    playlistDropdownBtn3.removeClass("btn-unpin-the-playlist");
+                    break;
+                default:
+                    playlistDropdownBtn3.html('Pin <span class="float-end"> <i class="fa-solid fa-thumbtack"></i> </span>');
+                    playlistDropdownBtn3.addClass("btn-pin-the-playlist");
+                    playlistDropdownBtn3.removeClass("btn-unpin-the-playlist");
+                    break;
+            }
+
             playlistDropdownLi0.append(playlistDropdownBtn0);
             playlistDropdownLi1.append(playlistDropdownBtn1);
             playlistDropdownLi2.append(playlistDropdownBtn2);
             playlistDropdownLi3.append(playlistDropdownBtn3);
             playlistDropdownLi4.append(playlistDropdownBtn4);
-            playlistDropdownLi5.append(playlistDropdownBtn5);
             playlistDropdownUl.append(playlistDropdownLi0);
             playlistDropdownUl.append(playlistDropdownLi1);
             playlistDropdownUl.append(playlistDropdownLi2);
             playlistDropdownUl.append(playlistDropdownLi3);
             playlistDropdownUl.append(playlistDropdownLi4);
-            playlistDropdownUl.append(playlistDropdownLi5);
-            playlistDropdownBox.append(playlistDropdownBtn);
-            playlistDropdownBox.append(playlistDropdownUl);
-            playlistBoxStack.append(playlistDropdownBox);
         }
-        playlistBox.append(playlistBoxStack);
+        playlistDropdownLi5.append(playlistDropdownBtn5);
+        playlistDropdownUl.append(playlistDropdownLi5);
+        playlistDropdownBox.append(playlistDropdownBtn);
+        playlistDropdownBox.append(playlistDropdownUl);
+        playlistBoxStack.append(playlistDropdownBox);
 
         return playlistBox;
     }
@@ -4502,7 +4710,7 @@ function trackManagemenetPlaylistsSampler(playlistId = 0, userPlaylistId = 0, ti
         let playlistInfoBox = $("<div class='ms-1'></div>");
         let playlistNameTitle = $("<span class='h6'></h6>");
         let playlistInfoSeparator = $("<br/>");
-        let playlistIsChosenSpan = $("<small class='card-text text-muted'></small>");
+        let playlistIsChosenSpan = $("<small class='card-text playlist-status-text text-muted'></small>");
 
         playlistNameTitle.html(title);
         playlistBox.attr("data-user-playlist-id", userPlaylistId);
@@ -4571,7 +4779,7 @@ function createInsideLgCard(id, title, body, headerBtn1 = null, headerBtn2 = nul
     }
 }
 
-function createAContainer(id, title, body, headerBtn1 = null, headerBtn2 = null) {
+function createAContainer(id, title, body, headerBtn1 = null, headerBtn2 = null, updateTheBody = false) {
     let divExists = document.getElementById(id + "_Container");
     if (divExists == null) {
         $("body").append('<div class="box-lg-part shadow-sm" id="' + id + '_Container"> <div class="box-lg-part-header p-2"> <div class="div-swiper mx-auto" id="' + id + '_Container-Swiper"></div> <div class="hstack gap-1"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl">' + title + '</span> </div> <div class="ms-auto" id="' + id + '-Header_Box"></div></div> </div> <div class="box-lg-part-body mt-5" id="' + id + '_Box"> </div> </div>');
@@ -4603,6 +4811,12 @@ function createAContainer(id, title, body, headerBtn1 = null, headerBtn2 = null)
             $(".box-vertical-switcher").css("width", "98.25%");
         }
     }
+    else {
+        if ((updateTheBody) && (body != undefined && body != null)) {
+            $("#" + id + "_Box").empty();
+            $("#" + id + "_Box").append(body);
+        }
+    }
 }
 
 function createHeadlessContainer(id, headerHtml, body, openOnCreate = false) {
@@ -4611,7 +4825,17 @@ function createHeadlessContainer(id, headerHtml, body, openOnCreate = false) {
         $("body").append('<div class="box-lg-part shadow-sm" id="' + id + '_Container"> <div class="box-lg-part-header p-2" id="' + id + '-Header"> <div class="div-swiper mx-auto" id="' + id + '_Container-Swiper"></div> <div class="mt-1" id="' + id + '-Header_Box"></div> </div> <div class="box-lg-part-body mt-5" id="' + id + '_Box"></div></div>');
         $("#" + id + "_Box").append(body);
         if (headerHtml != null || headerHtml != undefined) {
+            $("#" + id + "-Header_Box").fadeIn(0);
             $("#" + id + "-Header_Box").append(headerHtml);
+            $("#" + id + "_Box").addClass("mt-5");
+            $("#" + id + "-Header").css("border-bottom", "1px solid #f0f0f0");
+            $("#" + id + "-Header").css("background-color", "rgba(248, 249, 250, 0.7)");
+        }
+        else {
+            $("#" + id + "-Header_Box").fadeOut(0);
+            $("#" + id + "_Box").removeClass("mt-5");
+            $("#" + id + "-Header").css("border", "none");
+            $("#" + id + "-Header").css("background-color", "transparent");
         }
         displayCorrector(currentWindowSize, false);
         //if (currentWindowSize > 1024) {
@@ -6262,19 +6486,77 @@ function studioItemSampler(id, title, imgUrl, genres = [], releaseDate, status, 
     else return releaseBox;
 }
 
-function playlistInfoSampler(currentUserId = 0, playlistId, playlistTitle, playlistType, coverImageUrl, releaseDateAndTime, songsQty, mainArtistId, mainArtistName, mainArtistImgUrl, songs = [], openOnFinish = false, isSaved = 0) {
-    createAContainer("PlaylistInfo", playlistTitle, '<div class="release-box-lg"> <div class="hstack gap-1"> <div class="release-img-box-lg" id="Playlist_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-lg" id="Playlist_Img" /> <div class="box-standard ms-1"> <div> <small class="card-text"> <span id="PlaylistInfo_Type_Span">Single</span> ∙ <span id="PlaylistInfo_TotalDuration_Span">3 min 46 sec</span> </small> <div></div> <span class="h1" id="PlaylistInfo_Name_Lbl">Release Name</span> <div class="btn-borderless-profile-tag mt-1"> <div class="hstack gap-1"> <div class="profile-avatar-sm bg-chosen-bright" id="PlaylistInfo_AuthorImg_Box">R</div> <img src="#" class="profile-avatar-img-sm" alt="This image cannot be displayed" id="PlaylistInfo_Author_Img" style="display: none;" /> <small id="PlaylistInfo_MainArtist_Span">Rammstein</small> </div> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1" id="PlaylistInfo_PlayPauseMain_Btn"> <i class="fa-solid fa-play"></i> Play </button> <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle </button> <div class="d-inline-block"><input type="hidden" id="PlaylistSongsQty_Val" value="0" /> <form method="post" action="/Playlists/AddOrRemove" id="AddOrRemoveThePlaylist_Form"> <input type="hidden" name="TrackId" id="ARTP_Id_Val" value="0" /> <button type="submit" class="btn btn-standard-bolded btn-lg me-1 super-disabled" id="ARTP_SbmtBtn"> <i class="fa-solid fa-check"></i> </button> </form> </div> </div> <div class="box-standard mt-1"> <small class="card-text text-muted"> <span id="PlaylistInfo_SongsQty_Span">0 songs</span> ∙ <span id="PlaylistInfo_ReleaseDate_Span">2025</span> </small> </div> </div> </div> </div> <div class="box-standard" id="PlaylistInfo_TrackBoxes_Box"> </div><div class="d-none"> <form method="get" action="/Playlists/GetTracks" id="GetPlaylistTracks_Form"> <input type="hidden" name="Id" id="GPT_Id_Val" value="0" /> <input type="hidden" name="UserId" id="GPT_UserId_Val" value="0" /> <input type="hidden" name="Skip" id="GPT_Skip_Val" value="0" /> </form> </div>', null, null);
+function favoritesInfoSampler(songsQty, songs = [], lastUpdatedDate = new Date()) {
+    //fvr
+    createAContainer("PlaylistInfo", "Favorite Songs", '<div class="release-box-lg"> <div class="hstack gap-1"> <div class="release-img-box-lg" id="Favorites_Img_Box"> <i class="fa-solid fa-star text-primary"></i> </div> <div class="box-standard ms-1"> <div> <small class="card-text"> <span id="FavoritesInfo_Type_Span"> <i class="fa-solid fa-star text-primary"></i> Favorite Songs</span> ∙ <span id="FavoritesInfo_SongsQty_Span">No Songs</span> </small> <div></div> <span class="h1" id="FavoritesInfo_Name_Lbl">Favorites</span> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1" id="FavoritesInfo_PlayPauseMain_Btn"> <i class="fa-solid fa-play"></i> Play </button> <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle </button> </div> <div class="box-standard mt-1"> <small class="card-text text-muted"> <input type="hidden" id="FavoritesSongsQty_Val" value="0" /> <span id="FavoritesInfo_SongsOnlyQty_Span">0</span> <span id="FavoritesInfo_SongsQtyText_Span"> songs</span> </small> <small class="card-text text-muted" id="FavoritesInfo_LastUpdated_Span"> ∙ last updated recently</small> </div> </div> </div> </div> <div class="box-standard mt-1" id="FavoritesInfo_TrackBoxes_Box"></div>', null, null, true);
+    $("#FavoritesSongsQty_Val").val(songsQty);
+    if (songsQty <= 0) {
+        $("#FavoritesInfo_SongsQty_Span").text("No Songs");
+        $("#FavoritesInfo_SongsOnlyQty_Span").html("<span class='fw-500'>empty</span>");
+        $("#FavoritesInfo_SongsQtyText_Span").html("<span class='fw-500'>playlist</span>");
+    }
+    else if (songsQty == 1) {
+        $("#FavoritesInfo_SongsQtyText_Span").text("song");
+        $("#FavoritesInfo_SongsQty_Span").text("One Song");
+        $("#FavoritesInfo_SongsOnlyQty_Span").html("<span class='fw-500'>" + songsQty + "</span>");
+    }
+    else {
+        $("#FavoritesInfo_SongsQtyText_Span").text("songs");
+        $("#FavoritesInfo_SongsQty_Span").text(songsQty + " Songs");
+        $("#FavoritesInfo_SongsOnlyQty_Span").html("<span class='fw-500'>" + songsQty + "</span>");
+    }
+    if (lastUpdatedDate != null || lastUpdatedDate != undefined) {
+        lastUpdatedDate = new Date(lastUpdatedDate);
+        lastUpdatedDate = dateAndTimeFormation(0, lastUpdatedDate);
+        if (lastUpdatedDate != null) {
+            $("#FavoritesInfo_LastUpdated_Span").fadeIn(0);
+            $("#FavoritesInfo_LastUpdated_Span").html(" ∙ last updated <span class='fw-500'>" + lastUpdatedDate[0] + "</span>");
+        }
+        else $("#FavoritesInfo_LastUpdated_Span").fadeIn(0);
+    }
+    else $("#FavoritesInfo_LastUpdated_Span").fadeOut(0);
+
+    favoriteSongsApllier(songs, "FavoritesInfo_TrackBoxes_Box", false, 0);
+}
+
+function playlistInfoSampler(id, title, imageUrl, releaseDateAndTime, songsQty = 0, currentUserId = 0, mainArtistId = 0, mainArtistName, mainArtistImgUrl, songs = [], isSaved = false) {
+    createAContainer("PlaylistInfo", title, '<div class="release-box-lg"> <div class="hstack gap-1"> <div class="release-img-box-lg" id="Playlist_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-lg" id="Playlist_Img" /> <div class="box-standard ms-1"> <div> <small class="card-text"> <span id="PlaylistInfo_Type_Span">Single</span> <div></div> <span class="h1" id="PlaylistInfo_Name_Lbl">Release Name</span> <div class="btn-borderless-profile-tag mt-1"> <div class="hstack gap-1"> <div class="profile-avatar-sm bg-chosen-bright" id="PlaylistInfo_AuthorImg_Box">R</div> <img src="#" class="profile-avatar-img-sm" alt="This image cannot be displayed" id="PlaylistInfo_Author_Img" style="display: none;" /> <small id="PlaylistInfo_MainArtist_Span">Rammstein</small> </div> </div> </div> <div class="box-standard mt-2"> <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1" id="PlaylistInfo_PlayPauseMain_Btn"> <i class="fa-solid fa-play"></i> Play </button> <button type="button" class="btn btn-release-title btn-lg me-1"> <i class="fa-solid fa-shuffle"></i> Shuffle </button> <div class="d-inline-block"><input type="hidden" id="PlaylistSongsQty_Val" value="0" /> <button type="button" class="btn btn-standard-bolded btn-save-the-playlist btn-lg me-1 super-disabled" id="SaveThePlaylistIncluded_Btn"> <i class="fa-solid fa-plus"></i> </button> <button type="button" class="btn btn-standard-bolded btn-remove-the-playlist btn-lg me-1 super-disabled" id="UnsaveThePlaylistIncluded_Btn"> <i class="fa-solid fa-check-double"></i> </button> </div> </div> <div class="box-standard mt-1"> <span class="card-text text-muted"> <span id="PlaylistInfo_SongsQty_Span">0 songs</span> ∙ <span id="PlaylistInfo_ReleaseDate_Span">2025</span> </small> </div> </div> </div> </div> <div class="box-standard" id="PlaylistInfo_TrackBoxes_Box"> </div><div class="d-none"> <form method="get" action="/Playlists/GetTracks" id="GetPlaylistTracks_Form"> <input type="hidden" name="Id" id="GPT_Id_Val" value="0" /> <input type="hidden" name="UserId" id="GPT_UserId_Val" value="0" /> <input type="hidden" name="Skip" id="GPT_Skip_Val" value="0" /> </form> <form method="post" action="/Playlists/RemoveFrom" id="RemoveFromPlaylist_Form"> <input type="hidden" name="Id" id="RFP_Id_Val" value="0" /> <input type="hidden" name="PlaylistId" id="RFP_PlaylistId_Val" value="0" /></form> </div>', null, null, true);
     let releaseDate = new Date(releaseDateAndTime);
-    isSaved = parseInt(isSaved) > 2 ? 0 : isSaved;
 
     $("#GPT_Skip_Val").val(0);
-    $("#GPT_Id_Val").val(playlistId);
+    $("#GPT_Id_Val").val(id);
+    $("#SORTP_Id_Val").val(id);
     $("#GPT_UserId_Val").val(currentUserId);
+    if (isSaved) {
+        $(".btn-save-the-playlist").fadeOut(0);
+        $(".btn-remove-the-playlist").fadeIn(0);
+        $(".btn-save-the-playlist").attr("data-id", 0);
+        $(".btn-remove-the-playlist").attr("data-id", id);
+        $(".btn-save-the-playlist").addClass("super-disabled");
+        $(".btn-remove-the-playlist").removeClass("super-disabled");
+    }
+    else {
+        $(".btn-save-the-playlist").fadeIn(0);
+        $(".btn-remove-the-playlist").fadeOut(0);
+        $(".btn-save-the-playlist").attr("data-id", id);
+        $(".btn-remove-the-playlist").attr("data-id", 0);
+        $(".btn-remove-the-playlist").addClass("super-disabled");
+        $(".btn-save-the-playlist").removeClass("super-disabled");
+    }
 
     $("#PlaylistInfo_TrackBoxes_Box").empty();
-    $("#PlaylistInfo_Name_Lbl").html(playlistTitle);
-    $("#PlaylistInfo_MainArtist_Span").html(mainArtistName);
-    $("#PlaylistInfo_MainArtist_Span").attr("data-id", mainArtistId);
+    $("#PlaylistInfo_Name_Lbl").html(title);
+    $("#Playlist_Img_Box").html(' <i class="fa-solid fa-wave-square"></i> ');
+    $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-wave-square"></i> Playlist');
+
+    if (mainArtistId > 0 && mainArtistName != null || mainArtistName != undefined) {
+        $("#PlaylistInfo_MainArtist_Span").html(mainArtistName);
+        $("#PlaylistInfo_MainArtist_Span").attr("data-id", mainArtistId);
+    }
+    else {
+        $("#PlaylistInfo_MainArtist_Span").attr("data-id", 0);
+        $("#PlaylistInfo_MainArtist_Span").html("Unknown");
+    }
     $("#PlaylistInfo_SongsQty_Span").html(songsQty > 1 ? "<span class='fw-500'>" + songsQty + "</span>" : "<span class='fw-500'>One</span> song");
 
     $("#PlaylistInfo_ReleaseDate_Span").text(releaseDate.getFullYear());
@@ -6292,9 +6574,9 @@ function playlistInfoSampler(currentUserId = 0, playlistId, playlistTitle, playl
         $("#PlaylistInfo_AuthorImg_Box").html(' <i class="fa-solid fa-circle-user"></i> ');
     }
 
-    if (coverImageUrl != null) {
-        if (coverImageUrl.includes("/")) $("#Playlist_Img").attr("src", coverImageUrl);
-        else $("#Playlist_Img").attr("src", "/PlaylistCovers/" + coverImageUrl);
+    if (imageUrl != null) {
+        if (imageUrl.includes("/")) $("#Playlist_Img").attr("src", imageUrl);
+        else $("#Playlist_Img").attr("src", "/PlaylistCovers/" + imageUrl);
         $("#Playlist_Img_Box").fadeOut(0);
         $("#Playlist_Img").fadeIn(0);
     }
@@ -6303,194 +6585,272 @@ function playlistInfoSampler(currentUserId = 0, playlistId, playlistTitle, playl
         $("#Playlist_Img_Box").fadeIn(0);
         $("#Playlist_Img").attr("src", "#");
     }
-
-    switch (parseInt(playlistType)) {
-        case 0:
-            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-wave-square"></i> Playlist');
-            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-wave-square"></i> ');
-            break;
-        case 1:
-            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-record-vinyl"></i> Album');
-            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-record-vinyl"></i> ');
-            break;
-        case 2:
-            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-compact-disc"></i> EP/Single');
-            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-compact-disc"></i> ');
-            break;
-        case 3:
-            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-star text-primary"></i> Favorite Songs');
-            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-star text-primary"></i> ');
-            break;
-        default:
-            $("#PlaylistInfo_Type_Span").html(' <i class="fa-solid fa-wave-square"></i> Playlist');
-            $("#Playlist_Img_Box").html(' <i class="fa-solid fa-wave-square"></i> ');
-            break;
-    }
-
-    if (songs != undefined) songsApplier(playlistType, songs, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span");
+    if (songs != undefined) playlistSongsApplier(playlistId, songs, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span", false);
     $("#PlaylistSongsQty_Val").val(songs != null ? songs.length : 0);
+}
 
-    if (openOnFinish) {
-        displayCorrector(currentWindowSize, false);
-        slideContainers(null, "PlaylistInfo_Container");
+function favoriteSongsApllier(songs = [], parentElementId = null, isContinuing = false, loadedSongsQty = 0) {
+    if (parentElementId != null) {
+        if (songs != null && songs.length > 0) {
+            let trackIndex = 0;
+            $.each(songs, function (index) {
+                let artistsListed = $("<span></span>");
+                let trackMainBox = $("<div class='track-table-box btn-play-pause-track' data-untrack='true'></div>");
+                let trackImg;
+                let trackStackBox = $("<div class='hstack gap-1'></div>");
+                let unstarBtn = $("<button type='button' class='btn btn-track-table btn-track-favor-unfavor me-1'> <i class='fa-solid fa-star'></i> </button>");
+                let trackInfoBox = $("<div class='ms-1'></div>");
+                let trackNameLbl = $("<span class='h6'></span>");
+                let trackInfoSeparator = $("<br/>");
+                let trackArtistsName = $("<small class='artist-name-span text-muted'></small>");
+                let trackStatsBox = $("<div class='ms-auto'></div>");
+                let trackDurationSpan = $("<small class='card-text text-muted me-1'></small>");
+                let trackDropdown = $("<div class='dropdown d-inline-block'></div>");
+                let trackDropdownBtn = $('<button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+                let trackDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
+                let trackDropdownLi0 = $("<li></li>");
+                let trackDropdownLi1 = $("<li></li>");
+                let trackDropdownBtn0 = $('<button type="button" class="dropdown-item btn-get-library">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button>');
+                let trackDropdownBtn1 = $('<button type="button" class="dropdown-item btn-remove-from-playlist">Remove from Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-minus"></i> </span></button>');
+                let explicitSpan;
+                let featIconSpan;
+                let mainArtistSpan;
+
+                if (songs[index].trackArtists != null) {
+                    mainArtistSpan = $("<span class='artist-search-span get-artist-info'></span>");
+                    featIconSpan = $("<span> feat. </span>");
+                }
+                else mainArtistSpan = $("<span class='artist-search-span get-artist-info'></span>");
+                if (songs[index].hasExplicit) explicitSpan = $('<small class="explicit-span me-1">E</small>');
+
+                trackMainBox.attr('data-id', songs[index].id);
+                trackMainBox.attr("id", songs[index].id + "-TrackMain_Box");
+                mainArtistSpan.html(songs[index].mainArtistName);
+                mainArtistSpan.attr("id", songs[index].userId + "-FindArtistById_Span" + "_" + songs[index].id);
+                trackNameLbl.attr("id", songs[index].id + "-TrackName_Lbl");
+                trackArtistsName.attr("id", songs[index].id + "-TrackArtistsName_Lbl");
+                unstarBtn.attr("id", songs[index].id + "-TrackStarUnstar_Btn");
+                unstarBtn.attr("data-unfavor", false);
+
+                if (trackIndex == 0) firstTrackId = songs[index].id;
+                if (songs[index].coverImageUrl != null) {
+                    trackImg = $("<img src='#' class='release-img-sm alt='This image cannot be displayed' />");
+                    trackImg.attr("src", "/TrackCovers/" + songs[index].coverImageUrl);
+                }
+                else {
+                    trackImg = $("<div class='release-img-box-sm'></div>");
+                    trackImg.html(' <i class="fa-solid fa-music"></i> ');
+                }
+                trackImg.attr("id", songs[index].id + "-TrackImg_Box");
+                trackDropdownBtn0.attr("id", songs[index].id + "-AddToPlaylist_TrackId_Btn");
+                trackDropdownBtn1.attr("id", songs[index].id + "-RemoveFromPlaylist_TrackId_Btn");
+                trackDropdownBtn1.attr("data-playlist-id", "fvr");
+
+                trackNameLbl.html(songs[index].title);
+                trackArtistsName.append(mainArtistSpan);
+                if (songs[index].trackArtists != null) {
+                    for (let i = 0; i < songs[index].trackArtists.length; i++) {
+                        let artistSeparator = $("<span>, </span>");
+                        let artistSpan = $("<span class='artist-search-span get-artist-info'></span>");
+                        artistSpan.html(songs[index].trackArtists[i].artistName);
+                        artistSpan.attr("id", songs[index].trackArtists[i].artistId + "-FindTheArtistById_Span" + "_" + songs[index].id);
+                        if (i == 0) artistsListed.append(artistSpan);
+                        else {
+                            artistsListed.append(artistSeparator);
+                            artistsListed.append(artistSpan);
+                        }
+                    }
+                    trackArtistsName.append(featIconSpan);
+                    trackArtistsName.append(artistsListed);
+                }
+
+                trackDropdownLi0.append(trackDropdownBtn0);
+                trackDropdownLi1.append(trackDropdownBtn1);
+                trackDropdownUl.append(trackDropdownLi0);
+                trackDropdownUl.append(trackDropdownLi1);
+                trackDropdown.append(trackDropdownBtn);
+                trackDropdown.append(trackDropdownUl);
+                trackInfoBox.append(trackNameLbl);
+                trackInfoBox.append(trackInfoSeparator);
+                trackInfoBox.append(explicitSpan);
+                trackInfoBox.append(trackArtistsName);
+                trackStatsBox.append(trackDurationSpan);
+                trackStatsBox.append(unstarBtn);
+                trackStatsBox.append(trackDropdown);
+                trackStackBox.append(trackImg);
+                trackStackBox.append(trackInfoBox);
+                trackStackBox.append(trackStatsBox);
+                trackMainBox.append(trackStackBox);
+                $("#" + parentElementId).append(trackMainBox);
+
+                trackQueue.songs.push(songs[index].id);
+                trackIndex++;
+            });
+
+            if (!isContinuing) {
+                if (firstTrackId > 0) {
+                    $(".btn-play-pause-track-lg").attr("data-id", firstTrackId);
+                    $(".btn-play-pause-track-lg").attr("id", firstTrackId + "-PlayTheFirstTrackOfPlaylist_Btn");
+                    $(".btn-audio-shuffle").removeClass("super-disabled");
+                    $(".btn-play-pause-track-lg").removeClass("super-disabled");
+                }
+                else {
+                    $(".btn-play-pause-track-lg").removeAttr();
+                    $(".btn-play-pause-track-lg").attr("data-id", 0);
+                    $(".btn-audio-shuffle").addClass("super-disabled");
+                    $(".btn-play-pause-track-lg").addClass("super-disabled");
+                }
+            }
+            else {
+                $(".btn-audio-shuffle").removeClass("super-disabled");
+                $(".btn-play-pause-track-lg").removeClass("super-disabled");
+            }
+        }
+        else {
+            $("#" + parentElementId).empty();
+            $("#" + parentElementId).html('<div class="box-bordered text-center p-2 mt-1"> <h2 class="h2"> <i class="fa-regular fa-folder-open"></i> </h2> <h5 class="h5">Your Favorites are Empty</h5> <small class="card-text text-muted">Looks like there is nothing here yet! Start adding your favorite songs and create the perfect list of favorite ones <i class="fa-solid fa-heart fa-beat-fade text-primary"></i></small> </div>');
+            $(".btn-play-pause-track-lg").removeAttr();
+            $(".btn-play-pause-track-lg").attr("data-id", 0);
+            $(".btn-audio-shuffle").addClass("super-disabled");
+            $(".btn-play-pause-track-lg").addClass("super-disabled");
+        }
     }
 }
 
-function songsApplier(type = 0, songs = [], parentElementId, quantitySpanId, isContinuing = false) {
+function playlistSongsApplier(id = 0, songs = [], parentElementId = null, quantitySpanId = null, isContinuing = false, loadedSongsQty = 0) {
+    //songsApplier
     if (parentElementId != null) {
-        if (songs != null) {
+        if (songs != null && songs.length > 0) {
             let firstTrackId = 0;
             if (!isContinuing) {
                 trackQueue.songs = [];
                 trackOrderInQueue = 0;
             }
+            let songIndex = 0;
+            if (!isContinuing) {
+                firstTrackId = songs[0].id;
+                $("#" + parentElementId).empty();
+            }
 
-            if (songs.length > 0) {
-                let songIndex = 0;
-                if (!isContinuing) {
-                    firstTrackId = songs[0].id;
-                    $("#" + parentElementId).empty();
+            $.each(songs, function (index) {
+                let artistsListed = $("<span></span>");
+                let trackMainBox = $("<div class='track-table-box btn-play-pause-track' data-untrack='true'></div>");
+                let trackImg;
+                let trackStackBox = $("<div class='hstack gap-1'></div>");
+                let unstarBtn = $("<button type='button' class='btn btn-track-table btn-track-favor-unfavor me-1'></button>");
+                let trackInfoBox = $("<div class='ms-1'></div>");
+                let trackNameLbl = $("<span class='h6'></span>");
+                let trackInfoSeparator = $("<br/>");
+                let trackArtistsName = $("<small class='artist-name-span text-muted'></small>");
+                let trackStatsBox = $("<div class='ms-auto'></div>");
+                let trackDurationSpan = $("<small class='card-text text-muted me-1'></small>");
+                let trackDropdown = $("<div class='dropdown d-inline-block'></div>");
+                let trackDropdownBtn = $('<button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+                let trackDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
+                let trackDropdownLi0 = $("<li></li>");
+                let trackDropdownLi1 = $("<li></li>");
+                let trackDropdownBtn0 = $('<button type="button" class="dropdown-item btn-get-library">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button>');
+                let trackDropdownBtn1 = $('<button type="button" class="dropdown-item btn-remove-from-playlist">Remove from Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-minus"></i> </span></button>');
+                let explicitSpan;
+                let featIconSpan;
+                let mainArtistSpan;
+
+                if (songs[index].trackArtists != null) {
+                    mainArtistSpan = $("<span class='artist-search-span get-artist-info'></span>");
+                    featIconSpan = $("<span> feat. </span>");
                 }
-                $.each(songs, function (index) {
-                    let artistsListed = $("<span></span>");
-                    let trackMainBox = $("<div class='track-table-box btn-play-pause-track' data-untrack='true'></div>");
-                    let trackImg;
-                    let trackStackBox = $("<div class='hstack gap-1'></div>");
-                    let unstarBtn = $("<button type='button' class='btn btn-track-table btn-track-favor-unfavor me-1'></button>");
-                    let trackInfoBox = $("<div class='ms-1'></div>");
-                    let trackNameLbl = $("<span class='h6'></span>");
-                    let trackInfoSeparator = $("<br/>");
-                    let trackArtistsName = $("<small class='artist-name-span text-muted'></small>");
-                    let trackStatsBox = $("<div class='ms-auto'></div>");
-                    let trackDurationSpan = $("<small class='card-text text-muted me-1'></small>");
-                    let trackDropdown = $("<div class='dropdown d-inline-block'></div>");
-                    let trackDropdownBtn = $('<button class="btn btn-track-table" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
-                    let trackDropdownUl = $("<ul class='dropdown-menu shadow-sm'></ul>");
-                    let trackDropdownLi0 = $("<li></li>");
-                    let trackDropdownLi1 = $("<li></li>");
-                    let trackDropdownBtn0 = $('<button type="button" class="dropdown-item btn-get-library">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button>');
-                    let trackDropdownBtn1 = $('<button type="button" class="dropdown-item">Add to Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button>');
-                    let explicitSpan;
-                    let mainArtistSpan;
-                    let featIconSpan;
-                    
-                    if (songs[index].hasExplicit) explicitSpan = $('<small class="explicit-span me-1">E</small>');
-                    if (songs[index].trackArtists != null) {
-                        mainArtistSpan = $("<span class='artist-search-span'></span>");
-                        featIconSpan = $("<span> feat. </span>");
-                    }
-                    else mainArtistSpan = $("<span class='artist-search-span'></span>");
+                else mainArtistSpan = $("<span class='artist-search-span get-artist-info'></span>");
+                if (songs[index].hasExplicit) explicitSpan = $('<small class="explicit-span me-1">E</small>');
 
-                    trackMainBox.attr('data-id', songs[index].id);
-                    trackMainBox.attr("id", songs[index].id + "-TrackMain_Box");
-                    mainArtistSpan.html(songs[index].mainArtistName);
-                    mainArtistSpan.attr("id", songs[index].userId + "-FindArtistById_Span" + "_" + songs[index].id);
-                    trackNameLbl.attr("id", songs[index].id + "-TrackName_Lbl");
-                    trackArtistsName.attr("id", songs[index].id + "-TrackArtistsName_Lbl");
-                    unstarBtn.attr("id", songs[index].id + "-TrackStarUnstar_Btn");
-                    unstarBtn.attr("data-unfavor", !songs[index].isFavorite);
+                trackMainBox.attr('data-id', songs[index].id);
+                trackMainBox.attr("id", songs[index].id + "-TrackMain_Box");
+                mainArtistSpan.html(songs[index].mainArtistName);
+                mainArtistSpan.attr("id", songs[index].userId + "-FindArtistById_Span" + "_" + songs[index].id);
+                trackNameLbl.attr("id", songs[index].id + "-TrackName_Lbl");
+                trackArtistsName.attr("id", songs[index].id + "-TrackArtistsName_Lbl");
+                unstarBtn.attr("id", songs[index].id + "-TrackStarUnstar_Btn");
+                unstarBtn.attr("data-unfavor", !songs[index].isFavorite);
 
-                    switch (parseInt(type)) {
-                        case 0:
-                            if (songs[index].isFavorite) unstarBtn.html(" <i class='fa-solid fa-star'></i> ");
-                            else unstarBtn.html(" <i class='fa-regular fa-star'></i> ");
-                            unstarBtn.attr("data-unfavor", songs[index].isFavorite);
-                            break;
-                        case 3:
-                            unstarBtn.html(" <i class='fa-solid fa-star'></i> ");
-                            unstarBtn.attr("data-unfavor", true);
-                            break;
-                        default:
-                            if (songs[index].isFavorite) unstarBtn.html(" <i class='fa-solid fa-star'></i> ");
-                            else unstarBtn.html(" <i class='fa-regular fa-star'></i> ");
-                            unstarBtn.attr("data-unfavor", songs[index].isFavorite);
-                            break;
-                    }
+                if (songs[index].isFavorite) unstarBtn.html(" <i class='fa-solid fa-star'></i> ");
+                else unstarBtn.html(" <i class='fa-regular fa-star'></i> ");
+                unstarBtn.attr("data-unfavor", songs[index].isFavorite);
 
-                    if (songIndex == 0) firstTrackId = songs[index].id;
-                    if (songs[index].coverImageUrl != null) {
-                        trackImg = $("<img src='#' class='release-img-sm alt='This image cannot be displayed' />");
-                        trackImg.attr("src", "/TrackCovers/" + songs[index].coverImageUrl);
-                    }
-                    else {
-                        trackImg = $("<div class='release-img-box-sm'></div>");
-                        trackImg.html(' <i class="fa-solid fa-music"></i> ');
-                    }
-                    trackImg.attr("id", songs[index].id + "-TrackImg_Box");
-                    trackDropdownBtn0.attr("id", songs[index].id + "-AddToPlaylist_TrackId_Btn");
-
-                    trackNameLbl.html(songs[index].title);
-                    trackArtistsName.append(mainArtistSpan);
-                    if (songs[index].trackArtists != null) {
-                        for (let i = 0; i < songs[index].trackArtists.length; i++) {
-                            let artistSeparator = $("<span>, </span>");
-                            let artistSpan = $("<span class='artist-search-span'></span>");
-                            artistSpan.html(songs[index].trackArtists[i].artistName);
-                            artistSpan.attr("id", songs[index].trackArtists[i].artistId + "-FindTheArtistById_Span" + "_" + songs[index].id);
-                            if (i == 0) artistsListed.append(artistSpan);
-                            else {
-                                artistsListed.append(artistSeparator);
-                                artistsListed.append(artistSpan);
-                            }
-                        }
-                        trackArtistsName.append(featIconSpan);
-                        trackArtistsName.append(artistsListed);
-                    }
-
-                    trackDropdownLi0.append(trackDropdownBtn0);
-                    trackDropdownUl.append(trackDropdownLi0);
-                    trackDropdown.append(trackDropdownBtn);
-                    trackDropdown.append(trackDropdownUl);
-                    trackInfoBox.append(trackNameLbl);
-                    trackInfoBox.append(trackInfoSeparator);
-                    trackInfoBox.append(explicitSpan);
-                    trackInfoBox.append(trackArtistsName);
-                    trackStatsBox.append(trackDurationSpan);
-                    trackStatsBox.append(unstarBtn);
-                    trackStatsBox.append(trackDropdown);
-                    trackStackBox.append(trackImg);
-                    trackStackBox.append(trackInfoBox);
-                    trackStackBox.append(trackStatsBox);
-                    trackMainBox.append(trackStackBox);
-                    $("#" + parentElementId).append(trackMainBox);
-
-                    songIndex++;
-                    trackQueue.songs.push(songs[index].id);
-                });
-
-                if (!isContinuing) {
-                    if (firstTrackId > 0) {
-                        $(".btn-play-pause-track-lg").attr("data-id", firstTrackId);
-                        $(".btn-play-pause-track-lg").attr("id", firstTrackId + "-PlayTheFirstTrackOfPlaylist_Btn");
-                        $(".btn-audio-shuffle").removeClass("super-disabled");
-                        $(".btn-play-pause-track-lg").removeClass("super-disabled");
-                    }
-                    else {
-                        $(".btn-play-pause-track-lg").removeAttr();
-                        $(".btn-play-pause-track-lg").attr("data-id", 0);
-                        $(".btn-audio-shuffle").addClass("super-disabled");
-                        $(".btn-play-pause-track-lg").addClass("super-disabled");
-                    }
-                    if (songs.length > 1) $("#" + quantitySpanId).html("<span class='fw-500'>" + songs.length + "</span> songs");
-                    else $("#" + quantitySpanId).html("<span class='fw-500'>One</span> song");
+                if (songIndex == 0) firstTrackId = songs[index].id;
+                if (songs[index].coverImageUrl != null) {
+                    trackImg = $("<img src='#' class='release-img-sm alt='This image cannot be displayed' />");
+                    trackImg.attr("src", "/TrackCovers/" + songs[index].coverImageUrl);
                 }
                 else {
-                    let currentQty = parseInt($("#" + quantitySpanId).html()) + songs.length;
-                    $(".btn-audio-shuffle").removeClass("super-disabled");
-                    $(".btn-play-pause-track-lg").removeClass("super-disabled");
-                    $("#" + quantitySpanId).html("<span class='fw-500'>" + currentQty + "</span> songs");
+                    trackImg = $("<div class='release-img-box-sm'></div>");
+                    trackImg.html(' <i class="fa-solid fa-music"></i> ');
+                }
+                trackImg.attr("id", songs[index].id + "-TrackImg_Box");
+                trackDropdownBtn0.attr("id", songs[index].id + "-AddToPlaylist_TrackId_Btn");
+                trackDropdownBtn1.attr("id", songs[index].id + "-RemoveFromPlaylist_TrackId_Btn");
+                trackDropdownBtn1.attr("data-playlist-id", id);
+
+                trackNameLbl.html(songs[index].title);
+                trackArtistsName.append(mainArtistSpan);
+                if (songs[index].trackArtists != null) {
+                    for (let i = 0; i < songs[index].trackArtists.length; i++) {
+                        let artistSeparator = $("<span>, </span>");
+                        let artistSpan = $("<span class='artist-search-span get-artist-info'></span>");
+                        artistSpan.html(songs[index].trackArtists[i].artistName);
+                        artistSpan.attr("id", songs[index].trackArtists[i].artistId + "-FindTheArtistById_Span" + "_" + songs[index].id);
+                        if (i == 0) artistsListed.append(artistSpan);
+                        else {
+                            artistsListed.append(artistSeparator);
+                            artistsListed.append(artistSpan);
+                        }
+                    }
+                    trackArtistsName.append(featIconSpan);
+                    trackArtistsName.append(artistsListed);
                 }
 
+                trackDropdownLi0.append(trackDropdownBtn0);
+                trackDropdownLi1.append(trackDropdownBtn1);
+                trackDropdownUl.append(trackDropdownLi0);
+                trackDropdownUl.append(trackDropdownLi1);
+                trackDropdown.append(trackDropdownBtn);
+                trackDropdown.append(trackDropdownUl);
+                trackInfoBox.append(trackNameLbl);
+                trackInfoBox.append(trackInfoSeparator);
+                trackInfoBox.append(explicitSpan);
+                trackInfoBox.append(trackArtistsName);
+                trackStatsBox.append(trackDurationSpan);
+                trackStatsBox.append(unstarBtn);
+                trackStatsBox.append(trackDropdown);
+                trackStackBox.append(trackImg);
+                trackStackBox.append(trackInfoBox);
+                trackStackBox.append(trackStatsBox);
+                trackMainBox.append(trackStackBox);
+                $("#" + parentElementId).append(trackMainBox);
+
+                trackQueue.songs.push(songs[index].id);
+                songIndex++;
+            });
+
+            if (!isContinuing) {
+                if (firstTrackId > 0) {
+                    $(".btn-play-pause-track-lg").attr("data-id", firstTrackId);
+                    $(".btn-play-pause-track-lg").attr("id", firstTrackId + "-PlayTheFirstTrackOfPlaylist_Btn");
+                    $(".btn-audio-shuffle").removeClass("super-disabled");
+                    $(".btn-play-pause-track-lg").removeClass("super-disabled");
+                }
+                else {
+                    $(".btn-play-pause-track-lg").removeAttr();
+                    $(".btn-play-pause-track-lg").attr("data-id", 0);
+                    $(".btn-audio-shuffle").addClass("super-disabled");
+                    $(".btn-play-pause-track-lg").addClass("super-disabled");
+                }
+                if (songs.length > 1) $("#" + quantitySpanId).html("<span class='fw-500'>" + songs.length + "</span> songs");
+                else $("#" + quantitySpanId).html("<span class='fw-500'>One</span> song");
             }
             else {
-                $("#" + parentElementId).empty();
-                $("#" + quantitySpanId).html(" <i class='fa-solid fa-spinner fa-spin-pulse'></i> Fetching songs...");
-/*                $("#" + parentElementId).html('<div class="box-bordered text-center p-2 mt-1"> <h2 class="h2"> <i class="fa-regular fa-folder-open"></i> </h2> <h5 class="h5">Loading your playlist...</h5> <small class="card-text text-muted">Please wait while we load your music library and prepare your playlist</small> </div>');*/
-                $("#" + parentElementId).html('<div class="track-table-box"> <div class="hstack gap-1"> <div class="release-img-box-sm placeholder placeholder-wave"></div> <div class="ms-1 w-100"> <div class="placeholder-glow"> <span class="placeholder rounded col-9"></span> </div> <div class="placeholder-glow"> <small class="placeholder rounded col-6"></small> </div> </div> </div> </div>');
-                $(".btn-play-pause-track-lg").removeAttr();
-                $(".btn-play-pause-track-lg").attr("data-id", 0);
-                $(".btn-audio-shuffle").addClass("super-disabled");
-                $(".btn-play-pause-track-lg").addClass("super-disabled");
+                let currentQty = loadedSongsQty + songs.length;
+                $(".btn-audio-shuffle").removeClass("super-disabled");
+                $(".btn-play-pause-track-lg").removeClass("super-disabled");
+                $("#" + quantitySpanId).html("<span class='fw-500'>" + currentQty + "</span> songs");
             }
         }
         else {
@@ -7211,14 +7571,14 @@ function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = tru
 }
 
 function hideBySlidingToLeft(byClassname = false, openingElement, targetElementId) {
-    if (openingElement != null && targetElementId != null) {
+    if (targetElementId != null) {
         if (byClassname) {
             $("." + targetElementId).css("margin-left", "15%");
             setTimeout(function () {
                 $("." + targetElementId).css("margin-left", "-1200px");               
             }, 350);
             setTimeout(function () {
-                $("." + openingElement).fadeIn(300);
+                if (openingElement != null || openingElement != undefined) $("." + openingElement).fadeIn(300);
                 $("." + targetElementId).fadeOut(0);
             }, 700);
         }
@@ -7228,7 +7588,7 @@ function hideBySlidingToLeft(byClassname = false, openingElement, targetElementI
                 $("#" + targetElementId).css("margin-left", "-1200px");
             }, 350);
             setTimeout(function () {
-                $("#" + openingElement).fadeIn(300);
+                if (openingElement != null || openingElement != undefined) $("#" + openingElement).fadeIn(300);
                 $("#" + targetElementId).fadeOut(0);
             }, 700);
         }

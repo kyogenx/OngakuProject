@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250514132935_14052025-1")]
+    partial class _140520251
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,9 +312,6 @@ namespace OngakuProject.Migrations
                     b.Property<int>("TotalDuration")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TrackId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UniqueListeners")
                         .HasColumnType("int");
 
@@ -319,8 +319,6 @@ namespace OngakuProject.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TrackId");
 
                     b.HasIndex("UserId");
 
@@ -948,33 +946,6 @@ namespace OngakuProject.Migrations
                     b.ToTable("UserImages");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.UserListener", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArtistId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastListenedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArtistId");
-
-                    b.ToTable("UserListeners");
-                });
-
             modelBuilder.Entity("OngakuProject.Models.UserPlaylist", b =>
                 {
                     b.Property<int>("Id")
@@ -1133,12 +1104,8 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.DailyStreamAggregation", b =>
                 {
-                    b.HasOne("OngakuProject.Models.Track", null)
-                        .WithMany("DailyStreamAggregations")
-                        .HasForeignKey("TrackId");
-
                     b.HasOne("OngakuProject.Models.User", "User")
-                        .WithMany()
+                        .WithMany("DailyStreamAggregations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1342,17 +1309,6 @@ namespace OngakuProject.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.UserListener", b =>
-                {
-                    b.HasOne("OngakuProject.Models.User", "User")
-                        .WithMany("UserListeners")
-                        .HasForeignKey("ArtistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OngakuProject.Models.UserPlaylist", b =>
                 {
                     b.HasOne("OngakuProject.Models.Album", "Album")
@@ -1422,8 +1378,6 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.Track", b =>
                 {
-                    b.Navigation("DailyStreamAggregations");
-
                     b.Navigation("Favorite");
 
                     b.Navigation("TrackArtists");
@@ -1435,6 +1389,8 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.User", b =>
                 {
+                    b.Navigation("DailyStreamAggregations");
+
                     b.Navigation("Favorites");
 
                     b.Navigation("History");
@@ -1446,8 +1402,6 @@ namespace OngakuProject.Migrations
                     b.Navigation("TrackCredits");
 
                     b.Navigation("UserImages");
-
-                    b.Navigation("UserListeners");
 
                     b.Navigation("UserPlaylists");
                 });

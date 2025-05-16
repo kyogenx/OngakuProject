@@ -15,6 +15,7 @@ namespace OngakuProject.Models
         [MaxLength(100)]
         public string? ImageUrl { get; set; }
         public byte PrivacyStatus { get; set; } = 2; //0 - Private; 1 - Only for subscribers; 2 - Public
+        public bool IsEditable { get; set; }
         public DateTime? CreatedAt { get; set; }
         [Required]
         [ForeignKey("User")]

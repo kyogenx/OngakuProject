@@ -32,9 +32,16 @@
             <input type="hidden" name="Id" id="CSA_Id_Val" value="0" />
             <input type="hidden" name="Shortname" id="CSA_Shortname_Val" />
         </form>
+        <form method="get" asp-controller="Artist" asp-action="GetInfo" id="GetArtistInfo_Form">
+            <input type="hidden" name="Id" id="GetArtistInfo_Id_Val" value="0" />
+        </form>
         <form method="post" action="/Playlists/AddOrRemoveTheTrackAsFavorite" id="AddOrRemoveTheTrackAsFavorite_Form">
             <input type="hidden" name="TrackId" id="ARTAF_Id_Val" value="0" />
         </form>
+        <form method="post" action="/Playlists/SaveOrUnsave" id="SaveOrRemoveThePlaylist_Form">
+            <input type="hidden" name="Id" id="SORTP_Id_Val" value="0" />
+        </form>
+        <input type="hidden" id="CurrentUserNickname_Val" value="@UserInfo.Nickname" />
     </div>
 
     @* <div class="box-sm-part-inner" id="Proposal_Container">
@@ -977,7 +984,6 @@
     </div>
 </div>
  
-
 @* <div class="box-lg-part shadow-sm" id="Primary_Container ">
     <div class="box-lg-part-header p-2">
         <div class="div-swiper mx-auto" id="Primary_Container-Swiper"></div>
@@ -1158,7 +1164,7 @@
                 }
                 else
                 {
-                    <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto">@UserInfo.Nickname![0]</a>
+                    <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto" id="CurrentUserProfile_Img">@UserInfo.Nickname![0]</a>
                 }
             }
             else
@@ -1168,6 +1174,88 @@
         </div>
     </div>
     <div class="box-lg-part-body mt-5" id="Primary_Box">
+@*         <div class="artist-page-avatar-box" id="ArtistAvatar_Box">
+            <div class="artist-page-avatar-content">
+                <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1>
+                <span class="card-text avatar-page-stats"><span id="ArtistMonthlyListeners_Span">56.5M</span> <span id="ArtistMonthlyListenersText_Span">monthly listeners</span></span>
+            </div>
+        </div>
+        <div class="box-standard mt-2">
+            <div class="release-box-lg mt-1" id="ArtistLastRelease_Box">
+                <div class="hstack gap-1">
+                    <div class="release-img-box-standard" id="ALR_Img_Box"> <i class="fa-solid fa-music"></i> </div>
+                    <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" />
+                    <div class="ms-1">
+                        <div class="box-forced-top pt-2">
+                            <small class="card-text">Released <span class="fw-500" id="ALR_ReleaseDate_Span">Fri, 16 May</span></small>
+                        </div>
+                        <div class="box-forced-bottom pb-2">
+                            <span class="badge-standard badge-sm"> <i class="fa-solid fa-certificate"></i> Latest Release</span>
+                            <div class="mt-1">
+                                <span class="h5" id="ALR_Title_Lbl">Popular Release</span>
+                                <br />
+                                <small class="card-text text-muted" id="ALR_Artists_Span">Main Artist feat. Artists</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box-standard mt-2">
+                <h5 class="h5 ms-1">Popular Songs <small class="card-text text-muted"> <i class="fa-solid fa-angle-right"></i> </small></h5>
+                <div class="box-standard row mt-2" id="PopularSongs_Row">
+
+                </div> *@
+@*                 <div class="release-box mt-2">
+                    <div class="hstack gap-1">
+                        <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div>
+                        <div class="ms-1">
+                            <span class="h6">Track Name</span>
+                            <br/>
+                            <small class="card-text text-muted">2.5M streams</small>
+                        </div>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button>
+                        </div>
+                    </div>
+                </div> *@
+@*             </div> *@
+        </div>
+
+@*         <div class="release-box-lg">
+            <div class="hstack gap-1">
+                <div class="release-img-box-lg" id="Favorites_Img_Box">
+                    <i class="fa-solid fa-star text-primary"></i>
+                </div>
+                <div class="box-standard ms-1">
+                    <div>
+                        <small class="card-text">
+                            <span id="FavoritesInfo_Type_Span"> <i class="fa-solid fa-star text-primary"></i> Favorite Songs</span> ∙
+                            <span id="FavoritesInfo_SongsQty_Span">No Songs</span>
+                        </small>
+                        <div></div>
+                        <span class="h1" id="FavoritesInfo_Name_Lbl">Favorites</span>
+                    </div>
+                    <div class="box-standard mt-2">
+                        <button type="button" class="btn btn-release-title btn-play-pause-track btn-play-pause-track-lg btn-lg me-1" id="FavoritesInfo_PlayPauseMain_Btn">
+                            <i class="fa-solid fa-play"></i> Play
+                        </button>
+                        <button type="button" class="btn btn-release-title btn-lg me-1">
+                            <i class="fa-solid fa-shuffle"></i> Shuffle
+                        </button>
+                    </div>
+                    <div class="box-standard mt-1">
+                        <small class="card-text text-muted">
+                            <input type="hidden" id="FavoritesSongsQty_Val" value="0" />
+                            <span id="FavoritesInfo_SongsOnlyQty_Span">0</span>
+                            <span id="FavoritesInfo_SongsQtyText_Span"> songs</span>
+                        </small>
+                        <small class="card-text text-muted" id="FavoritesInfo_LastUpdated_Span"> ∙ last updated recently</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box-standard mt-1" id="FavoritesInfo_TrackBoxes_Box"></div> *@
+
 @*         <div class="hstack gap-1 mt-1">
             <h6 class="h6" id="ATP_ChosenPlaylistsQty_Lbl">No Chosen Playlist</h6>
             <div class="ms-auto">
