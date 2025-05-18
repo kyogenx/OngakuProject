@@ -2084,10 +2084,45 @@ $(document).on("submit", "#GetArtistInfo_Form", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
-            createHeadlessContainer("ArtistInfo", null, '<div class="artist-page-avatar-box" id="ArtistAvatar_Box"> <div class="artist-page-avatar-content"> <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1> <span class="card-text avatar-page-stats"><span id="ArtistMonthlyListeners_Span">56.5M</span> <span id="ArtistMonthlyListenersText_Span">monthly listeners</span></span> </div> </div> <div class="box-standard mt-2"> <div class="release-box-lg mt-1" id="ArtistLastRelease_Box"> <div class="hstack gap-1"> <div class="release-img-box-standard" id="ALR_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" /> <div class="ms-1"> <div class="box-forced-top pt-2"> <small class="card-text">Released <span class="fw-500" id="ALR_ReleaseDate_Span">Fri, 16 May</span></small> </div> <div class="box-forced-bottom pb-2"> <span class="badge-standard badge-sm"> <i class="fa-solid fa-certificate"></i> Latest Release</span> <div class="mt-1"> <span class="h5" id="ALR_Title_Lbl">Popular Release</span> <br /> <small class="card-text text-muted" id="ALR_Artists_Span">Main Artist feat. Artists</small> </div> </div> </div> </div> </div> <div class="box-standard mt-2"> <h5 class="h5 ms-1">Popular Songs <small class="card-text text-muted"> <i class="fa-solid fa-angle-right"></i> </small></h5> <div class="box-standard row mt-2" id="PopularSongs_Row"> </div> </div>', false);
+            createHeadlessContainer("ArtistInfo", null, '<div class="artist-page-avatar-box" id="ArtistAvatar_Box"> <div class="artist-page-avatar-content"> <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1> <div> <button type="button" class="btn btn-announcer btn-subscribe-for-artist btn-sm" data-announcements="No Subscribers, Tap to Subscribe" id="SubscribeForArtist_SbmtBtn"> <i class="fa-regular fa-heart"></i> Subscribe</button> <button type="button" class="btn btn-announcer btn-unsubscribe-for-artist btn-sm" data-announcements="No Subscribers, Tap to Unsubscribe" id="UnsubscribeForArtist_SbmtBtn"> <i class="fa-solid fa-heart"></i> Subscribed</button> <span class="avatar-page-stats"><span id="ArtistMonthlyListeners_Span">56.5M</span> <span id="ArtistMonthlyListenersText_Span">monthly listeners</span></span> </div> </div> </div> <div class="box-standard"> <div class="x-row-sliding-only-box p-2"> <button type="button" class="btn btn-standard-bordered btn-sm bg-chosen-bright me-1"> <i class="fa-solid fa-music"></i> Music</button> <button type="button" class="btn btn-standard-bordered btn-sm me-1"> <i class="fa-solid fa-feather-pointed"></i> Posts</button> <button type="button" class="btn btn-standard-bordered btn-sm"> <i class="fa-solid fa-list-ul"></i> More</button> </div> <div class="release-box-lg mt-2" id="ArtistLastRelease_Box"> <div class="hstack gap-1"> <div class="release-img-box-standard" id="ALR_Img_Box"> <i class="fa-solid fa-music"></i> </div> <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" /> <div class="ms-1"> <div class="box-forced-top pt-2"> <small class="card-text">Released <span class="fw-500" id="ALR_ReleaseDate_Span">Fri, 16 May</span></small> </div> <div class="box-forced-bottom pb-2"> <span class="badge-standard badge-sm"> <i class="fa-solid fa-certificate"></i> Latest Release</span> <div class="mt-1"> <span class="h5" id="ALR_Title_Lbl">Popular Release</span> <br /> <small class="card-text text-muted" id="ALR_Artists_Span">Main Artist feat. Artists</small> </div> </div> </div> </div> </div> <div class="box-standard mt-2"> <h5 class="h5 ms-1">Popular Songs <small class="card-text text-muted"> <i class="fa-solid fa-angle-right"></i> </small></h5> <div class="box-standard mt-2" id="PopularSongs_Row"> <div class="release-box mt-2"> <div class="hstack gap-1"> <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div> <div class="ms-1"> <span class="h6">Track Name</span> <br /> <small class="card-text text-muted">2.5M streams</small> </div> <div class="ms-auto"> <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button> </div> </div> </div> </div> </div> </div>', false);
 
             $("#ArtistInfo_Box").css("padding", "0");
             $("#ArtistName_Lbl").html(response.result.nickname);
+            if (response.userId > 0) {
+                if (response.isSubscribed) {
+                    $("#SubscribeForArtist_Id_Val").val(0);
+                    $("#UnsubscribeForArtist_Id_Val").val(response.userId);
+                    $("#SubscribeForArtist_SbmtBtn").fadeOut(0);
+                    $("#UnsubscribeForArtist_SbmtBtn").fadeIn(0);
+                    $("#SubscribeForArtist_SbmtBtn").addClass("super-disabled");
+                    $("#UnsubscribeForArtist_SbmtBtn").removeClass("super-disabled");
+                }
+                else {
+                    $("#UnsubscribeForArtist_Id_Val").val(0);
+                    $("#SubscribeForArtist_Id_Val").val(response.userId);
+                    $("#SubscribeForArtist_SbmtBtn").fadeIn(0);
+                    $("#UnsubscribeForArtist_SbmtBtn").fadeOut(0);
+                    $("#UnsubscribeForArtist_SbmtBtn").addClass("super-disabled");
+                    $("#SubscribeForArtist_SbmtBtn").removeClass("super-disabled");
+                }
+                $("#SubscribeForArtist_SbmtBtn").removeClass("btn-tooltip");
+            }
+            else {
+                $("#SubscribeForArtist_Id_Val").val(0);
+                $("#UnsubscribeForArtist_Id_Val").val(0);
+                $("#SubscribeForArtist_SbmtBtn").fadeIn(0);
+                $("#UnsubscribeForArtist_SbmtBtn").fadeOut(0);
+                $("#UnsubscribeForArtist_SbmtBtn").addClass("super-disabled");
+                $("#SubscribeForArtist_SbmtBtn").removeClass("super-disabled");
+
+                $("#SubscribeForArtist_SbmtBtn").html(' <i class="fa-regular fa-circle-xmark"></i> Unable to Subscribe');
+                $("#SubscribeForArtist_SbmtBtn").addClass("btn-tooltip");
+                $("#SubscribeForArtist_SbmtBtn").attr("data-bs-toggle", "tooltip");
+                $("#SubscribeForArtist_SbmtBtn").attr("data-bs-placement", "top");
+                $("#SubscribeForArtist_SbmtBtn").attr("data-bs-custom-class", "tooltip-standard shadow-sm");
+                $("#SubscribeForArtist_SbmtBtn").attr("data-bs-title", "Sign in to hear new drops first");
+            }
+
             if (response.result.imgUrl != null) {
                 $(".avatar-page-title").css("color", "#fdfdfd");
                 $(".avatar-page-stats").css("color", "#fdfdfd");
@@ -2123,7 +2158,6 @@ $(document).on("submit", "#GetArtistInfo_Form", function (event) {
                     $("#ALR_Img").attr("src", "#");
                     $("#ALR_Img_Box").fadeIn(0);
                 }
-                console.log(response.latestRelease);
                 $("#ALR_Title_Lbl").html(response.latestRelease.title);
                 $("#ALR_ReleaseDate_Span").html(dateAndTimeFormation(userLocale, response.latestRelease.addedAt)[0]);
                 if (response.latestRelease.trackArtists != null) {
@@ -2140,6 +2174,14 @@ $(document).on("submit", "#GetArtistInfo_Form", function (event) {
                 $("#ArtistLastRelease_Box").fadeOut(0);
             }
 
+            if (response.releases != null) {
+                artistPageSongsApplier(response.releases, "PopularSongs_Row", false, true);
+            }
+            else {
+                $("#PopularSongs_Row").empty();
+                $("#PopularSongs_Row").html('<div class="box-standard text-center mt-1 p-2"> <h2 class="h2"> <i class="fa-solid fa-music"></i> </h2> <h4 class="h4">Music Coming Soon</h4> <small class="card-text text-muted">This artist is yet to release any songs</small> </div>');
+            }
+
             displayCorrector(currentWindowSize, false);
             setTimeout(function () {
                 callAContainer(false, "ArtistInfo_Container", false);
@@ -2147,6 +2189,67 @@ $(document).on("submit", "#GetArtistInfo_Form", function (event) {
         }
         else callAlert('<i class="fa-solid fa-user-slash"></i>', null, null, "Artist info is temporarily inaccessible", 3.75, "Close", -1, null);
     });
+});
+
+$(document).on("submit", "#SubscribeForArtist_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = ' <i class="fa-regular fa-heart"></i> Subscribe';
+    buttonDisabler(true, "btn-subscribe-for-artist", "Tuning you in...");
+
+    $.post(url, data, function (response) {
+        $("#SubscribeForArtist_Id_Val").val(0);
+        if (response.success) {
+            $("#SubscribeForArtist_SbmtBtn").fadeOut(0);
+            $("#UnsubscribeForArtist_SbmtBtn").fadeIn(0);
+            $("#UnsubscribeForArtist_Id_Val").val(response.userId);
+            $("#SubscribeForArtist_SbmtBtn").addClass("super-disabled");
+            $("#UnsubscribeForArtist_SbmtBtn").removeClass("super-disabled");
+            callAlert('<i class="fa-regular fa-circle-check anime-spin-shift"></i>', null, null, "You're now following this artist", 3.5, "Close", -1, null);
+        }
+        else {
+            $("#UnsubscribeForArtist_Id_Val").val(0);
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 1; --fa-animation-delay: 0.35s;"></i>', null, null, "Something went wrong. Please try again later", 3.75, "Close", -1, null);
+        }
+        buttonUndisabler(true, "btn-subscribe-for-artist", baseHtml);
+    });
+});
+
+$(document).on("submit", "#UnsubscribeForArtist_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = ' <i class="fa-solid fa-heart"></i> Subscribed';
+    buttonDisabler(true, "btn-unsubscribe-for-artist", "Unfollowing...");
+
+    $.post(url, data, function (response) {
+        $("#UnsubscribeForArtist_Id_Val").val(0);
+        if (response.success) {
+            $("#SubscribeForArtist_SbmtBtn").fadeIn(0);
+            $("#UnsubscribeForArtist_SbmtBtn").fadeOut(0);
+            $("#SubscribeForArtist_Id_Val").val(response.userId);
+            $("#UnsubscribeForArtist_SbmtBtn").addClass("super-disabled");
+            $("#SubscribeForArtist_SbmtBtn").removeClass("super-disabled");
+            callAlert('<i class="fa-regular fa-circle-check anime-spin-shift"></i>', null, null, "You’re no longer following this artist", 3.5, "Close", -1, null);
+        }
+        else {
+            $("#SubscribeForArtist_Id_Val").val(0);
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 1; --fa-animation-delay: 0.35s;"></i>', null, null, "Unfollow failed. Please try againr", 3.75, "Close", -1, null);
+        }
+        buttonUndisabler(true, "btn-unsubscribe-for-artist", baseHtml);
+    });
+});
+
+$(document).on("mousedown", ".btn-subscribe-for-artist", function () {
+    let artistId = $(this).attr("data-artist-id");
+    if (artistId != undefined) $("#SubscribeForArtist_Id_Val").val(artistId);
+    $("#SubscribeForArtist_Form").submit();
+});
+$(document).on("mousedown", ".btn-unsubscribe-for-artist", function () {
+    let artistId = $(this).attr("data-artist-id");
+    if (artistId != undefined) $("#UnsubscribeForArtist_Id_Val").val(artistId);
+    $("#UnsubscribeForArtist_Form").submit();
 });
 
 $(document).on("mousedown", ".get-artist-info", function () {
@@ -3844,7 +3947,7 @@ $(document).on("mousedown", ".btn-play-pause-track", function () {
                 let objectTitle = $(this).attr("data-title");
                 let trackId = $(this).attr("data-order-index");
                 let currentSrc = document.getElementById("OngakuPlayer_Audio").src;
-
+ 
                 if ((objectSrc != undefined) && (currentSrc == objectSrc)) {
                     let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
                     audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, objectTitle, "Track Preview", null);
@@ -3855,18 +3958,22 @@ $(document).on("mousedown", ".btn-play-pause-track", function () {
                 let thisId = $(this).attr("data-id");
                 let currentTrackId = $("#OngakuPlayer_TrackId_Val").val();
                 let currentPlaylistId = $("#OngakuPlayer_PlaylistId_Val").val();
-                if (element.paused) {
-                    if (thisId == undefined) audioContinue("OngakuPlayer_Audio", currentTrackId);
+
+                if (thisId == undefined) {
+                    if (element.paused) audioContinue("OngakuPlayer_Audio", currentTrackId);
+                    else audioPause("OngakuPlayer_Audio");
+                }
+                else {
+                    if ((currentTrackId == thisId) && (playlistId == null || currentPlaylistId == playlistId)) {
+                        if (!element.paused) audioPause("OngakuPlayer_Audio");
+                        else audioContinue("OngakuPlayer_Audio", thisId);
+                    }
                     else {
-                        if ((currentTrackId == thisId) && (playlistId == null || currentPlaylistId == playlistId)) audioContinue("OngakuPlayer_Audio", thisId);
-                        else {
-                            trackOrderInQueue = trackQueue.songs.indexOf(parseInt(thisId), 0);
-                            trackOrderInQueue = trackOrderInQueue != -1 ? trackOrderInQueue : 0;
-                            audioChange("OngakuPlayer_Audio", playlistId, thisId);
-                        }
+                        trackOrderInQueue = trackQueue.songs.indexOf(parseInt(thisId), 0);
+                        trackOrderInQueue = trackOrderInQueue != -1 ? trackOrderInQueue : 0;
+                        audioChange("OngakuPlayer_Audio", playlistId, thisId);
                     }
                 }
-                else audioPause("OngakuPlayer_Audio");
             }
         }
     }
@@ -5974,6 +6081,46 @@ function copyAnElement(prototypeElementId, insertAfter = true) {
     else return null;
 }
 
+$(document).on("mousedown", ".btn-announcer", function () {
+    let thisId = $(this).attr("id");
+    let baseHtml = $(this).attr("data-base-html");
+    let announcements = getCommaSeparatedValues($(this).attr("data-announcements"));
+
+    if (thisId != undefined && baseHtml != undefined && announcements != null) {
+        announcer(false, true, thisId, baseHtml, announcements, 3);
+    }
+});
+
+function announcer(byClassname = false, animateOnChange = true, elementId, baseHtml, announcements = [], intervalInSeconds = 2.5) {
+    if ((elementId != null) && (Array.isArray(announcements) && announcements.length > 0) && (baseHtml != null)) {
+        let currentElementIndex = 1;
+        let currentAnnouncement;
+        clearInterval(intervalValue);
+        announcements.unshift(baseHtml);
+
+        intervalValue = setInterval(function () {
+            if (announcements[currentElementIndex] != undefined) currentAnnouncement = announcements[currentElementIndex];
+            else currentAnnouncement = baseHtml;
+
+            if (byClassname) {
+                $("." + elementId).html(currentAnnouncement);
+            }
+            else {
+                if (animateOnChange) {
+                    let blurDuration = intervalInSeconds * 0.1;
+                    blur(elementId, blurDuration);
+                }
+                $("#" + elementId).html(currentAnnouncement);
+            }
+            if (currentElementIndex >= announcements.length - 1) currentElementIndex = 0;
+            else currentElementIndex++;
+        }, intervalInSeconds * 1000);
+
+        return elementId;
+    }
+    else return null;
+}
+
 function elementDisabler(byClassname, id, displayId, displayText) {
     if (!byClassname) $("#" + id).attr("disabled", true);
     else $("." + id).attr("disabled", true);
@@ -6587,6 +6734,92 @@ function playlistInfoSampler(id, title, imageUrl, releaseDateAndTime, songsQty =
     }
     if (songs != undefined) playlistSongsApplier(playlistId, songs, "PlaylistInfo_TrackBoxes_Box", "PlaylistInfo_SongsQty_Span", false);
     $("#PlaylistSongsQty_Val").val(songs != null ? songs.length : 0);
+}
+
+function artistPageSongsApplier(songs = [], parentElementId = null, isContinuing = false, isSignedIn = false) {
+    if (songs != null && songs.length > 0) {
+        let row;
+        let rowId;
+        let rowIndex = 0;
+        if ((parentElementId != null || parentElementId != undefined) && (!isContinuing)) {
+            $("#" + parentElementId).empty();
+            for (let i = 0; i < songs.length; i++) {
+                if (i % 2 == 0) {
+                    rowIndex++;
+                    rowId = rowIndex + "-SongListRow_Box";
+                    row = $("<div class='row'></div>");
+                    row.attr("id", rowId);
+                    $("#" + parentElementId).append(row);
+                }
+                let col = $("<div class='col'></div>");
+                let justTrackBox = $("<div class='track-table-box btn-play-pause-track mb-1' data-untrack='true'></div>");
+                let trackStackBox = $("<div class='hstack gap-1'></div>");
+                let trackImg;
+                let trackInfoBox = $("<div class='ms-1'></div>");
+                let trackNameLbl = $("<span class='h6'></span>");
+                let trackInfoSeparator = $("<br/>");
+                let trackInfoMainSpan = $("<span class='card-text'></span>'");
+                let trackInfoStreamsSpan = $("<small class='card-text text-muted'></small>");
+                let trackIsFavoriteBox = $("<div class='ms-auto'></div>");
+                let trackIsFavoriteBtn = $('<button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button>');
+                let explicitSpan;
+
+                justTrackBox.attr('data-id', songs[i].id);
+                justTrackBox.attr("id", songs[i].id + "-JustTrackMain_Box");
+
+                if (songs[i].hasExplicit) {
+                    explicitSpan = $('<small class="explicit-span me-1">E</small> ∙ ');
+                    trackInfoMainSpan.append(explicitSpan);
+                }
+                if (songs[i].coverImageUrl != null) {
+                    trackImg = $("<img src='#' class='release-img-sm alt='This image cannot be displayed' />");
+                    trackImg.attr("src", "/TrackCovers/" + songs[i].coverImageUrl);
+                }
+                else {
+                    trackImg = $("<div class='release-img-box-sm'></div>");
+                    trackImg.html(' <i class="fa-solid fa-music"></i> ');
+                }
+                trackNameLbl.html(songs[i].title);
+                if (parseInt(songs[i].streamsQty) > 0) {
+                    if (songs[i].streamsQty == 1) trackInfoStreamsSpan.html("One stream");
+                    else trackInfoStreamsSpan.html(songs[i].streamsQty + " streams");
+                }
+                else trackInfoStreamsSpan.html("No Streams");
+                trackInfoMainSpan.append(trackInfoStreamsSpan);
+
+                if (isSignedIn) {
+                    if (songs[i].isFavorite) {
+                        trackIsFavoriteBtn.html(' <i class="fa-solid fa-star"></i> ');
+                    }
+                    else {
+                        trackIsFavoriteBtn.html(' <i class="fa-regular fa-star"></i> ');
+                    }
+                }
+                else {
+                    trackIsFavoriteBtn.addClass("btn-tooltip");
+                    trackIsFavoriteBtn.html(' <i class="fa-solid fa-ban"></i> ');
+                    trackIsFavoriteBtn.attr("data-bs-toggle", "tooltip");
+                    trackIsFavoriteBtn.attr("data-bs-placement", "top");
+                    trackIsFavoriteBtn.attr("data-bs-custom-class", "tooltip-standard shadow-sm");
+                    trackIsFavoriteBtn.attr("data-bs-title", "Sign in to add this track to your favorites");
+                }
+                trackIsFavoriteBox.append(trackIsFavoriteBtn);
+                trackInfoBox.append(trackNameLbl);
+                trackInfoBox.append(trackInfoSeparator);
+                trackInfoBox.append(trackInfoMainSpan);
+                trackStackBox.append(trackImg);
+                trackStackBox.append(trackInfoBox);
+                trackStackBox.append(trackIsFavoriteBox);
+                justTrackBox.append(trackStackBox);
+                col.append(justTrackBox);
+                $("#" + rowId).append(col);
+
+                //if (parentElementId != null || parentElementId != undefined) $("#" + parentElementId).append(justTrackBox);
+            }
+            return true;
+        }
+    }
+    else return false;
 }
 
 function favoriteSongsApllier(songs = [], parentElementId = null, isContinuing = false, loadedSongsQty = 0) {

@@ -11,12 +11,14 @@ namespace OngakuProject.Controllers
     {
         private readonly Context _context;
         private readonly IArtistInfo _artistInfo;
+        private readonly ISubscribtion _subscribtion;
         private readonly IProfile _profile;
 
-        public ArtistController(Context context, IArtistInfo artistInfo, IProfile profile)
+        public ArtistController(Context context, IArtistInfo artistInfo, ISubscribtion subscribtion, IProfile profile)
         {
             _context = context;
             _artistInfo = artistInfo;
+            _subscribtion = subscribtion;
             _profile = profile;
         }
 
@@ -27,10 +29,12 @@ namespace OngakuProject.Controllers
             if (ArtistInfo is not null)
             {
                 int UserId = 0;
+                bool IsSubscribed = false;
                 if (User.Identity.IsAuthenticated)
                 {
                     string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     UserId = _profile.ParseCurrentUserId(UserId_Str);
+                    IsSubscribed = await _subscribtion.IsSubscribedAsync(Id, UserId);
                 }
 
                 Track? LatestRelease = await _artistInfo.GetLatestReleaseAsync(Id, UserId);
@@ -38,7 +42,7 @@ namespace OngakuProject.Controllers
                 List<Track>? PopularReleases = PopularReleasesPreview != null ? await PopularReleasesPreview.ToListAsync() : null;
                 PopularReleases = PopularReleases?.OrderByDescending(t => t.TrackHistory != null ? t.TrackHistory.Count : 0).ToList();
 
-                return Json(new { success = true, latestRelease = LatestRelease, releases = PopularReleases, result = ArtistInfo });
+                return Json(new { success = true, userId = UserId, isSubscribed = IsSubscribed, latestRelease = LatestRelease, releases = PopularReleases, result = ArtistInfo });
             }
             return Json(new { success = false });
         }

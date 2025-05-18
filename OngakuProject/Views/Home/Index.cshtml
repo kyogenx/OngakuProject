@@ -956,6 +956,14 @@
                 </div>
             </div>
             <div class="box-standard row mt-2">
+                <div class="d-none">
+                    <form method="post" action="/Subscribtion/Subscribe" id="SubscribeForArtist_Form">
+                        <input type="hidden" id="SubscribeForArtist_Id_Val" name="Id" value="0" />
+                    </form>
+                    <form method="post" action="/Subscribtion/Unsubscribe" id="UnsubscribeForArtist_Form">
+                        <input type="hidden" id="UnsubscribeForArtist_Id_Val" name="Id" value="0" />
+                    </form>
+                </div>
                 <div class="col">
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-badged btn-playback-rate w-100" data-target="OngakuPlayer_Audio" data-speed="1">1.0x</button>
                 </div>
@@ -1174,14 +1182,23 @@
         </div>
     </div>
     <div class="box-lg-part-body mt-5" id="Primary_Box">
-@*         <div class="artist-page-avatar-box" id="ArtistAvatar_Box">
+        @* <div class="artist-page-avatar-box" id="ArtistAvatar_Box">
             <div class="artist-page-avatar-content">
                 <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1>
-                <span class="card-text avatar-page-stats"><span id="ArtistMonthlyListeners_Span">56.5M</span> <span id="ArtistMonthlyListenersText_Span">monthly listeners</span></span>
+                <div>
+                    <button type="button" class="btn btn-announcer btn-subscribe-for-artist btn-sm" data-announcements="No Subscribers, Tap to Subscribe" id="SubscribeForArtist_SbmtBtn"> <i class="fa-regular fa-heart"></i> Subscribe</button>
+                    <button type="button" class="btn btn-announcer btn-unsubscribe-for-artist btn-sm" data-announcements="No Subscribers, Tap to Unsubscribe" id="UnsubscribeForArtist_SbmtBtn"> <i class="fa-solid fa-heart"></i> Subscribed</button>
+                    <span class="avatar-page-stats"><span id="ArtistMonthlyListeners_Span">56.5M</span> <span id="ArtistMonthlyListenersText_Span">monthly listeners</span></span>
+                </div>
             </div>
         </div>
-        <div class="box-standard mt-2">
-            <div class="release-box-lg mt-1" id="ArtistLastRelease_Box">
+        <div class="box-standard">
+            <div class="x-row-sliding-only-box p-2">
+                <button type="button" class="btn btn-standard-bordered btn-sm bg-chosen-bright me-1"> <i class="fa-solid fa-music"></i> Music</button>
+                <button type="button" class="btn btn-standard-bordered btn-sm me-1"> <i class="fa-solid fa-feather-pointed"></i> Posts</button>
+                <button type="button" class="btn btn-standard-bordered btn-sm"> <i class="fa-solid fa-list-ul"></i> More</button>
+            </div>
+            <div class="release-box-lg mt-2" id="ArtistLastRelease_Box">
                 <div class="hstack gap-1">
                     <div class="release-img-box-standard" id="ALR_Img_Box"> <i class="fa-solid fa-music"></i> </div>
                     <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" />
@@ -1202,24 +1219,23 @@
             </div>
             <div class="box-standard mt-2">
                 <h5 class="h5 ms-1">Popular Songs <small class="card-text text-muted"> <i class="fa-solid fa-angle-right"></i> </small></h5>
-                <div class="box-standard row mt-2" id="PopularSongs_Row">
-
-                </div> *@
-@*                 <div class="release-box mt-2">
-                    <div class="hstack gap-1">
-                        <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div>
-                        <div class="ms-1">
-                            <span class="h6">Track Name</span>
-                            <br/>
-                            <small class="card-text text-muted">2.5M streams</small>
-                        </div>
-                        <div class="ms-auto">
-                            <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button>
+                <div class="box-standard mt-2" id="PopularSongs_Row">
+                    <div class="release-box mt-2">
+                        <div class="hstack gap-1">
+                            <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div>
+                            <div class="ms-1">
+                                <span class="h6">Track Name</span>
+                                <br />
+                                <small class="card-text text-muted">2.5M streams</small>
+                            </div>
+                            <div class="ms-auto">
+                                <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button>
+                            </div>
                         </div>
                     </div>
-                </div> *@
-@*             </div> *@
-        </div>
+                </div> 
+             </div>
+        </div> *@
 
 @*         <div class="release-box-lg">
             <div class="hstack gap-1">

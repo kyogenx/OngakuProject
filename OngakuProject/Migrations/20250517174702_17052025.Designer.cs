@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250517174702_17052025")]
+    partial class _17052025
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1012,33 +1015,6 @@ namespace OngakuProject.Migrations
                     b.ToTable("UserPlaylists");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.UserSubscribtion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("SubscribedFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SubscriberId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserSubscribtions");
-                });
-
             modelBuilder.Entity("GenreTrack", b =>
                 {
                     b.HasOne("OngakuProject.Models.Genre", null)
@@ -1403,17 +1379,6 @@ namespace OngakuProject.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.UserSubscribtion", b =>
-                {
-                    b.HasOne("OngakuProject.Models.User", "User")
-                        .WithMany("UserSubscribtions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OngakuProject.Models.Album", b =>
                 {
                     b.Navigation("AlbumGenres");
@@ -1488,8 +1453,6 @@ namespace OngakuProject.Migrations
                     b.Navigation("UserListeners");
 
                     b.Navigation("UserPlaylists");
-
-                    b.Navigation("UserSubscribtions");
                 });
 #pragma warning restore 612, 618
         }

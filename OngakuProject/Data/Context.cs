@@ -29,5 +29,6 @@ namespace OngakuProject.Data
         public DbSet<TrackPlaylist> TrackPlaylists { get; set; }
         public DbSet<UserPlaylist> UserPlaylists { get; set; }
         public DbSet<UserListener> UserListeners { get; set; }
+        public DbSet<UserSubscribtion> UserSubscribtions { get; set; }
     }
 }
