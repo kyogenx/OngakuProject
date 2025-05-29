@@ -23,6 +23,7 @@ namespace OngakuProject.Interfaces
         public Task<int> UnmuteTrackAsync(int Id, int UserId);
         public Task<int> DisableTrackAsync(int Id, int UserId);
         public Task<int> DeleteTrackAsync(int Id, int UserId);
+        public Task<string?> GetTrackAudioUrlAsync(int Id);
         public Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId, int UserId = 0);
         public Task<Track?> GetTrackInfoAsync(int Id, int UserId = 0, bool IsForAuthor = false);
         public Task<TrackCredit?> GetCreditsAsync(int Id);

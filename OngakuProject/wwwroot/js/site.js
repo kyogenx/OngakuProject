@@ -5,6 +5,7 @@ let intervalValue;
 let timeoutValue;
 let sentRequest = null;
 let openedContainers = [];
+let openedSmContainers = [];
 let openedCards = [];
 const userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
 let dayOfWeekShortArr = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -14,7 +15,7 @@ let reserveOrderInQueue = 0;
 let trackQueue = { songs: [], orderChanger: 1, autoPlay: false };
 let reserveQueue = [];
 
-//localItemFilter(); SearchForGenres_Form Update Favorites btn-show-field-box
+//localItemFilter(); SearchForGenres_Form Update Favorites btn-show-field-box EditTrackLyrics
 //imagePreviewer() type='file' UpdateTrackCredits_Form Playlists .div-swiper
 //SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form LoadTheTrack_Form GetPlaylists
 //FUNCTION TERRITORY playlistInfoSampler();
@@ -885,10 +886,11 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
+            $("#StreamTheTrack_Id_Val").val(response.result.id); 
+            $("#StreamTheTrack_Url_Val").val(response.result.trackFileUrl);
+
             $("#GetTrackLyrics_Id_Val").val(response.result.id);
             $("#GetTrackCredits_Id_Val").val(response.result.id);
-            $("#StreamTheTrack_Id_Val").val(response.result.id);
-            $("#StreamTheTrack_Url_Val").val(response.result.trackFileUrl);
             if (response.result.isFavorite) {
                 $(".btn-track-favor-unfavor").html(' <i class="fa-solid fa-star"></i> ');
                 $(".btn-track-favor-unfavor-lg").html(' <i class="fa-solid fa-star"></i> ');
@@ -902,6 +904,7 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
             $(".btn-track-favor-unfavor").attr("data-id", response.result.id);
             $(".btn-track-favor-unfavor-lg").attr("data-id", response.result.id);
 
+            $("#OngakuPlayer_Type_Val").val(response.type);
             $("#StreamTheTrack_Form").submit();
             buttonUndisabler(false, "GetTrackLyrics_SbmtBtn", null);
             buttonUndisabler(false, "GetTrackCredits_SbmtBtn", null);
@@ -929,16 +932,28 @@ $(document).on("submit", "#StreamTheTrack_Form", function (event) {
 
     $.get(url, data, function (response) {
         if (response != null) {
+            let type = $("#OngakuPlayer_Type_Val").val();
             let trackId = $("#StreamTheTrack_Id_Val").val();
-            let playlistId = $("#StreamTheTrack_PlaylistId_Val").val();
-            let trackTitleImg = $("#ReleaseInfo_Img").attr("src");
-            let title = $("#" + trackId + "-TrackName_Lbl").html();
-            let artistsName = $("#" + trackId + "-TrackArtistsName_Lbl").html();
-            trackTitleImg = trackTitleImg == undefined ? $("#" + trackId + "-TrackImg_Box").attr("src") : trackTitleImg;
-            audioPlay("OngakuPlayer_Audio", trackTitleImg == undefined ? null : trackTitleImg, streamUrl, playlistId, trackId, 0, title, artistsName, null);
+
+            if (type == 0) {
+                let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
+                let trackTitleImg = $("#ReleaseInfo_Img").attr("src");
+                let title = $("#" + trackId + "-TrackName_Lbl").html();
+                let artistsName = $("#" + trackId + "-TrackArtistsName_Lbl").html();
+                trackTitleImg = trackTitleImg == undefined ? $("#" + trackId + "-TrackImg_Box").attr("src") : trackTitleImg;
+                audioPlay("OngakuPlayer_Audio", trackTitleImg == undefined ? null : trackTitleImg, streamUrl, 0, trackId, playlistId, title, artistsName, null);
+                audioPlayerTypeSwitch("OngakuPlayer_Audio", 0);
+            }
+            else {
+                let title = $("#ETL_TrackTitle_Lbl").html();
+                let artistsName = $("#ETL_TrackArtists_Span").html();
+                audioPrepare("OngakuPlayer_Audio", streamUrl, null, title, artistsName, null);
+                audioPlayerTypeSwitch("OngakuPlayer_Audio", 2);
+                slideContainers(null, "LyricSync_Container");
+            }
         }
         else {
-
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake text-danger" style="--fa-animation-duration: 0.5s; --fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2;"></i>', null, null, "Track temporarily unavailable", 3.5, "Close", -1, null);
         }
     });
 });
@@ -1217,15 +1232,26 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
                 $("#DTL_Id_Val").val(response.id);
                 $("#DeleteTrackLyrics_Box").fadeIn(0);
                 buttonUndisabler(false, "DeleteTrackLyrics_SbmtBtn", ' <i class="fa-solid fa-trash-can"></i> Delete');
-                adjustTextareaRows("UTL_Content_Val");
                 getElementLength("UTL_Content_Val", "UTL_Content_Val-Indicator_Span", false);
-                getElementRows("UTL_Content_Val", "UTL_Content_Val-RowsIndicator_Span", false);
                 buttonUndisabler(false, "UpdateTrackLyrics_SbmtBtn", "Save Lyrics");
+                adjustTextareaRows("UTL_Content_Val");
+                let textLength = getElementRows("UTL_Content_Val", "UTL_Content_Val-RowsIndicator_Span", false);
                 $("#UTL_Content_Val").css("height", "auto");
+
+                if (textLength > 0) {
+                    $("#TimeSyncLyrics_Btn").removeClass("super-disabled");
+                    $("#TimeSyncLyrics_Btn").attr("data-bs-title", "Apply lyrics and sync timing for karaoke");
+                }
+                else {
+                    $("#TimeSyncLyrics_Btn").addClass("super-disabled");
+                    $("#TimeSyncLyrics_Btn").attr("data-bs-title", "Start syncing tracks lyrics. Perfect feature for a karaoke-style experience");
+                }
             }
             else {
                 $("#DTL_Id_Val").val(0);
                 $("#DeleteTrackLyrics_Box").fadeOut(0);
+                $("#TimeSyncLyrics_Btn").removeClass("super-disabled");
+                $("#TimeSyncLyrics_Btn").attr("data-bs-title", "Apply lyrics and sync timing for karaoke");
                 buttonDisabler(false, "DeleteTrackLyrics_SbmtBtn", null);
             }
             setTimeout(function () {
@@ -1268,6 +1294,30 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
                 slideBoxes(true, "box-standard-player", "OngakuPlayer_LyricsMain_Box");
                 slideBoxes(false, "OngakuPlayer_MainAddLayer_Box", "OngakuPlayer_NonMainAddLayer_Box");
             }
+            else if (response.type == 2) {
+                //Sync
+                //createTutorialContainer(null, "LyricSyncTutorials", "lyric-sync-tutorials", ['<i class="fa-solid fa-arrows-rotate anime-sync-forever"></i>', '<i class="fa-regular fa-lightbulb"></i>'], ['Welcome to <span class="fw-500">Lyric Sync</span>!<br /><br />Easily align your track’s lyrics with the music timeline, making playback smoother and karaoke more enjoyable for everyone. We recommend reading these quick tips before you start syncing. They will help you understand everything you need to do here', 'Start by exploring the audio player.<br />New controls have been added to assist with syncing. Hover or tap each button below to see its function']);
+                let rowedText = rowsToSpan("LyricSyncRow_Span", response.result.content, ["lyric-text", "lyric-row-choose"]);
+                if (rowedText[1].length > 0) {
+                    $("#TimeSync_RowNumber_Span").text(1);
+                    for (let i = 0; i < rowedText[1].length; i++) {
+                        if (i == 0) {
+                            rowedText[1][i] = rowedText[1][i].addClass("lyric-text-active");
+                            $("#TimeSync_Lyrics_Box").append(rowedText[1][i]);
+                            $("#TimeSync_Lyrics_Box").append("<br/>");
+                        }
+                        else {
+                            $("#TimeSync_Lyrics_Box").append(rowedText[1][i]);
+                            $("#TimeSync_Lyrics_Box").append("<br/>");
+                        }
+                    }
+                    $("#OngakuPlayer_TrackId_Val").val(response.id);
+                    $("#LyricSync_TrackId_Val").val(response.id);
+                    $("#LyricSync_LyricsId_Val").val(response.result.id);
+                    $("#OngakuPlayer_Type_Val").val(2);
+                    $("#LoadTheTrack_Form").submit();
+                }
+            }
         }
         else {
             if (response.type == 0) {
@@ -1277,6 +1327,180 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
             }
         }
     });
+});
+
+$(document).on("submit", "#LyricSync_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#LyricSync_SbmtBtn").html();
+    buttonDisabler(false, "LyricSync_SbmtBtn", "Saving...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#LyricSync_SbmtBtn").html(' <i class="fa-regular fa-circle-check anime-sync-shift"></i> Saved');
+            callAlert(' <i class="fa-regular fa-circle-check anime-sync-shift"></i> ', null, null, "Lyrics synced successfully", 3.5, "Done", -1, null);
+            slideContainers("LyricSync_Container", "Primary_Container");
+        }
+        else {
+            if(response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Sync interrupted due to an unexpected error. Please try again later", 3.75, "Close", -1, null);
+            else callAlert('<i class="fa-solid fa-right-to-bracket"></i>', null, null, "Please sign in to interact with lyrics and tracks", 3.75, "Got It", -1, null);
+        }
+        buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
+    });
+});
+
+$(document).on("mousedown", ".btn-sync-lyrics", function () {
+    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+    if (audioPlayer != null) {
+        if (audioPlayer.paused) callAlert(' <i class="fa-solid fa-forward-fast"></i> ', null, null, "Lyrics can only be synced while the track is playing", 3.5, "Got It", -1, null);
+        else {
+            let baseHtml = $("#LyricSync_SbmtBtn").html();
+            let currentTimestamp = audioPlayer.currentTime;
+            let previousTimestamp = $("#LyricSync_PreviousTimestamp_Val").val();
+            if (previousTimestamp == 0) {
+                $(".lyric-sync-row").remove();
+                $("#LyricSync_Timestamps_Box").empty();
+                $("#LyricSync_CurrentRowIndex_Val").val(0);
+                $("#LyricSync_CurrentTimestamp_Val").val(0);
+            }
+            buttonDisabler(false, "LyricSync_SbmtBtn", null);
+            buttonDisabler(true, "btn-un-undo-last-sync", null);
+            $("#LyricSync_SbmtBtn").html(' <i class="fa-solid fa-arrows-rotate anime-sync-shift"></i> Line Added');
+            //callASmContainer()
+
+            let thisRowIndex = $("#LyricSync_CurrentRowIndex_Val").val();
+            let currentRowLyrics = $("#" + thisRowIndex + "-LyricSyncRow_Span").html();
+            currentTimestamp = secondsToRegularDuration(currentTimestamp);
+            previousTimestamp = secondsToRegularDuration(previousTimestamp);
+            let currentTimestampToParce = currentTimestamp;
+            currentTimestamp = currentTimestamp == null ? "00:00" : currentTimestamp[0] + ":" + currentTimestamp[1];
+            previousTimestamp = previousTimestamp == null ? "00:00" : previousTimestamp[0] + ":" + previousTimestamp[1];
+
+            let doesThisRowAlreadyExists = document.getElementById(thisRowIndex + "-LyricSyncRow_Box");
+            let mainRow = elementDesigner("div", "row lyric-sync-row", null);
+            let rowIndexCol = elementDesigner("div", "col col-1 regular-start-table-cell text-center", null);
+            let timestampCol = elementDesigner("div", "col col-3 regular-mid-table-cell text-center", null);
+            let lyricShortInfoCol = elementDesigner("div", "col col-6 regular-end-table-cell text-center", null);
+            let actionBtnsCol = elementDesigner("div", "col col-2 regular-end-table-cell text-center", null);
+            let lineIndexInput = $("<input type='hidden' name='Lines' />");
+            let timestampInput = $("<input type='hidden' name='Timestamps' />");
+
+            mainRow.attr("id", thisRowIndex + "-LyricSyncRow_Box");
+            lineIndexInput.attr("id", thisRowIndex + "-LyricSync_LineIndex_Val");
+            timestampInput.attr("id", thisRowIndex + "-LyricSync_Timestamp_Val");
+
+            let rowIndexSpan = elementDesigner("span", "console-log-text", ++thisRowIndex);
+            let timestampSpan = elementDesigner("span", "console-log-text text-muted", previousTimestamp + " to " + currentTimestamp);
+            let lyricShortInfoSpan = elementDesigner("span", "console-log-text", currentRowLyrics);
+            let rewindBtn = elementDesigner("button", "btn btn-cybepunked btn-lyric-sync-rewind btn-sm me-2", ' <i class="fa-solid fa-clock-rotate-left"></i> ');
+            let undoBtn = elementDesigner("button", "btn btn-cybepunked btn-lyric-sync-undo btn-sm text-danger", ' <i class="fa-solid fa-xmark"></i> ');
+
+            rowIndexCol.append(rowIndexSpan);
+            timestampCol.append(timestampSpan);
+            lyricShortInfoCol.append(lyricShortInfoSpan);
+            actionBtnsCol.append(rewindBtn);
+            actionBtnsCol.append(undoBtn);
+
+            mainRow.append(rowIndexCol);
+            mainRow.append(timestampCol);
+            mainRow.append(lyricShortInfoCol);
+            mainRow.append(actionBtnsCol);
+
+            if (doesThisRowAlreadyExists != null) {
+                let rewindingRowIndex = thisRowIndex - 1;
+                buttonUndisabler(true, "btn-un-undo-last-sync", null);
+                $("#" + rewindingRowIndex + "-LyricSyncRow_Box").remove();
+            }
+            $("#LyricSync_Stats_Box").append(mainRow);
+            $("#LyricSync_Timestamps_Box").append(lineIndexInput);
+            $("#LyricSync_Timestamps_Box").append(timestampInput);
+
+            previousTimestamp = regularToSecondsDuration(currentTimestampToParce[0], currentTimestampToParce[1]);
+            $("#LyricSync_CurrentTimestamp_Val").val(0);
+            $("#LyricSync_CurrentRowIndex_Val").val(--thisRowIndex);
+            $("#LyricSync_PreviousTimestamp_Val").val(previousTimestamp);
+            $(".btn-lyric-sync-undo").addClass("super-disabled");
+            $(".btn-lyric-sync-rewind").addClass("super-disabled");
+            undoBtn.attr("id", thisRowIndex + "-LyricSyncUndo_Btn");
+            rewindBtn.attr("id", thisRowIndex + "-LyricSyncRewind_Btn");
+            undoBtn.removeClass("super-disabled");
+            rewindBtn.removeClass("super-disabled");
+            lineIndexInput.val(thisRowIndex);
+            timestampInput.val(previousTimestamp);
+
+            $("#" + ++thisRowIndex + "-LyricSyncRow_Span").mousedown();
+            setTimeout(function () {
+                buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
+            }, 2500);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-lyric-sync-rewind", function () {
+    let rowIndex = getTrueId($(this).attr("id"), false);
+    if (rowIndex != undefined) {
+        let prevRowIndex = rowIndex - 1;
+        let baseHtml = $("#LyricSync_SbmtBtn").html();
+        let prevTimestampStart = $("#" + prevRowIndex + "-LyricSync_Timestamp_Val").val();
+
+        buttonDisabler(false, "LyricSync_SbmtBtn", null);
+        $("#LyricSync_SbmtBtn").html(' <i class="fa-solid fa-clock-rotate-left anime-rewind-shift"></i> Rewinding...');
+        $("#" + rowIndex + "-LyricSyncRow_Span").mousedown();
+
+        $("#LyricSync_CurrentRowIndex_Val").val(rowIndex);
+        $("#TimeSync_RowNumber_Span").text(++rowIndex);
+        $("#LyricSync_PreviousTimestamp_Val").val(prevTimestampStart);
+        audioEdit("OngakuPlayer_Audio", null, null, null, prevTimestampStart);
+
+        setTimeout(function () {
+            buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
+        }, 1500);
+    }
+});
+
+$(document).on("mousedown", ".btn-lyric-sync-undo", function () {
+    let rowIndex = getTrueId($(this).attr("id"), false);
+    if (rowIndex != undefined) {
+        let prevRowIndex = rowIndex - 1;
+        let baseHtml = $("#LyricSync_SbmtBtn").html();
+        let prevTimestampStart = $("#" + prevRowIndex + "-LyricSync_Timestamp_Val").val();
+
+        buttonDisabler(false, "LyricSync_SbmtBtn", null);
+        $("#LyricSync_SbmtBtn").addClass("anime-scale-down-shift");
+        $("#LyricSync_SbmtBtn").html(' <i class="fa-regular fa-circle-check"></i> Line Removed');
+        $("#" + rowIndex + "-LyricSync_LineIndex_Val").remove();
+        $("#" + rowIndex + "-LyricSync_Timestamp_Val").remove();
+        $("#" + rowIndex + "-LyricSyncRow_Span").mousedown();
+
+        $("#" + prevRowIndex + "-LyricSyncUndo_Btn").removeClass("super-disabled");
+        $("#" + prevRowIndex + "-LyricSyncRewind_Btn").removeClass("super-disabled");
+
+        $("#TimeSync_RowNumber_Span").text(rowIndex);
+        $("#LyricSync_CurrentRowIndex_Val").val(rowIndex);
+        $("#LyricSync_PreviousTimestamp_Val").val(prevTimestampStart);
+
+        audioEdit("OngakuPlayer_Audio", null, null, null, prevTimestampStart);
+        audioPause("OngakuPlayer_Audio");
+
+        hideBySlidingToLeft(false, null, rowIndex + "-LyricSyncRow_Box");
+        setTimeout(function () {
+            $("#" + rowIndex + "-LyricSyncRow_Box").remove();
+        }, 750);
+        setTimeout(function () {
+            buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
+        }, 2000);
+    }
+});
+
+$(document).on("mousedown", ".lyric-row-choose", function () {
+    let rowIndex = getTrueId($(this).attr("id"), false);
+    if (rowIndex != undefined) {
+        $("#LyricSync_CurrentRowIndex_Val").val(rowIndex);
+        $("#TimeSync_RowNumber_Span").text(++rowIndex);
+        $(".lyric-text").removeClass("lyric-text-active");
+        $(this).addClass("lyric-text-active");
+    }
 });
 
 $(document).on("submit", "#DeleteTrackLyrics_Form", function (event) {
@@ -1312,6 +1536,34 @@ $(document).on("submit", "#DeleteTrackLyrics_Form", function (event) {
         $("#DeleteTrackLyrics_SbmtBtn").html(' <i class= "fa-solid fa-trash-can"></i> Delete');
     });
 });
+
+function rowsToSpan(identifierNonUniquePart = null, text, spanClassList = []) {
+    const cleanedText = text.replace(/\s{2,}/g, '\n').trim();
+    const inlinedToLines = cleanedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    if (inlinedToLines != null && inlinedToLines.length > 0) {
+        let index = 0;
+        let currentSpan;
+        let spanRowsArr = [];
+        let fullClasslist = null;
+        if (spanClassList != null && spanClassList.length > 0) {
+            for (let i = 0; i < spanClassList.length; i++) {
+                if (i == 0) fullClasslist = spanClassList[i];
+                else fullClasslist += " " + spanClassList[i];
+            }
+        } 
+
+        for (let i = 0; i < inlinedToLines.length; i++) {
+            currentSpan = fullClasslist != null ? elementDesigner("span", fullClasslist, inlinedToLines[i]) : elementDesigner("span", "card-text", inlinedToLines[i]);
+            if (identifierNonUniquePart == null || identifierNonUniquePart == undefined) currentSpan.attr("id", index + "-RowList_Span");
+            else currentSpan.attr("id", index + "-" + identifierNonUniquePart);
+            spanRowsArr.push(currentSpan);
+            index++;
+        }
+        return [inlinedToLines, spanRowsArr];
+    } 
+
+    return inlinedToLines;
+}
 
 $(document).on("submit", "#UpdateTrackCoverImage_Form", function (event) {
     event.preventDefault();
@@ -1375,12 +1627,17 @@ $(document).on("submit", "#UpdateTrackLyrics_Form", function (event) {
     $.post(url, data, function (response) {
         if (response.success) {
             slideContainers(null, "Primary_Container");
-            callAlert('<i class="fa-solid fa-font"></i>', null, null, "The track lyrics have been successfully edited", 3.5, "Close", -1, null);
+            callAlert('<i class="fa-regular fa-circle-check anime-spin-shift"></i>', null, null, "Lyrics saved. Use time-synced lyrics for this track?", 4.5, " <i class='fa-solid fa-group-arrows-rotate'></i> Apply Sync", 1, "$('#TimeSyncLyrics_Btn').mousedown();");
         }
         else {
             callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.3s; --fa-animation-duration: 0.75s; --fa-animation-iteration-count: 2;"></i>', null, null, "There appears to be an issue with the entered lyrics and its details. Please review them and try again", 3.75, "Okay", -1, null);
         }
     });
+});
+
+$(document).on("mousedown", "#TimeSyncLyrics_Btn", function () {
+    $("#GetTrackLyrics_Type_Val").val(2);
+    $("#GetTrackLyrics_Form").submit();
 });
 
 $(document).on("submit", "#UpdateTrackStatus_Form", function (event) {
@@ -1599,14 +1856,6 @@ $(document).on("submit", "#EditPlaylistShortname_Form", function (event) {
             buttonDisabler(false, "EditPlaylistShortname_SbmtBtn", baseHtml);
         }
     });
-});
-
-$(document).on("mousedown", ".btn-close-sm-part-container", function () {
-    let trueId = getTrueId($(this).attr("id"), false);
-    if (trueId != undefined) {
-        uncallAProposal();
-        uncallASmContainer(false, trueId);
-    }
 });
 
 $(document).on("submit", "#SaveOrRemoveThePlaylist_Form", function (event) {
@@ -3060,13 +3309,6 @@ $(document).on("mousedown", ".btn-box-vertical-swticher", function () {
     }
 });
 
-$(document).on("mousedown", ".btn-close-sm-container", function () {
-    let trueId = getTrueId($(this).attr("id"));
-    if (trueId != undefined) {
-        uncallAContainer(false, trueId);
-    }
-});
-
 $(document).on("mousedown", ".profile-avatar-img-enlarged", function () {
     let filesMaxLength = $("#ImagesQty_Val").val();
     let thisFileUrl = loadAnotherFile(true, 1, filesMaxLength, "PGI_Skip_Val", "ProfileGetImage_Form");
@@ -3808,6 +4050,13 @@ $(document).on("mousedown", ".btn-open-sm-container", function () {
     }
 });
 
+$(document).on("mousedown", ".btn-close-sm-container", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        uncallASmContainer(false, trueId);
+    }
+});
+
 $(document).on("mousedown", ".btn-box-backslide", function () {
     let currentStep = $(this).attr("data-step");
     let currentTargetId = $(this).attr("data-target-id");
@@ -3938,7 +4187,11 @@ $(document).on("mouseleave", ".hint-span", function () {
 $(document).on("mousedown", ".btn-play-pause-track", function () {
     let thisButtonId = $(this).attr("id");
     if (thisButtonId != undefined) {
-        const element = document.getElementById("OngakuPlayer_Audio");
+        let element = $(this).attr("data-player");
+        if (element == undefined) element = document.getElementById("OngakuPlayer_Audio");
+        else element = document.getElementById(element);
+        const elementId = element.id;
+
         if (element != null) {
             let playlistId = null;
             let isForPreview = $(this).attr("data-preview");
@@ -3946,13 +4199,13 @@ $(document).on("mousedown", ".btn-play-pause-track", function () {
                 let objectSrc = $(this).attr("data-src");
                 let objectTitle = $(this).attr("data-title");
                 let trackId = $(this).attr("data-order-index");
-                let currentSrc = document.getElementById("OngakuPlayer_Audio").src;
+                let currentSrc = document.getElementById(elementId).src;
  
                 if ((objectSrc != undefined) && (currentSrc == objectSrc)) {
-                    let currentTime = document.getElementById("OngakuPlayer_Audio").currentTime;
-                    audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, currentTime, objectTitle, "Track Preview", null);
+                    let currentTime = document.getElementById(elementId).currentTime;
+                    audioPlay(elementId, objectSrc, playlistId, trackId, currentTime, objectTitle, "Track Preview", null);
                 }
-                else audioPlay("OngakuPlayer_Audio", objectSrc, playlistId, trackId, 0, objectTitle, "Track Preview", null);
+                else audioPlay(elementId, objectSrc, playlistId, trackId, 0, objectTitle, "Track Preview", null);
             }
             else {
                 let thisId = $(this).attr("data-id");
@@ -3960,18 +4213,18 @@ $(document).on("mousedown", ".btn-play-pause-track", function () {
                 let currentPlaylistId = $("#OngakuPlayer_PlaylistId_Val").val();
 
                 if (thisId == undefined) {
-                    if (element.paused) audioContinue("OngakuPlayer_Audio", currentTrackId);
-                    else audioPause("OngakuPlayer_Audio");
+                    if (element.paused) audioContinue(elementId, currentTrackId);
+                    else audioPause(elementId);
                 }
                 else {
                     if ((currentTrackId == thisId) && (playlistId == null || currentPlaylistId == playlistId)) {
-                        if (!element.paused) audioPause("OngakuPlayer_Audio");
-                        else audioContinue("OngakuPlayer_Audio", thisId);
+                        if (!element.paused) audioPause(elementId);
+                        else audioContinue(elementId, thisId);
                     }
                     else {
                         trackOrderInQueue = trackQueue.songs.indexOf(parseInt(thisId), 0);
                         trackOrderInQueue = trackOrderInQueue != -1 ? trackOrderInQueue : 0;
-                        audioChange("OngakuPlayer_Audio", playlistId, thisId);
+                        audioChange(elementId, playlistId, thisId);
                     }
                 }
             }
@@ -4025,7 +4278,14 @@ $("audio").on("ended", function () {
         let playlistId = $("#OngakuPlayer_PlaylistId_Val").val();
         let trackId = getTrackFromQueue(trackQueue.songs, trackOrderInQueue, trackQueue.orderChanger, trackQueue.autoPlay);
         if (trackId != null) audioChange("OngakuPlayer_Audio", playlistId, trackId);
-        else audioPause("OngakuPlayer_Audio");
+        else {
+            audioPause("OngakuPlayer_Audio");
+            const playerType = $("#OngakuPlayer_Type_Val").val();
+            if (playerType == 2) {
+                $("#LyricSync_PreviousTimestamp_Val").val(0);
+                callAlert('<i class="fa-regular fa-circle-check"></i>', null, null, "Check lyrics and timings, tap <kbd> <i class='fa-solid fa-check-double'></i> Save</kbd> to confirm. To re-sync lyrics, play from the start or update timings manually", 5.75, "Close", -1, null);
+            }
+        }
     }
 });
 
@@ -5227,6 +5487,172 @@ function checkTheInput(value, minLength, necessaryChars, target) {
     else return false;
 }
 
+function sliderSlideToLeft(currentIndex = 0, nonIdentical_Id_Part) {
+    if (nonIdentical_Id_Part != null || nonIdentical_Id_Part != "") {
+        if (currentIndex > 0) {
+            let prevIndex = currentIndex;
+            currentIndex--;
+
+            $("#" + prevIndex + "-" + nonIdentical_Id_Part).addClass("anime-slide-to-right");
+            setTimeout(function () {
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("to-left");
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("to-right");
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).addClass("anime-slide-from-left-to-mid");
+                $("#" + prevIndex + "-" + nonIdentical_Id_Part).addClass("to-right");
+            }, 400);
+            setTimeout(function () {
+                $("#" + prevIndex + "-" + nonIdentical_Id_Part).removeClass("anime-slide-to-right");
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("anime-slide-from-left-to-mid");
+            }, 800);
+
+            $(".slider-dots").removeClass('active');
+            $(".btn-sliders-slide-to-left").attr("data-index", currentIndex);
+            $(".btn-sliders-slide-to-right").attr("data-index", currentIndex);
+            $("#" + currentIndex + "-TutorialDot_Box").addClass("active");
+        }
+        else {
+            $("#" + currentIndex + "-" + nonIdentical_Id_Part).addClass("anime-empty-slide-to-right");
+            setTimeout(function () {
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("anime-empty-slide-to-right");
+            }, 400);
+        }
+    }
+}
+
+function sliderSlideToRight(slidersClassname, currentIndex, nonIdentical_Id_Part) {
+    if ((slidersClassname != null || slidersClassname != "") && (nonIdentical_Id_Part != null || nonIdentical_Id_Part != "")) {
+        let thisSlidersFamily = document.getElementsByClassName(slidersClassname);
+        if (thisSlidersFamily != null && thisSlidersFamily.length > 0) thisSlidersFamily = thisSlidersFamily.length - 1;
+        else thisSlidersFamily = 0;
+
+        if (currentIndex < thisSlidersFamily) {
+            let prevIndex = currentIndex;
+            currentIndex++;
+
+            $("#" + prevIndex + "-" + nonIdentical_Id_Part).addClass("anime-slide-to-left");
+            setTimeout(function () {
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("to-left");
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("to-right");
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).addClass("anime-slide-from-right-to-mid");
+                $("#" + prevIndex + "-" + nonIdentical_Id_Part).addClass("to-left");
+            }, 400);
+            setTimeout(function () {
+                $("#" + prevIndex + "-" + nonIdentical_Id_Part).removeClass("anime-slide-to-left");
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("anime-slide-from-right-to-mid");
+            }, 800);
+
+            $(".slider-dots").removeClass('active');;
+            $(".btn-sliders-slide-to-left").attr("data-index", currentIndex);
+            $(".btn-sliders-slide-to-right").attr("data-index", currentIndex);
+            $("#" + currentIndex + "-TutorialDot_Box").addClass("active");
+        }
+        else {
+            $("#" + currentIndex + "-" + nonIdentical_Id_Part).addClass("anime-empty-slide-to-left");
+            setTimeout(function () {
+                $("#" + currentIndex + "-" + nonIdentical_Id_Part).removeClass("anime-empty-slide-to-left");
+            }, 400);
+        }
+    }
+}
+
+function createGUID() {
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+    );
+}
+
+//Sync
+function createTutorialContainer(header = null, nonUniqueIdentifierName = null, familyClassname = null, icons = [], htmls = []) {
+    if ((icons != null && icons.length > 0) && (htmls != null && htmls.length > 0)) {
+        let divExists = document.getElementById("Tutorials_Container");
+        familyClassname = familyClassname == null ? createGUID() : familyClassname;
+        nonUniqueIdentifierName = nonUniqueIdentifierName == null ? createGUID() : nonUniqueIdentifierName;
+
+        if (divExists == null) createHeadlessSmContainer("Tutorials", '<div class="div-swiper mx-auto"></div> <div class="box-standard mt-2" id="TutorialSamples_Box"> </div> <div class="box-standard hstack gap-2 text-center mt-2"> <button type="button" class="btn btn-standard btn-sliders-slide-to-left me-2" id="TutorialSample_Box-ToLeft_Btn" data-index="0"> <i class="fa-solid fa-circle-left"></i> </button> <div class="box-standard text-center mx-auto" id="TutorialDots_Box"> </div> <button type="button" class="btn btn-standard btn-sliders-slide-to-right ms-2" id="TutorialSample_Box-ToRight_Btn" data-index="0" data-family="lyrics-sync-tutorials"> <i class="fa-solid fa-circle-right"></i> </button> </div>', false);
+        $("#TutorialDots_Box").empty();
+        $("#TutorialSamples_Box").empty();
+        $(".btn-sliders-slide-to-left").attr("data-index", 0);
+        $(".btn-sliders-slide-to-right").attr("data-index", 0);
+        $("#TutorialSample_Box-ToRight_Btn").attr("data-family", familyClassname);
+
+        for (let i = 0; i < htmls.length; i++) {
+            let dotBox;
+            let mainBox;
+            if (i != 0) {
+                dotBox = elementDesigner("div", "slider-dots", null);
+                mainBox = elementDesigner("div", "box-sm-part-sliding to-right" + familyClassname, null);
+            }
+            else {
+                dotBox = elementDesigner("div", "slider-dots active", null);
+                mainBox = elementDesigner("div", "box-sm-part-sliding " + familyClassname, null);
+            }
+            let stackBox = elementDesigner("div", "box-tutorial row", null);
+            let iconCol = elementDesigner("div", "col col-3", null);
+            let textCol = elementDesigner("div", "col col-9", null);
+            let iconBox = elementDesigner("div", "tutorial-icon", null);
+            let textSpan = elementDesigner("span", "card-text white-space-on", htmls[i]);
+
+            if (icons[i] != null || icons[i] != undefined) iconBox.html(icons[i]);
+            iconCol.append(iconBox);
+            textCol.append(textSpan);
+            stackBox.append(iconCol);
+            stackBox.append(textCol);
+            mainBox.append(stackBox);
+            dotBox.attr("id", i + "-TutorialDot_Box");
+            mainBox.attr("id", i + "-" + nonUniqueIdentifierName);
+
+            $("#TutorialDots_Box").append(dotBox);
+            $("#TutorialSamples_Box").append(mainBox);
+
+            displayCorrector(currentWindowSize, false);
+            setTimeout(function () {
+                callASmContainer(false, "Tutorials_Container");
+            }, 150);
+        }
+    }
+}
+
+$(document).on("mousedown", ".btn-sliders-slide-to-left", function () {
+    let thisId = $(this).attr("id");
+    if (thisId != undefined) {
+        let currentIndex = $(this).attr("data-index");
+        let nonIdenticalPart = getTrueId(thisId, false);
+        if (currentIndex != undefined && nonIdenticalPart != null) sliderSlideToLeft(currentIndex, nonIdenticalPart);
+    }
+});
+$(document).on("mousedown", ".btn-sliders-slide-to-right", function () {
+    let thisId = $(this).attr("id");
+    if (thisId != undefined) {
+        let currentIndex = $(this).attr("data-index");
+        let nonIdenticalPart = getTrueId(thisId, false);
+        let familyClassname = $(this).attr("data-family");
+        if (currentIndex != undefined && nonIdenticalPart != null && familyClassname != undefined) sliderSlideToRight(familyClassname, currentIndex, nonIdenticalPart);
+    }
+});
+
+$(document).on("touchstart", ".box-sm-part-sliding", function (event) {
+    handleTouchStart(event);
+});
+$(document).on("touchmove", ".box-sm-part-sliding", function (event) {
+    let thisId = $(this).attr("id");
+    if (thisId != undefined || thisId != "") {
+        let moveDirection = handleTouchMove(event);
+        let currentIndex = getTrueId(thisId, false);
+        let nonIdenticalPart = getTrueId(thisId, true);
+
+        if (moveDirection === 3) {
+            sliderSlideToRight("lyric-sync-tutorials", currentIndex, nonIdenticalPart);
+            $(".box-sm-part-sliding").removeClass("untouchable");
+        }
+        else if (moveDirection == 2) {
+            sliderSlideToLeft(currentIndex, nonIdenticalPart);
+            $(".box-sm-part-sliding").removeClass("untouchable");
+        }
+        xDown = null;
+        yDown = null;
+    }
+});
+
 function slideSmContainers(closingContainerId, id) {
     if (closingContainerId == null) {
         uncallASmContainer(true, null);
@@ -5258,11 +5684,13 @@ function slideContainers(closingContainerId, id) {
 }
 
 function callASmContainer(callByClassname, id) {
-    let isNowOpen = false;
+    let cardOpened = false;
+    let alertBottom = 0;
     let isPlayerActive = $(".ongaku-player-box").css("bottom");
+    let anySideBar = document.getElementsByClassName("side-navbar");
+
     $(".btn-sticky-at-bottom").css("opacity", 0);
     $(".box-sticky-at-bottom").css("opacity", 0);
-    let anySideBar = document.getElementsByClassName("side-navbar");
 
     if (anySideBar != null && anySideBar.length > 0) {
         $(".box-sm-part-inner").css("left", "6%");
@@ -5273,164 +5701,150 @@ function callASmContainer(callByClassname, id) {
         let elements = document.getElementsByClassName(id);
         if (elements.length > 0) {
             for (let i = 0; i < elements.length; i++) {
-                if ($("#" + elements[i].id).css("display") == "block") {
-                    isNowOpen = true;
+                if ($("#" + elements[i].id).hasClass("active")) {
+                    cardOpened = true;
                     break;
                 }
             }
         }
-        else isNowOpen = false;
+        else cardOpened = false;
     }
     else {
-        if ($("#" + id).css("display") == "block") isNowOpen = true;
-        else isNowOpen = false;
+        if ($("#" + id).hasClass("active")) cardOpened = true;
+        else cardOpened = false;
     }
 
     if (parseInt(currentWindowSize) < 1024) {
-        let alertBottom = bottomNavbarH;
+        alertBottom = bottomNavbarH;
         if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
-        if (callByClassname) {
-            if (isNowOpen) {
-                $(".box-sm-part-inner").fadeIn(0);
+    }
+    else {
+        alertBottom = 10;
+        if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
+    }
+
+    if (callByClassname) {
+        if (cardOpened) {
+            $(".box-sm-part-inner").fadeIn(0);
+            $(".box-sm-part-inner").removeClass("active");
+            $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+            setTimeout(function () {
+                $(".box-sm-part-inner").css("bottom", "-1200px");
+            }, 300);
+            setTimeout(function () {
+                $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+            }, 600);
+            setTimeout(function () {
                 $(".box-sm-part-inner").css("bottom", alertBottom + "px");
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", "-1200px");
-                }, 300);
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom + "px");
-                }, 600);
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom - 50 + "px");
-                }, 900);
-            }
-            else {
-                $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", alertBottom + "px");
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom - 50 + "px");
-                }, 300);
-            }
+            }, 900);
         }
         else {
-            if (isNowOpen) {
-                $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", alertBottom + "px");
-                setTimeout(function () {
-                    $("#" + id).css("bottom", "-1200px");
-                }, 300);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + "px");
-                }, 600);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom - 50 + "px");
-                }, 900);
-            }
-            else {
-                $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", alertBottom + "px");
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom - 50 + "px");
-                }, 300);
-            }
+            $(".box-sm-part-inner").fadeIn(0);
+            $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+            setTimeout(function () {
+                $(".box-sm-part-inner").addClass("active");
+                $(".box-sm-part-inner").css("bottom", alertBottom + "px");
+            }, 300);
         }
     }
     else {
-        let alertBottom = 10;
-        if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
-        if (callByClassname) {
-            if (isNowOpen) {
-                $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", "-1200px");
-                }, 300);
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom + 55 + "px");
-                }, 600);
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom  + "px");
-                }, 900);
-            }
-            else {
-                $(".box-sm-part-inner").fadeIn(0);
-                $(".box-sm-part-inner").css("bottom", alertBottom + 55 + "px");
-                setTimeout(function () {
-                    $(".box-sm-part-inner").css("bottom", alertBottom + "px");
-                }, 300);
-            }
+        if (cardOpened) {
+            $("#" + id).fadeIn(0);
+            $("#" + id).css("bottom", alertBottom + 45 + "px");
+            $(".box-sm-part-inner").removeClass("active");
+            setTimeout(function () {
+                $("#" + id).css("bottom", "-1200px");
+                unpushLastSmContainerFromList(id);
+            }, 300);
+            setTimeout(function () {
+                $("#" + id).css("bottom", alertBottom + 45 + "px");
+            }, 600);
+            setTimeout(function () {
+                pushSmContainerToList(id);
+                $("#" + id).addClass("active");
+                $("#" + id).css("bottom", alertBottom + "px");
+            }, 900);
         }
         else {
-            let alertBottom = 10;
-            if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
-            if (isNowOpen) {
-                $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", alertBottom + 45 + "px");
-                setTimeout(function () {
-                    $("#" + id).css("bottom", "-1200px");
-                }, 300);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + 55 + "px");
-                }, 600);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + "px");
-                }, 900);
-            }
-            else {
-                $("#" + id).fadeIn(0);
-                $("#" + id).css("bottom", alertBottom + 55 + "px");
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + "px");
-                }, 300);
-            }
+            $("#" + id).fadeIn(0);
+            $(".box-sm-part-inner").removeClass("active");
+            $("#" + id).css("bottom", alertBottom + 45 + "px");
+            setTimeout(function () {
+                pushSmContainerToList(id);
+                $("#" + id).addClass("active");
+                $("#" + id).css("bottom", alertBottom + "px");
+            }, 300);
         }
     }
 }
 
 function uncallASmContainer(callByClassname, id) {
+    let alertBottom = 0;
+    let lastSmContainerId = null;
+    let isPlayerActive = $(".ongaku-player-box").css("bottom");
+    if (isPlayerActive != undefined) isPlayerActive = parseInt(isPlayerActive) + parseInt($(".ongaku-player-box").innerHeight());
+    else isPlayerActive = 0;
+
+    if (parseInt(currentWindowSize) < 1024) alertBottom = bottomNavbarH + isPlayerActive;
+    else alertBottom = isPlayerActive;
+
     if (callByClassname) {
-        if (currentWindowSize < 1024) {
-            let alertBottom = bottomNavbarH;
-            $(".box-sm-part-inner").css("bottom", alertBottom + 65 + "px");
-            setTimeout(function () {
-                $(".box-sm-part-inner").css("bottom", "-1200px");
-            }, 300);
-            setTimeout(function () {
-                $(".box-sm-part-inner").fadeOut(0);
-            }, 600);
-        }
-        else {
-            $(".box-sm-part-inner").css("bottom", "50px");
-            setTimeout(function () {
-                $(".box-sm-part-inner").css("bottom", "-1200px");
-            }, 300);
-            setTimeout(function () {
-                $(".box-sm-part-inner").fadeOut(0);
-            }, 600);
-        }
+        $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+        setTimeout(function () {
+            $(".box-sm-part-inner").css("bottom", "-1200px");
+        }, 300);
+        setTimeout(function () {
+            $(".box-sm-part-inner").fadeOut(0);
+            $(".box-sm-part-inner").removeClass("active");
+            $(".box-sm-part-inner").removeClass("backgrounded");
+            lastSmContainerId = getLastOpenedSmContainer();
+            if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
+        }, 600);
     }
     else {
-        if (currentWindowSize < 1024) {
-            let alertBottom = bottomNavbarH;
-            $("#" + id).css("bottom", alertBottom + 65 + "px");
-            setTimeout(function () {
-                $("#" + id).css("bottom", "-1200px");
-            }, 300);
-            setTimeout(function () {
-                $("#" + id).fadeOut(0);
-            }, 600);
-        }
-        else {
-            $("#" + id).css("bottom", "50px");
-            setTimeout(function () {
-                $("#" + id).css("bottom", "-1200px");
-            }, 300);
-            setTimeout(function () {
-                $("#" + id).fadeOut(0);
-            }, 600);
-        }
+        $("#" + id).css("bottom", alertBottom + 45 + "px");
+        setTimeout(function () {
+            $("#" + id).removeClass("active");
+            $("#" + id).removeClass("backgrounded");
+            $("#" + id).css("bottom", "-1200px");
+            unpushLastSmContainerFromList(id);
+        }, 300);
+        setTimeout(function () {
+            $("#" + id).fadeOut(0);
+            lastSmContainerId = getLastOpenedSmContainer();
+            if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
+        }, 600);
     }
     $(".btn-sticky-at-bottom").css("opacity", 1);
     $(".box-sticky-at-bottom").css("opacity", 1);
+}
+
+function getLastOpenedSmContainer() {
+    if (openedSmContainers != null && openedSmContainers.length > 0) return openedSmContainers[openedSmContainers.length - 1];
+    else return null;
+}
+
+function pushSmContainerToList(elementId) {
+    if (elementId != null || elementId != undefined) {
+        if (openedSmContainers.length > 0) {
+            if (openedSmContainers[openedSmContainers.length - 1] != elementId) openedSmContainers.push(elementId);
+        }
+        else openedSmContainers.push(elementId);
+        return openedSmContainers;
+    }
+    else return null;
+}
+
+function unpushLastSmContainerFromList(elementId) {
+    if (elementId != null || elementId != undefined) {
+        let lastElementIndex = openedSmContainers.lastIndexOf(elementId);
+        if (lastElementIndex != -1) {
+            openedSmContainers.splice(lastElementIndex, 1);
+            return openedSmContainers;
+        }
+        else return null;
+    }
+    else return null;
 }
 
 function uncallAContainer(callByClassname, id) {
@@ -5632,16 +6046,18 @@ function callAlert(icon, backgroundColor, foregroundColor, text, duration, butto
         }, 350);
     }
 
-    if (buttonText == null) {
-        $("#OngakuAlert_Btn").fadeOut(300);
-    }
+    if (buttonText == null) $("#OngakuAlert_Btn").fadeOut(300);
     else {
         $("#OngakuAlert_Btn").fadeIn(300);
+        $("#OngakuAlert_Btn").html(buttonText);
     }
 
     switch (parseInt(buttonActionType)) {
         case 0:
             $("#OngakuAlert_Btn").attr("onmousedown", "uncallAlert();");
+            break;
+        case 1:
+            $("#OngakuAlert_Btn").attr("onmousedown", buttonAction);
             break;
         default:
             $("#OngakuAlert_Btn").attr("onmousedown", "uncallAlert();");
@@ -5649,7 +6065,6 @@ function callAlert(icon, backgroundColor, foregroundColor, text, duration, butto
     }
 
     $("#OngakuAlert_Text_Lbl").html(text);
-
     if (duration != Infinity) {
         let widthPercentage = 0;
         let stepIncreaseValue = (100 / duration) / 100;
@@ -5665,11 +6080,7 @@ function callAlert(icon, backgroundColor, foregroundColor, text, duration, butto
             uncallAlert();
         }, duration * 1000);
     }
-    else {
-        $(".ongaku-alert-timer").css("width", 0);
-        $("#OngakuAlert_Btn").fadeIn(300);
-        $("#OngakuAlert_Btn").html("Close");
-    }
+    else $(".ongaku-alert-timer").css("width", 0);
 }
 
 function createHeadlessSmContainer(id, body, openOnCreate = false) {
@@ -5791,11 +6202,88 @@ function audioDuration(element, parseToSeconds = false) {
     else return null;
 }
 
+function audioPlayerTypeSwitch(element, type) {
+    if (element != null) {
+        const audioPlayer = document.getElementById(element);
+        if (audioPlayer != null) {
+            $(".box-audio-player-buttons").fadeOut(300);
+            switch (parseInt(type)) {
+                //Regular buttons
+                case 0:
+                    $(".ongaku-player-album-box").html(' <i class="fa-solid fa-music"></i> ');
+                    setTimeout(function () {
+                        $("#" + element + "_StandardTrackButtons_Box").fadeIn(300);
+                    }, 300);
+                    break;
+                    //Lyric Sync buttons
+                case 2:
+                    $(".ongaku-player-album-box").html(' <i class="fa-solid fa-arrows-rotate"></i> ');
+                    setTimeout(function () {
+                        $("#" + element + "_LyricSyncButtons_Box").fadeIn(300);
+                    }, 300);
+                    break;
+                default:
+                    $(".ongaku-player-album-box").html(' <i class="fa-solid fa-music"></i> ');
+                    setTimeout(function () {
+                        $("#" + element + "_StandardTrackButtons_Box").fadeIn(300);
+                    }, 300);
+                    break;
+            }
+        }
+    }
+}
+
+//for preloading the track without playing (Just UI)
+function audioPrepare(element, streamUrl, coverImgSrc = null, title = null, mainArtist = null, featuringArtists = []) {
+    if (element != null || element != undefined) {
+        const audioPlayer = document.getElementById(element);
+        if (audioPlayer != null) {
+            let allArtists;
+            buttonDisabler(true, "btn-play-pause-track-lg", "Loading...");
+
+            audioPlayer.src = streamUrl;//Polish the UI (hide or disable other player buttons and etc.);
+            if (title != null || title != undefined) $(".ongaku-track-name-lbl").html(title);
+            if (mainArtist != null) allArtists = mainArtist;
+            else allArtists = "Track Preview";
+            if (featuringArtists != null && featuringArtists.length > 0) {
+                for (let i = 0; i < featuringArtists.length; i++) {
+                    if (i == 0) mainArtist += " feat. " + featuringArtists[i];
+                    else mainArtist += ", " + featuringArtists[i];
+                }
+            }
+
+            if (allArtists != null) $(".ongaku-artist-name-lbl").html(allArtists);
+            $(".ongaku-track-current-duration-line").css("width", 0);
+            $(".ongaku-track-duration-left").text(audioPlayer.duration);
+            $(".ongaku-track-name-lbl").removeClass("super-disabled");
+
+            if (coverImgSrc != null) {
+                $(".ongaku-player-album-img").attr("src", coverImgSrc);
+                $(".ongaku-player-album-img-enlarged").attr("src", coverImgSrc);
+                $(".ongaku-player-album-img").fadeIn(0);
+                $(".ongaku-player-album-img-enlarged").fadeIn(0);
+                $(".ongaku-player-album-box").fadeOut(0);
+                $(".ongaku-player-album-box-enlarged").fadeOut(0);
+            }
+            else {
+                $(".ongaku-player-album-img").attr("src", "#");
+                $(".ongaku-player-album-img-enlarged").attr("src", "#");
+                $(".ongaku-player-album-img").fadeOut(0);
+                $(".ongaku-player-album-img-enlarged").fadeOut(0);
+                $(".ongaku-player-album-box").fadeIn(0);
+                $(".ongaku-player-album-box-enlarged").fadeIn(0);
+            }
+        }
+    } 
+}
+
+//only for regular playlists, albums (song playling)
 function audioChange(element, playlistId, trackId, addToQueue = false) {
     if (element != null || element != undefined) {
         let audioPlayer = document.getElementById(element);
         if (audioPlayer != null) {
             buttonDisabler(true, "btn-play-pause-track-lg", "Loading...");
+            $("#OngakuPlayer_Type_Val").val(0);
             $("#OngakuPlayer_TrackId_Val").val(trackId);
             $("#OngakuPlayer_PlaylistId_Val").val(playlistId);
             $("#LoadTheTrack_Form").submit();
@@ -5805,7 +6293,7 @@ function audioChange(element, playlistId, trackId, addToQueue = false) {
                 if (trackQueue.autoPlay) trackId = 1;
                 else trackId = 0;
             }
-            audioEdit("OngakuPlayer_Audio", null, null, trackId, null);
+            audioEdit(element, null, null, trackId, null);
         }
     }
 }
@@ -5856,6 +6344,7 @@ function audioPlay(element, coverImgSrc = null, fileSrc, playlistId, trackId, st
             $(".ongaku-player-album-box-enlarged").fadeOut(0);
         }
         else {
+            $(".ongaku-player-album-box").html(' <i class="fa-solid fa-music"></i> ');
             $(".ongaku-player-album-img").attr("src", "#");
             $(".ongaku-player-album-img-enlarged").attr("src", "#");
             $(".ongaku-player-album-img").fadeOut(0);
@@ -7452,7 +7941,7 @@ function uncallAProposal() {
 }
 
 function callAProposal(icon, header, description, positiveButtonHtml, positiveButtonClasses = [], positiveButtonAttributes = [], positiveButtonAttributeValues = [], isPositiveButtonForm = false, positiveButtonFormHtml = null, timeroutDurationInSec = 30) {
-    createHeadlessSmContainer("Proposal", '<div class="box-standard p-2" id="Proposal_Box"> <div class="box-standard text-center p-1"> <h2 class="h2" id="Proposal_Icon_Lbl"> <i class="fa-solid fa-question"></i> </h2> <h4 class="h4" id="Proposal_Header_Lbl">Proposal Header</h4> <small class="card-text text-muted white-space-on" id="Proposal_Description_Span">Proposal description (short)</small> </div> <div class="row mt-3"> <div class="col" id="ProposalSubmit_Box"> <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-proposal-submit w-100" id="ProposalSubmit_Btn">Submit</button> <div class="box-standard" id="ProposalForForms_Box" style="display: none;"></div> </div> <div class="col" id="ProposalCancel_Box"> <button type="button" class="btn btn-standard-bolded btn-close-sm-part-container bg-chosen-bright w-100" id="Proposal_Container-BtnClose"> <i class="fa-regular fa-circle-xmark"></i> Cancel</button> </div> </div> <div class="box-bordered text-center mt-2 p-2"> <span class="h6">Time Left</span> <br /> <small class="card-text text-muted" id="Proposal_Timer_Span">00:30</small> </div> </div>', false);
+    createHeadlessSmContainer("Proposal", '<div class="box-standard p-2" id="Proposal_Box"> <div class="box-standard text-center p-1"> <h2 class="h2" id="Proposal_Icon_Lbl"> <i class="fa-solid fa-question"></i> </h2> <h4 class="h4" id="Proposal_Header_Lbl">Proposal Header</h4> <small class="card-text text-muted white-space-on" id="Proposal_Description_Span">Proposal description (short)</small> </div> <div class="row mt-3"> <div class="col" id="ProposalSubmit_Box"> <button type="button" class="btn btn-standard-bolded btn-classic-styled btn-proposal-submit w-100" id="ProposalSubmit_Btn">Submit</button> <div class="box-standard" id="ProposalForForms_Box" style="display: none;"></div> </div> <div class="col" id="ProposalCancel_Box"> <button type="button" class="btn btn-standard-bolded btn-close-sm-container bg-chosen-bright w-100" id="Proposal_Container-BtnClose"> <i class="fa-regular fa-circle-xmark"></i> Cancel</button> </div> </div> <div class="box-bordered text-center mt-2 p-2"> <span class="h6">Time Left</span> <br /> <small class="card-text text-muted" id="Proposal_Timer_Span">00:30</small> </div> </div>', false);
     if (icon != null || icon != undefined) $("#Proposal_Icon_Lbl").html(icon);
     else $("#Proposal_Icon_Lbl").html(' <i class="fa-solid fa-question"></i> ');
     if (header != null || header != undefined) $("#Proposal_Header_Lbl").html(header);
@@ -7806,9 +8295,9 @@ function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = tru
 function hideBySlidingToLeft(byClassname = false, openingElement, targetElementId) {
     if (targetElementId != null) {
         if (byClassname) {
-            $("." + targetElementId).css("margin-left", "15%");
+            $("." + targetElementId).css("transform", "translateX(15%)");
             setTimeout(function () {
-                $("." + targetElementId).css("margin-left", "-1200px");               
+                $("." + targetElementId).css("transform", "translateX(-1200px)");
             }, 350);
             setTimeout(function () {
                 if (openingElement != null || openingElement != undefined) $("." + openingElement).fadeIn(300);
@@ -7816,9 +8305,9 @@ function hideBySlidingToLeft(byClassname = false, openingElement, targetElementI
             }, 700);
         }
         else {
-            $("#" + targetElementId).css("margin-left", "15%");
+            $("#" + targetElementId).css("transform", "translateX(15%)");
             setTimeout(function () {
-                $("#" + targetElementId).css("margin-left", "-1200px");
+                $("#" + targetElementId).css("transform", "translateX(-1200px)");
             }, 350);
             setTimeout(function () {
                 if (openingElement != null || openingElement != undefined) $("#" + openingElement).fadeIn(300);

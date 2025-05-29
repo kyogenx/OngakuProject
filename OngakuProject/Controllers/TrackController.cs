@@ -161,7 +161,7 @@ namespace OngakuProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Load(int Id, int PlaylistId)
+        public async Task<IActionResult> Load(int Id, int PlaylistId, byte Type = 0)
         {
             int UserId = 0;
             if (User.Identity.IsAuthenticated)
@@ -169,11 +169,12 @@ namespace OngakuProject.Controllers
                 string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 UserId = _profile.ParseCurrentUserId(UserId_Str);
             }
-            Track? TrackResult = await _track.LoadTheTrackAsync(Id, PlaylistId, UserId);
+
+            Track? TrackResult = Type == 0 ? await _track.LoadTheTrackAsync(Id, PlaylistId, UserId) : await _track.LoadTheTrackAsync(Id, PlaylistId);
             if (TrackResult is not null)
             {
-                await _trackAnalytic.AddTrackListenQueueAsync(UserId, Id);
-                return Json(new { success = true, playlistId = PlaylistId, result = TrackResult });
+                if(Type == 0) await _trackAnalytic.AddTrackListenQueueAsync(UserId, Id);
+                return Json(new { success = true, type = Type, playlistId = PlaylistId, result = TrackResult });
             }
             else return Json(new { success = false });
         }
@@ -209,7 +210,7 @@ namespace OngakuProject.Controllers
         {
             Lyrics? Result = await _track.GetLyricsAsync(Id);
             if (Result is not null) return Json(new { success = true, type = Type, id = Id, result = Result });
-            else return Json(new { success = false, id = Id, type = Type });
+            return Json(new { success = false, id = Id, type = Type });
         }
     }
 }

@@ -32,6 +32,7 @@ builder.Services.AddTransient<IUser, UserRep>();
 builder.Services.AddTransient<IProfile, ProfileRep>();
 builder.Services.AddTransient<IArtistInfo, ArtistInfoRep>();
 builder.Services.AddTransient<ITrack, TrackRep>();
+builder.Services.AddTransient<ILyric, LyricRep>();
 builder.Services.AddTransient<IPlaylist, PlaylistRep>();
 builder.Services.AddTransient<ISubscribtion, SubscribtionRep>();
 builder.Services.AddTransient<ICountry, CountryRep>();

@@ -338,6 +338,12 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
+        public async Task<string?> GetTrackAudioUrlAsync(int Id)
+        {
+            if (Id > 0) return await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => t.TrackFileUrl).FirstOrDefaultAsync();
+            else return null;
+        }
+
         public async Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId, int UserId = 0)
         {
             if (Id > 0)
@@ -408,7 +414,7 @@ namespace OngakuProject.Repositories
 
         public async Task<Lyrics?> GetLyricsAsync(int Id)
         {
-            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).Select(t => new Lyrics { Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).Select(t => new Lyrics { Id = t.Id, Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
             else return null;
         }
 
