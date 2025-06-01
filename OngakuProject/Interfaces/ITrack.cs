@@ -27,7 +27,6 @@ namespace OngakuProject.Interfaces
         public Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId, int UserId = 0);
         public Task<Track?> GetTrackInfoAsync(int Id, int UserId = 0, bool IsForAuthor = false);
         public Task<TrackCredit?> GetCreditsAsync(int Id);
-        public Task<Lyrics?> GetLyricsAsync(int Id);
         public IQueryable<Track>? GetStudioItems(int Id, bool IsForAuthor = false);
         public ValidationResult? CreditValidation(string? Value, ValidationContext Context);
     }

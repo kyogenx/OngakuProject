@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OngakuProject.Models
 {
@@ -6,6 +7,8 @@ namespace OngakuProject.Models
     {
         public string? Content { get; set; }
         public string? Hints { get; set; }
+        [MaxLength(45)]
+        public string? SyncedLyricsId { get; set; }
         [ForeignKey("Track")]
         public int? TrackId { get; set; }
         [ForeignKey("Language")]

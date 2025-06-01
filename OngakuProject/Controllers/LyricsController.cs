@@ -28,9 +28,26 @@ namespace OngakuProject.Controllers
                     string? Result = await _lyric.AddLyricSyncAsync(Model);
                     if (Result is not null) return Json(new { success = true });
                 }
-                else return Json(new { success = false, error = 0 });
+                return Json(new { success = false, error = 0 });
             }
-            return Json(new { success = false, error = -1 });
+            else return Json(new { success = false, error = -1 });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Resync(LyricSync_VM Model)
+        {
+            if(User.Identity.IsAuthenticated)
+            {
+                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.UserId = _profile.ParseCurrentUserId(UserId_Str);
+                if (ModelState.IsValid)
+                {
+                    string? Result = await _lyric.EditLyricSyncAsync(Model);
+                    if (Result is not null) return Json(new { success = true, id = Result });
+                }
+                return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
         }
     }
 }

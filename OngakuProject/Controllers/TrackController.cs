@@ -13,15 +13,17 @@ namespace OngakuProject.Controllers
     {
         private readonly Context _context;
         private readonly ITrack _track;
+        private readonly ILyric _lyric;
         private readonly IProfile _profile;
         private readonly IGenre _genre;
         private readonly ITrackAnalytic _trackAnalytic;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public TrackController(Context context, ITrack track, IProfile profile, IGenre genre, ITrackAnalytic trackAnalytic, IWebHostEnvironment webHostEnvironment)
+        public TrackController(Context context, ITrack track, ILyric lyric, IProfile profile, IGenre genre, ITrackAnalytic trackAnalytic, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _track = track;
+            _lyric = lyric;
             _profile = profile;
             _genre = genre;
             _trackAnalytic = trackAnalytic;
@@ -208,8 +210,16 @@ namespace OngakuProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetLyrics(int Id, byte Type)
         {
-            Lyrics? Result = await _track.GetLyricsAsync(Id);
-            if (Result is not null) return Json(new { success = true, type = Type, id = Id, result = Result });
+            Lyrics? Result = await _lyric.GetLyricsAsync(Id);
+            if (Result is not null)
+            {
+                if(Result.SyncedLyricsId is not null)
+                {
+                    TrackRaven? SyncedLyrics = await _lyric.GetSyncedLyricsAsync(Result.SyncedLyricsId);
+                    if(SyncedLyrics is not null) return Json(new { success = true, type = Type, id = Id, result = Result, syncedLyrics = SyncedLyrics });
+                }
+                return Json(new { success = true, type = Type, id = Id, result = Result });
+            }
             return Json(new { success = false, id = Id, type = Type });
         }
     }

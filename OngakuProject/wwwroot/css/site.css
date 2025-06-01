@@ -5,7 +5,7 @@ html {
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
-
+/*.active lyric-*/
 html {
   position: relative;
   min-height: 100%;
@@ -123,7 +123,7 @@ body {
     font-family: 'Trebuchet MS';
     color: #666666;
     font-size: 1.5rem;
-    line-height: 1.75;
+    line-height: 1.8;
     white-space: pre-line;
     transition: all ease 0.24s;
 }
@@ -137,6 +137,7 @@ body {
 .lyric-text-active {
     opacity: 1;
     color: #2b2b2b;
+    font-size: 1.75rem;
     transition: all ease 0.24s;
 }
 
@@ -214,7 +215,9 @@ body {
     width: 0px;
     background: transparent;
 }
+
 .box-lg-part {
+    padding: 0;
     z-index: 9000;
     width: 63%;
     max-height: 85%;
@@ -222,7 +225,7 @@ body {
     border-radius: 10px 10px 1px 1px;
     border-top: 1px solid #f0f0f0;
     border-right: 1px solid #f0f0f0;
-    background-color: white;
+    background-color: black;
     overflow-y: auto;
     overflow-x: hidden;
     bottom: -1200px;
@@ -247,7 +250,7 @@ body {
 }
 
 .box-sm-part-inner {
-    z-index: 9000;
+    z-index: 9500;
     width: 37%;
     min-height: 250px;
     left: 0;
@@ -260,6 +263,7 @@ body {
     border: 1px solid #f0f0f0;
     position: fixed;
     display: none;
+    pointer-events: auto;
     transform: translateY(15px) scale(0.975);
     transition: all ease 0.3s;
 }
@@ -267,9 +271,14 @@ body {
 .box-sm-part-inner.active {
   opacity: 1;
   filter: none;
-  z-index: 10000;
+  z-index: 9500;
+  pointer-events: auto;
   backdrop-filter: blur(8px);
   transform: translateY(0) scale(1);
+}
+.box-sm-part-inner.passive {
+    z-index: 9000;
+    pointer-events: none;
 }
 
 .box-sm-part-header {
@@ -327,6 +336,57 @@ body {
 }
 .slider-dots.active {
     background-color: #e0e0e0;
+}
+
+.slider-dots-lg {
+    width: 10px;
+    height: 10px;
+    margin: 0 2px 0 2px;
+    border-radius: 99px;
+    background-color: #f0f0f0;
+    display: inline-block;
+    transition: all ease 0.3s;
+}
+.slider-dots-lg.active{
+    background-color: #e0e0e0;
+}
+
+.box-card-manager {
+    z-index: 0;
+    padding: 2px 10px 2px 10px;
+    height: auto;
+    border: none;
+    text-align: center;
+    border-radius: 10px;
+    background-color: transparent;
+    left: 0;
+    width: 37%;
+    bottom: -1200px;
+    position: fixed;
+    display: none;
+    transition: all ease 0.24s;
+}
+.box-card-manager.active {
+    z-index: 9500;
+    display: block;
+}
+
+.box-listed {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding: 6px;
+    color: #2b2b2b;
+    cursor: pointer;
+    border-radius: 10px 10px 0 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: transparent;
+    transition: all ease 0.3s;
+}
+.box-listed:hover,
+.box-listed:active {
+    border-radius: 10px;
+    background-color: #f8f9fa;
 }
 
 .box-tutorial {
@@ -403,6 +463,12 @@ body {
 .div-swiper:hover,
 .div-swiper:active {
     background-color: #e0e0e0 ;
+}
+
+.div-swiper-sm {
+    margin-top: 6px;
+    height: 4px;
+    width: 35%;
 }
 
 .div-vertical-swiper {
@@ -613,7 +679,7 @@ body {
 }
 
 .ongaku-player-box {
-    z-index: 9500;
+    z-index: 10000;
     height: auto;
     border: 1px solid #f0f0f0;
     min-height: 75px;
@@ -2017,6 +2083,19 @@ body {
     background-color: #f0f0f0;
 }
 
+.box-mark-for-editing {
+    transition: all ease 0.24s;
+    transform: translateY(-3px) scale(1.01);
+    backdrop-filter: blur(6px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.box-mark-for-editing:hover,
+.box-mark-for-editing:active {
+    backdrop-filter: none;
+    transform: none;
+    box-shadow: none;
+}
+
 .bottom-element {
     margin-top: auto;
 }
@@ -2200,6 +2279,60 @@ body {
 }
 .anime-empty-slide-to-right {
     animation: empty-slide-to-right 0.4s ease forwards;
+}
+
+.anime-keeps-going-on-shift {
+    animation: keeps-going-shift 0.75s ease forwards;
+}
+.anime-border-para-glow {
+    border: 1px solid transparent;
+    animation: border-glow-shift 1.75s ease forwards;
+}
+
+@keyframes border-glow-shift {
+    0% {
+        border-color: transparent;
+        box-shadow: 0 -2px 10px rgba(0, 94, 255, 0.6);
+    }
+    25% {
+        border-color: transparent;
+        box-shadow: 2px 0 10px rgba(0, 94, 255, 0.6);
+    }
+    50% {
+        border-color: transparent;
+        box-shadow: 0 2px 10px rgba(0, 94, 255, 0.6);
+    }
+    75% {
+        border-color: transparent;
+        box-shadow: -2px 0 10px rgba(0, 94, 255, 0.6);
+    }
+    100% {
+        border-color: transparent;
+        box-shadow: 0 -2px 10px rgba(0, 94, 255, 0.6);
+    }
+}
+
+@keyframes keeps-going-shift {
+    0% {
+        visibility: hidden;
+        transform: translateX(0);
+    }
+    25% {
+        visibility: hidden;
+        transform: translateX(-40px);
+    }
+    50% {
+        visibility: visible;
+        transform: translateX(15px);
+    }
+    75% {
+        visibility: visible;
+        transform: translateX(-7.5px);
+    }
+    100% {
+        visibility: visible;
+        transform: translateX(0);
+    }
 }
 
 @keyframes scale-down-shift {

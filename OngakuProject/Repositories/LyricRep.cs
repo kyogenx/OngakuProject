@@ -50,6 +50,7 @@ namespace OngakuProject.Repositories
                     {
                         await _session.StoreAsync(trackRavenSample);
                         await _session.SaveChangesAsync();
+                        await _context.Lyrics.AsNoTracking().Where(t => t.Id == Model.LyricsId).ExecuteUpdateAsync(l => l.SetProperty(l => l.SyncedLyricsId, trackRavenSample.Id));
 
                         return trackRavenSample.Id;
                     }
@@ -81,14 +82,63 @@ namespace OngakuProject.Repositories
             return null;
         }
 
-        public Task<string?> EditLyricSyncAsync(LyricSync_VM Model)
+        public async Task<string?> EditLyricSyncAsync(LyricSync_VM Model)
         {
-            throw new NotImplementedException();
+            if(Model.Id is not null && Model.TrackId > 0)
+            {
+                bool CheckTrackOwnership = await _context.Tracks.AsNoTracking().AnyAsync(t => t.Id == Model.TrackId && t.UserId == Model.UserId && !t.IsDeleted);
+                if(CheckTrackOwnership)
+                {
+                    using (IAsyncDocumentSession _session = DocumentStoreHolder.Store.OpenAsyncSession())
+                    {
+                        TrackRaven? RavenSample = await _session.LoadAsync<TrackRaven>(Model.Id);
+                        if(RavenSample is not null)
+                        {
+                            List<LyricSync>? SyncedLyricsList = new List<LyricSync>();
+                            if (Model.Timestamps != null && Model.Lines != null)
+                            {
+                                for (int i = 0; i < Model.Timestamps.Length; i++)
+                                {
+                                    if (Model.Lines[i] != null)
+                                    {
+                                        LyricSync lyricSyncSample = new LyricSync()
+                                        {
+                                            WordLineContent = Model.Lines[i],
+                                            TimestampSec = Model.Timestamps[i]
+                                        };
+                                        SyncedLyricsList.Add(lyricSyncSample);
+                                    }
+                                }
+                            }
+
+                            RavenSample.SyncedLyrics = SyncedLyricsList;
+                            await _session.SaveChangesAsync();
+
+                            return RavenSample.Id;
+                        }
+                    } 
+                }
+            }
+            return null;
         }
 
-        public Task<TrackRaven>? GetSyncedLyricsAsync(string? Id)
+        public async Task<Lyrics?> GetLyricsAsync(int Id)
         {
-            throw new NotImplementedException();
+            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).Select(t => new Lyrics { Id = t.Id, SyncedLyricsId = t.SyncedLyricsId, Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
+            else return null;
+        }
+
+        public async Task<TrackRaven?> GetSyncedLyricsAsync(string? Id)
+        {
+            if (Id is not null)
+            {
+                using (IAsyncDocumentSession _session = DocumentStoreHolder.Store.OpenAsyncSession())
+                {
+                    TrackRaven? Result = await _session.LoadAsync<TrackRaven>(Id);
+                    if (Result is not null) return Result;
+                }
+            }
+            return null;
         }
     }
 }

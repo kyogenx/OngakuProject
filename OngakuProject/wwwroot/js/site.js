@@ -3,6 +3,8 @@ let currentPageUrl;
 let bottomNavbarH = 0;
 let intervalValue;
 let timeoutValue;
+let resizeTimeout;
+let playerPosition = 0;
 let sentRequest = null;
 let openedContainers = [];
 let openedSmContainers = [];
@@ -20,25 +22,23 @@ let reserveQueue = [];
 //SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form LoadTheTrack_Form GetPlaylists
 //FUNCTION TERRITORY playlistInfoSampler();
 
+//function callASmContainer(); function displayCorrector
 window.onload = function () {
-    displayCorrector(currentWindowSize, true);
-    $(".ongaku-alert").fadeOut(0);
-    $(".box-lg-part").fadeOut(0);
-    $(".box-sm-part-inner").fadeOut(0);
+    displayCorrector(currentWindowSize);
+    bottomNavbarH = $(".bottom-navbar").innerHeight();
+    callPlayerBox(true, "ongaku-player-box");
     setTimeout(function () {
-        bottomNavbarH = $(".bottom-navbar").innerHeight();
         callAContainer(false, "Primary_Container");
-        callTheMusicIsland(currentWindowSize);
-    }, 350);
+    }, 700);
     currentPageUrl = window.location.href;
 }
 
 window.onresize = function () {
     currentWindowSize = window.innerWidth;
-    displayCorrector(currentWindowSize, false);
+    displayCorrector(currentWindowSize);
+    bottomNavbarH = $(".bottom-navbar").innerHeight();
     setTimeout(function () {
-        bottomNavbarH = $(".bottom-navbar").innerHeight();
-        callTheMusicIsland(currentWindowSize);
+        lgPartContainerCorrector(currentWindowSize, playerPosition);
     }, 350);
 }
 
@@ -1257,6 +1257,7 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
             setTimeout(function () {
                 slideContainers(null, "EditTrackLyrics_Container");
             }, 150);
+            uncallASmContainer(false, "StudioMusic_Container");
         }
         if (response.success) {
             if (response.type == 0) {
@@ -1314,6 +1315,7 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
                     $("#OngakuPlayer_TrackId_Val").val(response.id);
                     $("#LyricSync_TrackId_Val").val(response.id);
                     $("#LyricSync_LyricsId_Val").val(response.result.id);
+                    $("#LyricSync_Lyrics_Val").val(response.result.content);
                     $("#OngakuPlayer_Type_Val").val(2);
                     $("#LoadTheTrack_Form").submit();
                 }
@@ -1321,10 +1323,11 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
         }
         else {
             if (response.type == 0) {
-                callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;"></i>', null, null, "This track has no lyrics... yet", 3.25, "Close", -1, null);
                 buttonUnchooser(true, "btn-ongaku-player-additional");
-                buttonDisabler(false, "GetTrackLyrics_SbmtBtn", baseHtml);           
+                buttonDisabler(false, "GetTrackLyrics_SbmtBtn", baseHtml);
+                callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;"></i>', null, null, "This track has no lyrics... yet", 3.25, "Close", -1, null);
             }
+            else buttonDisabler(false, "TimeSyncLyrics_Btn", null);
         }
     });
 });
@@ -1350,51 +1353,73 @@ $(document).on("submit", "#LyricSync_Form", function (event) {
     });
 });
 
-$(document).on("mousedown", ".btn-sync-lyrics", function () {
-    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+let g_EditingRowIndex = 0; //LyricSync_EditingRowIndex_Val
+let g_RowsCounter = 0; //LyricSync_RowsCounter_Val
+let g_CurrentRowIndex = 0; //LyricSync_CurrentRowIndex_Val
+let g_CurrentTimestamp = 0; //LyricSync_CurrentTimestamp_Val
+let g_PreviousTimestamp = 0; //LyricSync_PreviousTimestamp_Val
+let g_LastUndoTimestamp = 0; //LyricSync_LastUndoTimestamp_Val
+let g_LyricLinedCounter = 0; //LyricSync_LyricLinesCounter_Val
+let g_InstrumentalBreaksCounter = 0; //LyricSync_InstrumentalBreaksCounter_Val
+
+function submitLyricSync(audioPlayer, isForInstrumentalBreak = false, currentTime) {
     if (audioPlayer != null) {
-        if (audioPlayer.paused) callAlert(' <i class="fa-solid fa-forward-fast"></i> ', null, null, "Lyrics can only be synced while the track is playing", 3.5, "Got It", -1, null);
+        if (audioPlayer.paused) {
+            if (!isForInstrumentalBreak) callAlert(' <i class="fa-solid fa-forward-fast anime-keeps-going-on-shift"></i> ', null, null, "Lyrics can only be synced while the track is playing", 3.75, "Got It", -1, null);
+            else callAlert(' <i class="fa-solid fa-forward-fast anime-keeps-going-on-shift"></i> ', null, null, "Instrumental breaks can only be applied while the track keeps going", 3.75, "Got It", -1, null);
+        }
         else {
-            let baseHtml = $("#LyricSync_SbmtBtn").html();
-            let currentTimestamp = audioPlayer.currentTime;
-            let previousTimestamp = $("#LyricSync_PreviousTimestamp_Val").val();
-            if (previousTimestamp == 0) {
+            let baseHtml;
+            let currentRowLyrics = null;
+
+            if (!isForInstrumentalBreak) {
+                g_LyricLinedCounter++;
+                baseHtml = ' <i class="fa-solid fa-arrows-rotate"></i> ';
+                buttonDisabler(true, "btn-sync-lyrics", ' <i class="fa-solid fa-arrows-rotate anime-sync-shift"></i> ');
+                currentRowLyrics = $("#" + g_CurrentRowIndex + "-LyricSyncRow_Span").html();
+            }
+            else {
+                g_InstrumentalBreaksCounter++;
+                baseHtml = ' <i class="fa-solid fa-guitar"></i> ';
+                buttonDisabler(true, "btn-sync-instrumental-break", ' <i class="fa-solid fa-circle-notch anime-sync-shift"></i> ');
+            }
+
+            if (g_PreviousTimestamp == 0) {
                 $(".lyric-sync-row").remove();
                 $("#LyricSync_Timestamps_Box").empty();
                 $("#LyricSync_CurrentRowIndex_Val").val(0);
                 $("#LyricSync_CurrentTimestamp_Val").val(0);
             }
-            buttonDisabler(false, "LyricSync_SbmtBtn", null);
-            buttonDisabler(true, "btn-un-undo-last-sync", null);
-            $("#LyricSync_SbmtBtn").html(' <i class="fa-solid fa-arrows-rotate anime-sync-shift"></i> Line Added');
-            //callASmContainer()
 
-            let thisRowIndex = $("#LyricSync_CurrentRowIndex_Val").val();
-            let currentRowLyrics = $("#" + thisRowIndex + "-LyricSyncRow_Span").html();
-            currentTimestamp = secondsToRegularDuration(currentTimestamp);
-            previousTimestamp = secondsToRegularDuration(previousTimestamp);
-            let currentTimestampToParce = currentTimestamp;
-            currentTimestamp = currentTimestamp == null ? "00:00" : currentTimestamp[0] + ":" + currentTimestamp[1];
-            previousTimestamp = previousTimestamp == null ? "00:00" : previousTimestamp[0] + ":" + previousTimestamp[1];
+            let currentTimestampToParce = currentTime;
+            currentTime = secondsToRegularDuration(currentTime);
+            g_PreviousTimestamp = secondsToRegularDuration(g_PreviousTimestamp);
+            currentTime = currentTime == null ? "00:00" : currentTime[0] + ":" + currentTime[1];
+            g_PreviousTimestamp = g_PreviousTimestamp == null ? "00:00" : g_PreviousTimestamp[0] + ":" + g_PreviousTimestamp[1];
 
-            let doesThisRowAlreadyExists = document.getElementById(thisRowIndex + "-LyricSyncRow_Box");
+            let doesThisRowAlreadyExists = document.getElementById(g_RowsCounter + "-LyricSyncRow_Box");
             let mainRow = elementDesigner("div", "row lyric-sync-row", null);
             let rowIndexCol = elementDesigner("div", "col col-1 regular-start-table-cell text-center", null);
             let timestampCol = elementDesigner("div", "col col-3 regular-mid-table-cell text-center", null);
             let lyricShortInfoCol = elementDesigner("div", "col col-6 regular-end-table-cell text-center", null);
             let actionBtnsCol = elementDesigner("div", "col col-2 regular-end-table-cell text-center", null);
-            let lineIndexInput = $("<input type='hidden' name='Lines' />");
-            let timestampInput = $("<input type='hidden' name='Timestamps' />");
+            let lineIndexInput = $("<input type='hidden' class='lyric-sync-lines' name='Lines' />");
+            let timestampInput = $("<input type='hidden' class='lyric-sync-timestamps' name='Timestamps' />");
 
-            mainRow.attr("id", thisRowIndex + "-LyricSyncRow_Box");
-            lineIndexInput.attr("id", thisRowIndex + "-LyricSync_LineIndex_Val");
-            timestampInput.attr("id", thisRowIndex + "-LyricSync_Timestamp_Val");
+            mainRow.attr("id", g_RowsCounter + "-LyricSyncRow_Box");
+            lineIndexInput.attr("id", g_RowsCounter + "-LyricSync_LineIndex_Val");
+            timestampInput.attr("id", g_RowsCounter + "-LyricSync_Timestamp_Val");
+            if (!isForInstrumentalBreak) lineIndexInput.val(g_CurrentRowIndex);
+            else lineIndexInput.val(-256);
+            timestampInput.val(currentTimestampToParce);
 
-            let rowIndexSpan = elementDesigner("span", "console-log-text", ++thisRowIndex);
-            let timestampSpan = elementDesigner("span", "console-log-text text-muted", previousTimestamp + " to " + currentTimestamp);
-            let lyricShortInfoSpan = elementDesigner("span", "console-log-text", currentRowLyrics);
+            let rowIndexSpan = isForInstrumentalBreak == false ? elementDesigner("span", "console-log-text", g_LyricLinedCounter) : elementDesigner("span", "console-log-text", ' <i class="fa-solid fa-music"></i> ');
+            let timestampSpan = elementDesigner("span", "console-log-text text-muted", g_PreviousTimestamp + " to " + currentTime);
+            let lyricShortInfoSpan = isForInstrumentalBreak == false ? elementDesigner("span", "console-log-text", currentRowLyrics) : elementDesigner("span", "console-log-text", " <i class='fa-solid fa-ellipsis fa-fade'></i> Instrumental Break");
             let rewindBtn = elementDesigner("button", "btn btn-cybepunked btn-lyric-sync-rewind btn-sm me-2", ' <i class="fa-solid fa-clock-rotate-left"></i> ');
             let undoBtn = elementDesigner("button", "btn btn-cybepunked btn-lyric-sync-undo btn-sm text-danger", ' <i class="fa-solid fa-xmark"></i> ');
+
+            timestampSpan.attr("id", g_RowsCounter + "-LyricSync_ElementTimestamp_Span");
 
             rowIndexCol.append(rowIndexSpan);
             timestampCol.append(timestampSpan);
@@ -1406,90 +1431,307 @@ $(document).on("mousedown", ".btn-sync-lyrics", function () {
             mainRow.append(timestampCol);
             mainRow.append(lyricShortInfoCol);
             mainRow.append(actionBtnsCol);
-
+      
+            buttonUndisabler(true, "btn-undo-last-sync", null);
+            buttonUndisabler(true, "btn-undo-total-prepare", null);
+            $(".btn-undo-last-sync").attr("data-last-sync-index", g_RowsCounter);
             if (doesThisRowAlreadyExists != null) {
-                let rewindingRowIndex = thisRowIndex - 1;
-                buttonUndisabler(true, "btn-un-undo-last-sync", null);
+                let rewindingRowIndex = g_RowsCounter - 1;
+                buttonDisabler(true, "btn-un-undo-last-sync", null);
                 $("#" + rewindingRowIndex + "-LyricSyncRow_Box").remove();
             }
+
             $("#LyricSync_Stats_Box").append(mainRow);
             $("#LyricSync_Timestamps_Box").append(lineIndexInput);
             $("#LyricSync_Timestamps_Box").append(timestampInput);
 
-            previousTimestamp = regularToSecondsDuration(currentTimestampToParce[0], currentTimestampToParce[1]);
-            $("#LyricSync_CurrentTimestamp_Val").val(0);
-            $("#LyricSync_CurrentRowIndex_Val").val(--thisRowIndex);
-            $("#LyricSync_PreviousTimestamp_Val").val(previousTimestamp);
+            g_EditingRowIndex = 0;
+            g_CurrentTimestamp = 0;
+            g_PreviousTimestamp = currentTimestampToParce;
             $(".btn-lyric-sync-undo").addClass("super-disabled");
             $(".btn-lyric-sync-rewind").addClass("super-disabled");
-            undoBtn.attr("id", thisRowIndex + "-LyricSyncUndo_Btn");
-            rewindBtn.attr("id", thisRowIndex + "-LyricSyncRewind_Btn");
+            undoBtn.attr("id", g_RowsCounter + "-LyricSyncUndo_Btn");
+            rewindBtn.attr("id", g_RowsCounter + "-LyricSyncRewind_Btn");
             undoBtn.removeClass("super-disabled");
             rewindBtn.removeClass("super-disabled");
-            lineIndexInput.val(thisRowIndex);
-            timestampInput.val(previousTimestamp);
 
-            $("#" + ++thisRowIndex + "-LyricSyncRow_Span").mousedown();
-            setTimeout(function () {
-                buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
-            }, 2500);
+            buttonUndisabler(false, "LyricSync_SbmtBtn", null);
+            buttonUndisabler(true, "btn-lyric-sync-preview", null);
+
+            g_RowsCounter++;
+            $("#LyricSync_TotalRowsQty_Span").text(g_RowsCounter);
+            if (g_RowsCounter == 1) $("#LyricSync_TotalRowsQtyText_Span").text("line synced");
+            else $("#LyricSync_TotalRowsQtyText_Span").text("lines synced");
+            if (!isForInstrumentalBreak) {
+                g_CurrentRowIndex++; 
+                if (g_LyricLinedCounter == 0) {
+                    $("#LyricSync_LyricLinesQty_Span").text("no");
+                    $("#LyricSync_LyricLinesQtyText_Span").text("lyric lines synced");
+                }
+                else if (g_LyricLinedCounter == 1) {
+                    $("#LyricSync_LyricLinesQty_Span").text("one");
+                    $("#LyricSync_LyricLinesQtyText_Span").text("lyric line synced");
+                }
+                else {
+                    $("#LyricSync_LyricLinesQty_Span").text(g_LyricLinedCounter);
+                    $("#LyricSync_LyricLinesQtyText_Span").text("lyric lines synced");
+                }
+                $("#" + g_CurrentRowIndex + "-LyricSyncRow_Span").mousedown();
+                setTimeout(function () {
+                    buttonUndisabler(true, "btn-sync-lyrics", baseHtml);
+                }, 750);
+            }
+            else {
+                if (g_InstrumentalBreaksCounter == 0) {
+                    $("#LyricSync_InstrumentalBreaksQty_Span").text("no");
+                    $("#LyricSync_InstrumentalBreaksQtyText_Span").text("instrumental breaks applied");
+                }
+                else if (g_InstrumentalBreaksCounter == 1) {
+                    $("#LyricSync_InstrumentalBreaksQty_Span").text("one");
+                    $("#LyricSync_InstrumentalBreaksQtyText_Span").text("instrumental break applied");
+                }
+                else {
+                    $("#LyricSync_InstrumentalBreaksQty_Span").text(g_InstrumentalBreaksCounter);
+                    $("#LyricSync_InstrumentalBreaksQtyText_Span").text("instrumental breaks applied");
+                }
+                $("#" + g_CurrentRowIndex + "-LyricSyncRow_Span").mousedown();
+
+                setTimeout(function () {
+                    buttonUndisabler(true, "btn-sync-instrumental-break", baseHtml);
+                }, 750);
+            }
         }
     }
+}
+
+function editLyricSync(audioPlayer, editingLineIndex, endTime) {
+    if (editingLineIndex != null && endTime != null) {
+        if (audioPlayer != null) {
+            let prevElementIndex = editingLineIndex - 1;
+            let startTime = $("#" + prevElementIndex + "-LyricSync_Timestamp_Val").val();
+            if (startTime != undefined) {
+                let checkIfLineAlreadyExists = document.getElementById(editingLineIndex + "-LyricSync_LineIndex_Val");
+                if (checkIfLineAlreadyExists != null) {
+                    g_EditingRowIndex = 0;
+                    g_PreviousTimestamp = endTime;
+
+                    $("#" + editingLineIndex + "-LyricSync_Timestamp_Val").val(endTime);
+                    endTime = secondsToRegularDuration(endTime);
+                    startTime = secondsToRegularDuration(startTime);
+                    endTime = endTime == null ? "--:--" : endTime[0] + ":" + endTime[1];
+                    startTime = startTime == null ? "--:--" : startTime[0] + ":" + startTime[1];
+                    $("#" + editingLineIndex + "-LyricSync_ElementTimestamp_Span").text(startTime + " to " + endTime);
+                    $("#" + editingLineIndex + "-LyricSyncRow_Box").removeClass("box-mark-for-editing");
+                    $("#" + g_RowsCounter + "-LyricSyncRow_Span").mousedown();
+
+                    buttonUndisabler(true, "btn-sync-lyrics", null);
+                    buttonUndisabler(true, "btn-undo-last-sync", null);
+                    buttonUndisabler(true, "btn-sync-instrumental-break", null);
+                    buttonUndisabler(false, g_RowsCounter + "-LyricSyncRewind_Btn", null);
+                }
+            }
+        }
+    }
+}
+
+function rewindLyricSyncProcess(audioPlayer, rewindingLineIndex) {
+    if (rewindingLineIndex != null || rewindingLineIndex != undefined) {
+        audioPlayer = document.getElementById(audioPlayer);
+        if (audioPlayer != null) {
+            let prevElementIndex = rewindingLineIndex - 1;
+            let lineValue = $("#" + rewindingLineIndex + "-LyricSync_LineIndex_Val").val();
+            let startTime = $("#" + prevElementIndex + "-LyricSync_Timestamp_Val").val();
+
+            if (lineValue >= 0) {
+                buttonUndisabler(true, "btn-sync-lyrics", null);
+                buttonDisabler(true, "btn-sync-instrumental-break", null);
+            }
+            else {
+                buttonDisabler(true, "btn-sync-lyrics", null);
+                buttonUndisabler(true, "btn-sync-instrumental-break", null);
+            }
+            buttonDisabler(true, "btn-lyric-sync-rewind", null);
+
+            $("#" + rewindingLineIndex + "-LyricSyncRow_Span").mousedown();
+            $("#" + rewindingLineIndex + "-LyricSyncRow_Box").addClass("box-mark-for-editing");
+            $("#" + rewindingLineIndex + "-LyricSync_ElementTimestamp_Span").attr("data-timestamp-text", $("#" + rewindingLineIndex + "-LyricSync_ElementTimestamp_Span").html());
+            $("#" + rewindingLineIndex + "-LyricSync_ElementTimestamp_Span").html("Tap to stop edit<br/><small class='card-text text-muted'>" + $("#" + rewindingLineIndex + "-LyricSync_ElementTimestamp_Span").attr("data-timestamp-text"));
+
+            g_EditingRowIndex = rewindingLineIndex;
+            g_CurrentRowIndex = parseInt(rewindingLineIndex) + 1;
+
+            audioPlayer.currentTime = startTime;
+        }
+    }
+}
+
+$(document).on("mousedown", ".btn-sync-lyrics", function () {
+    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+    let currentTime = audioPlayer.currentTime;
+
+    if (g_EditingRowIndex == null || g_EditingRowIndex == 0) submitLyricSync(audioPlayer, false, currentTime);
+    else editLyricSync(audioPlayer, g_EditingRowIndex, currentTime);
+});
+
+$(document).on("mousedown", ".btn-sync-instrumental-break", function () {
+    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+    let currentTime = audioPlayer.currentTime;
+    let editingRowIndex = $("#LyricSync_EditingRowIndex_Val").val();
+
+    if (editingRowIndex == null || editingRowIndex == 0) submitLyricSync(audioPlayer, true, currentTime);
+    else editLyricSync(audioPlayer, editingRowIndex, currentTime);
 });
 
 $(document).on("mousedown", ".btn-lyric-sync-rewind", function () {
     let rowIndex = getTrueId($(this).attr("id"), false);
-    if (rowIndex != undefined) {
-        let prevRowIndex = rowIndex - 1;
-        let baseHtml = $("#LyricSync_SbmtBtn").html();
-        let prevTimestampStart = $("#" + prevRowIndex + "-LyricSync_Timestamp_Val").val();
+    if (rowIndex != undefined) rewindLyricSyncProcess("OngakuPlayer_Audio", rowIndex);
+});
 
-        buttonDisabler(false, "LyricSync_SbmtBtn", null);
-        $("#LyricSync_SbmtBtn").html(' <i class="fa-solid fa-clock-rotate-left anime-rewind-shift"></i> Rewinding...');
-        $("#" + rowIndex + "-LyricSyncRow_Span").mousedown();
+$(document).on("mousedown", ".box-mark-for-editing", function () {
+    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+    let rowIndex = getTrueId($(this).attr("id"), false);
+    if (rowIndex != undefined && audioPlayer != null) {
+        let lastAppliedTime = $("#LyricSync_PreviousTimestamp_Val").val();
+        $("#" + rowIndex + "-LyricSyncRow_Box").removeClass("box-mark-for-editing");
+        $("#" + rowIndex + "-LyricSync_ElementTimestamp_Span").html($("#" + rowIndex + "-LyricSync_ElementTimestamp_Span").attr("data-timestamp-text"));
+        $("#" + rowIndex + "-LyricSync_ElementTimestamp_Span").removeAttr("data-timestamp-text");
+        buttonUndisabler(true, "btn-sync-lyrics", null);
+        buttonUndisabler(true, "btn-sync-instrumental-break", null);
+        buttonUndisabler(false, rowIndex + "-LyricSyncRewind_Btn", null);
 
-        $("#LyricSync_CurrentRowIndex_Val").val(rowIndex);
-        $("#TimeSync_RowNumber_Span").text(++rowIndex);
-        $("#LyricSync_PreviousTimestamp_Val").val(prevTimestampStart);
-        audioEdit("OngakuPlayer_Audio", null, null, null, prevTimestampStart);
-
-        setTimeout(function () {
-            buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
-        }, 1500);
+        audioPlayer.currentTime = lastAppliedTime;
     }
+});
+
+$(document).on("mousedown", ".btn-undo-last-sync", function () {
+    let lastSyncIndex = $(this).attr("data-last-sync-index");
+    if (lastSyncIndex != undefined) {
+        $("#" + lastSyncIndex + "-LyricSyncRewind_Btn").mousedown();
+    }
+});
+
+$(document).on("mousedown", ".btn-undo-total-prepare", function () {
+    buttonDisabler(true, "btn-undo-total-prepare", null);
+    callAProposal(' <i class="fa-solid fa-rotate-right anime-sync-shift"></i> ', "Reset All?", "All saved timestamps will be permanently removed. You'll need to start syncing from the beginning", "Yes, Restart", ["btn-undo-total"], null, null, false, null, 30);
+});
+
+$(document).on("mousedown", ".btn-undo-total", function () {
+    uncallAProposal();
+    hideBySlidingToLeft(true, null, "lyric-sync-row");
+
+    g_RowsCounter = 0;
+    g_EditingRowIndex = 0;
+    g_CurrentRowIndex = 0;
+    g_CurrentTimestamp = 0;
+    g_PreviousTimestamp = 0;
+    g_LyricLinedCounter = 0;
+    g_InstrumentalBreaksCounter = 0;
+
+    audioPause("OngakuPlayer_Audio");
+    audioEdit("OngakuPlayer_Audio", null, null, null, 0);
+    $("#0-LyricSyncRow_Span").mousedown();
+    $("#LyricSync_Timestamps_Box").empty();
+
+    $("#LyricSync_TotalRowsQty_Span").text("No");
+    $("#LyricSync_LyricLinesQty_Span").text("no");
+    $("#LyricSync_InstrumentalBreaksQty_Span").text("no");
+    $("#LyricSync_TotalRowsQtyText_Span").text("lines synced");
+    $("#LyricSync_LyricLinesQtyText_Span").text("lyric lines synced");
+    $("#LyricSync_IntrumentalBreaksQtyText_Span").text("instrumental breaks applied");
+
+    setTimeout(function () {
+        $("#LyricSync_Stats_Box").empty();
+        $("#LyricSync_Stats_Box").append('<div class="row lyric-sync-row" id="Initial-LyricSyncRow_Box"> <div class="col col-1 regular-start-table-cell text-center" id="0-RowRank_Col_Box"> <span class="console-log-text">1</span> </div> <div class="col col-3 regular-mid-table-cell text-center" id="0-Timestamp_Col_Box"> <span class="console-log-text text-muted">00:00 to --:--</span> </div> <div class="col col-6 regular-end-table-cell text-center" id="0-Lyrics_Col_Box"> <span class="console-log-text">start to show here</span> </div> <div class="col col-2 regular-end-table-cell text-center" id="0-Lyrics_Col_Box"> <button type="button" class="btn btn-cybepunked btn-sm me-2" disabled> <i class="fa-solid fa-clock-rotate-left"></i> </button> <button type="button" class="btn btn-cybepunked btn-sm text-danger" disabled> <i class="fa-solid fa-xmark"></i> </button> </div> </div>');
+    }, 750);
+    buttonDisabler(true, "btn-undo-last-sync", null);
+    buttonDisabler(true, "btn-lyric-sync-preview", null);
+    buttonDisabler(true, "btn-undo-total-prepare", null);
 });
 
 $(document).on("mousedown", ".btn-lyric-sync-undo", function () {
     let rowIndex = getTrueId($(this).attr("id"), false);
     if (rowIndex != undefined) {
         let prevRowIndex = rowIndex - 1;
-        let baseHtml = $("#LyricSync_SbmtBtn").html();
-        let prevTimestampStart = $("#" + prevRowIndex + "-LyricSync_Timestamp_Val").val();
+        let currentLineIndex = parseInt($("#" + rowIndex + "-LyricSync_LineIndex_Val").val());
+        let prevTimestampStart = Math.round(parseInt($("#" + prevRowIndex + "-LyricSync_Timestamp_Val").val()));
 
-        buttonDisabler(false, "LyricSync_SbmtBtn", null);
-        $("#LyricSync_SbmtBtn").addClass("anime-scale-down-shift");
-        $("#LyricSync_SbmtBtn").html(' <i class="fa-regular fa-circle-check"></i> Line Removed');
-        $("#" + rowIndex + "-LyricSync_LineIndex_Val").remove();
-        $("#" + rowIndex + "-LyricSync_Timestamp_Val").remove();
-        $("#" + rowIndex + "-LyricSyncRow_Span").mousedown();
-
-        $("#" + prevRowIndex + "-LyricSyncUndo_Btn").removeClass("super-disabled");
-        $("#" + prevRowIndex + "-LyricSyncRewind_Btn").removeClass("super-disabled");
+        buttonDisabler(false, $(this).attr("id"), ' <i class="fa-regular fa-circle-xmark anime-sync-shift"></i> ');
+        buttonUndisabler(false, prevRowIndex + "-LyricSyncUndo_Btn", null);
+        buttonUndisabler(false, prevRowIndex + "-LyricSyncRewind_Btn", null);
+        
+        if (currentLineIndex >= 0) {
+            g_LyricLinedCounter--;
+            $("#" + g_LyricLinedCounter + "-LyricSyncRow_Span").mousedown();
+        }
+        else g_InstrumentalBreaksCounter--;
 
         $("#TimeSync_RowNumber_Span").text(rowIndex);
-        $("#LyricSync_CurrentRowIndex_Val").val(rowIndex);
-        $("#LyricSync_PreviousTimestamp_Val").val(prevTimestampStart);
+        g_RowsCounter--;
+        g_CurrentRowIndex = prevRowIndex;
+        currentLineIndex = g_LyricLinedCounter;
+        g_PreviousTimestamp = g_RowsCounter > 0 ? prevTimestampStart : 0;
 
-        audioEdit("OngakuPlayer_Audio", null, null, null, prevTimestampStart);
+        $("#" + rowIndex + "-LyricSync_LineIndex_Val").remove();
+        $("#" + rowIndex + "-LyricSync_Timestamp_Val").remove();
+        if (prevRowIndex >= 0) $(".btn-undo-last-sync").attr("data-last-sync-index", prevRowIndex);
+        else {
+            buttonDisabler(true, "btn-undo-last-sync", null);
+            buttonDisabler(true, "btn-undo-total-prepare", null);
+            $(".btn-undo-last-sync").removeAttr("data-last-sync-index");
+        }
+
+        if (g_RowsCounter <= 0) {
+            buttonDisabler(false, "LyricSync_SbmtBtn", null);
+            $("#LyricSync_TotalRowsQty_Span").text("No");
+            $("#LyricSync_TotalRowsQtyText_Span").text("lines synced");
+        }
+        else if (g_RowsCounter == 1) {
+            buttonUndisabler(false, "LyricSync_SbmtBtn", null);
+            $("#LyricSync_TotalRowsQty_Span").text("One");
+            $("#LyricSync_TotalRowsQtyText_Span").text("line synced");
+        }
+        else {
+            $("#LyricSync_TotalRowsQty_Span").text(g_RowsCounter);
+            $("#LyricSync_TotalRowsQtyText_Span").text("lines synced");
+        }
+        if (g_LyricLinedCounter <= 0) {
+            $("#LyricSync_LyricLinesQty_Span").text("no");
+            $("#LyricSync_LyricLinesQtyText_Span").text("lyric lines synced");
+        }
+        else if (g_LyricLinedCounter == 1) {
+            $("#LyricSync_LyricLinesQty_Span").text("one");
+            $("#LyricSync_LyricLinesQtyText_Span").text("lyric line synced");
+        }
+        else {
+            $("#LyricSync_LyricLinesQty_Span").text(g_LyricLinedCounter);
+            $("#LyricSync_LyricLinesQtyText_Span").text("lyric lines synced");
+        }
+        if (g_InstrumentalBreaksCounter <= 0) {
+            $("#LyricSync_InstrumentalBreaksQty_Span").text("no");
+            $("#LyricSync_IntrumentalBreaksQtyText_Span").text("instrumental breaks applied");
+        }
+        else if (g_InstrumentalBreaksCounter == 1) {
+            $("#LyricSync_InstrumentalBreaksQty_Span").text("one");
+            $("#LyricSync_IntrumentalBreaksQtyText_Span").text("instrumental break applied");
+        }
+        else {
+            $("#LyricSync_InstrumentalBreaksQty_Span").text(g_InstrumentalBreaksCounter);
+            $("#LyricSync_IntrumentalBreaksQtyText_Span").text("instrumental breaks applied");
+        }
+
         audioPause("OngakuPlayer_Audio");
+        audioEdit("OngakuPlayer_Audio", null, null, null, isNaN(prevTimestampStart) ? 0 : prevTimestampStart);
 
         hideBySlidingToLeft(false, null, rowIndex + "-LyricSyncRow_Box");
         setTimeout(function () {
             $("#" + rowIndex + "-LyricSyncRow_Box").remove();
+            buttonUndisabler(false, $(this).attr("id"), ' <i class="fa-solid fa-rotate"></i> ');
+            if (rowsTotalQty <= 0) {
+                $("#LyricSync_Stats_Box").append('<div class="row lyric-sync-row" id="Initial-LyricSyncRow_Box"> <div class="col col-1 regular-start-table-cell text-center" id="0-RowRank_Col_Box"> <span class="console-log-text">1</span> </div> <div class="col col-3 regular-mid-table-cell text-center" id="0-Timestamp_Col_Box"> <span class="console-log-text text-muted">00:00 to --:--</span> </div> <div class="col col-6 regular-end-table-cell text-center" id="0-Lyrics_Col_Box"> <span class="console-log-text">start to show here</span> </div> <div class="col col-2 regular-end-table-cell text-center" id="0-Lyrics_Col_Box"> <button type="button" class="btn btn-cybepunked btn-sm me-2" disabled> <i class="fa-solid fa-clock-rotate-left"></i> </button> <button type="button" class="btn btn-cybepunked btn-sm text-danger" disabled> <i class="fa-solid fa-xmark"></i> </button> </div> </div>');
+                buttonDisabler(true, "btn-undo-last-sync", null);
+                buttonDisabler(true, "btn-undo-total-prepare", null);
+            }
         }, 750);
-        setTimeout(function () {
-            buttonUndisabler(false, "LyricSync_SbmtBtn", baseHtml);
-        }, 2000);
     }
 });
 
@@ -1502,6 +1744,120 @@ $(document).on("mousedown", ".lyric-row-choose", function () {
         $(this).addClass("lyric-text-active");
     }
 });
+
+$(document).on("mousedown", ".btn-lyric-sync-preview", function () {
+    let lyricRows = document.getElementsByClassName("lyric-sync-lines");
+    let lyricTimestamps = document.getElementsByClassName("lyric-sync-timestamps");
+    let lyrics = $("#LyricSync_Lyrics_Val").val();
+    if (lyrics != null && lyricRows.length > 0 && lyricTimestamps.length > 0) {
+        let lyricRowValues = [];
+        let lyricTimestampValues = [];
+        for (let i = 0; i < lyricRows.length; i++) {
+            if ($("#" + lyricRows[i].id != undefined)) lyricRowValues.push($("#" + lyricRows[i].id).val());
+        }
+        for (let i = 0; i < lyricTimestamps.length; i++) {
+            if ($("#" + lyricTimestamps[i].id != undefined) != undefined) lyricTimestampValues.push($("#" + lyricTimestamps[i].id).val());
+        }
+        lyricSyncPreview("OngakuPlayer_Audio", lyricRowValues, lyricTimestampValues);
+    }
+});
+
+$(document).on("mousedown", ".btn-stop-lyric-sync-preview", function () {
+    stopLyricSyncPreview("OngakuPlayer_Audio");
+});
+
+$(document).on("mousedown", ".btn-track-backward-for", function () {
+    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+    if (audioPlayer != null) {
+        let rewindDuration = $(this).attr("data-rewind-for");
+        if (rewindDuration != undefined) {
+            let currentTime = audioPlayer.currentTime;
+            currentTime -= parseInt(rewindDuration);
+            currentTime = currentTime < 0 ? 0 : currentTime;
+            $(".btn-track-backward-for").html(' <i class="fa-solid fa-arrow-rotate-left anime-rewind-shift"></i> ');
+
+            audioEdit("OngakuPlayer_Audio", null, null, null, currentTime);
+        }
+    }
+});
+$(document).on("mousedown", ".btn-track-forward-for", function () {
+    let audioPlayer = document.getElementById("OngakuPlayer_Audio");
+    if (audioPlayer != null) {
+        let rewindDuration = $(this).attr("data-rewind-for");
+        if (rewindDuration != undefined) {
+            let totalDuration = audioPlayer.duration;
+            let currentTime = audioPlayer.currentTime;
+            currentTime += parseInt(rewindDuration);
+            currentTime = currentTime >= totalDuration ? totalDuration : currentTime;
+            $(".btn-track-forward-for").html(' <i class="fa-solid fa-arrow-rotate-right anime-sync-shift"></i> ');
+
+            audioEdit("OngakuPlayer_Audio", null, null, null, currentTime);
+        }
+    }
+});
+
+function lyricSyncPreview(audioPlayerId = null, lyricRowsArr = [], timestampsArr = []) {
+    if (lyricRowsArr.length > 0 && timestampsArr.length > 0 && audioPlayerId != null) {
+        let audioPlayer = document.getElementById(audioPlayerId);
+        audioPlayerTypeSwitch(audioPlayerId, 1);
+        audioEdit(audioPlayerId, null, null, null, 0);
+
+        let currentTime = 0;
+        let currentRowIndex = 0;
+        let rowTimeStamp = timestampsArr[currentRowIndex];
+
+        $(audioPlayer).on("timeupdate", function () {
+            currentTime = audioPlayer.currentTime;
+            rowTimeStamp = timestampsArr[currentRowIndex];
+            $(".lyric-text").removeClass("lyric-text-active");
+            $("#" + currentRowIndex + "-LyricSyncRow_Span").addClass("lyric-text-active");
+            if (currentTime > rowTimeStamp) {
+                currentRowIndex++;
+            }
+        });
+
+        $(".btn-lyric-sync-preview").addClass("btn-stop-lyric-sync-preview");
+        $(".btn-lyric-sync-preview").removeClass("btn-lyric-sync-preview");
+        $(".btn-stop-lyric-sync-preview").html(' <i class="fa-solid fa-stop"></i> Stop Previewing');
+        $(".btn-stop-lyric-sync-preview-sm").html(' <i class="fa-solid fa-stop"></i> ');
+    }
+}
+
+function lyricSynchronization(audioPlayerId = null, lyrics = null, lyricRowsArr = [], timestampsArr = []) {
+    if (lyrics != null && lyricRowsArr.length > 0 && timestampsArr.length > 0 && audioPlayerId != null) {
+        let audioPlayer = document.getElementById(audioPlayerId);
+        if (audioPlayer != null) {
+            let currentTime = 0;
+            let currentRowIndex = 0;
+            let rowTimeStamp = timestampsArr[currentRowIndex];
+            audioEdit(audioPlayerId, null, null, null, 0);
+
+            $("audio").on("timeupdate", function () {
+                currentTime = audioPlayer.currentTime;
+                $(".lyric-text").removeClass("lyric-text-active");
+                $("#" + currentRowIndex + "-LyricSyncRow_Span").addClass("lyric-text-active");
+                if (currentTime > rowTimeStamp) {
+                    currentRowIndex++;
+                }
+            });
+        }
+    }
+}
+
+function stopLyricSyncPreview(audioPlayerId) {
+    if (audioPlayerId != null) {
+        let recentSyncRowIndex = $("#LyricSync_CurrentRowIndex_Val").val();
+        let recentSyncTimestamp = $("#LyricSync_PreviousTimestamp_Val").val();
+        audioPlayerTypeSwitch(audioPlayerId, 2);
+        audioEdit(audioPlayerId, null, null, null, recentSyncTimestamp);
+        $("#" + recentSyncRowIndex + "-LyricSyncRow_Span").mousedown();
+
+        $(".btn-stop-lyric-sync-preview").addClass("btn-lyric-sync-preview");
+        $(".btn-stop-lyric-sync-preview").html(' <i class="fa-regular fa-eye"></i> Preview');
+        $(".btn-lyric-sync-preview").removeClass("btn-stop-lyric-sync-preview");
+        $(".btn-stop-lyric-sync-preview-sm").html(' <i class="fa-solid fa-stop"></i> ');
+    }
+}
 
 $(document).on("submit", "#DeleteTrackLyrics_Form", function (event) {
     event.preventDefault();
@@ -1627,9 +1983,11 @@ $(document).on("submit", "#UpdateTrackLyrics_Form", function (event) {
     $.post(url, data, function (response) {
         if (response.success) {
             slideContainers(null, "Primary_Container");
+            buttonUndisabler(false, "TimeSyncLyrics_Btn", null);
             callAlert('<i class="fa-regular fa-circle-check anime-spin-shift"></i>', null, null, "Lyrics saved. Use time-synced lyrics for this track?", 4.5, " <i class='fa-solid fa-group-arrows-rotate'></i> Apply Sync", 1, "$('#TimeSyncLyrics_Btn').mousedown();");
         }
         else {
+            buttonDisabler(false, "TimeSyncLyrics_Btn", null);
             callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.3s; --fa-animation-duration: 0.75s; --fa-animation-iteration-count: 2;"></i>', null, null, "There appears to be an issue with the entered lyrics and its details. Please review them and try again", 3.75, "Okay", -1, null);
         }
     });
@@ -2027,7 +2385,7 @@ $(document).on("submit", "#GetPlaylists_Form", function (event) {
                             $("#AvailablePlaylists_Box").append(playlistBox);
                         }
                     });
-                    displayCorrector(currentWindowSize, false);
+                    displayCorrector(currentWindowSize);
                     setTimeout(function () {
                         $("#ATP_Id_Val").val(trackId);
                         $("#GetPlaylists_Type_Val").removeAttr('data-track-id');
@@ -2061,7 +2419,7 @@ $(document).on("submit", "#GetPlaylistShortname_Form", function (event) {
                 $("#CSA_Shortname_Val").val(null);
                 $("#EPS_Shortname_Val-Warn").html("(undefined)");
             }
-            displayCorrector(currentWindowSize, false);
+            displayCorrector(currentWindowSize);
             setTimeout(function () {
                 slideSmContainers(null, "EditPlaylistShortname_Container");
             }, 150);
@@ -2097,7 +2455,7 @@ $(document).on("submit", "#GetEditInfo_Form", function (event) {
             $(".btn-pre-delete-the-playlist").removeAttr("super-disabled");
             buttonUndisabler(true, "btn-edit-playlist", baseHtml);
 
-            displayCorrector(currentWindowSize, false);
+            displayCorrector(currentWindowSize);
             setTimeout(function () {
                 slideContainers(null, "EditPlaylist_Container");
             }, 150);
@@ -2205,7 +2563,7 @@ $(document).on("submit", "#GetSingleInfo_Form", function (event) {
             if (response.result != null) {
                 singleSampler(response.isForAuthor, response.result.isFavorite, response.result.id, response.result.status, response.result.title, response.result.coverImageUrl, response.result.genres, response.result.releasedAt, response.result.user, response.result.userId, response.result.trackArtists, response.result.trackFileUrl);
             }
-            displayCorrector(currentWindowSize, false);
+            displayCorrector(currentWindowSize);
             setTimeout(function () {
                 slideContainers(null, "ReleaseInfo_Container");
             }, 150);
@@ -2431,7 +2789,7 @@ $(document).on("submit", "#GetArtistInfo_Form", function (event) {
                 $("#PopularSongs_Row").html('<div class="box-standard text-center mt-1 p-2"> <h2 class="h2"> <i class="fa-solid fa-music"></i> </h2> <h4 class="h4">Music Coming Soon</h4> <small class="card-text text-muted">This artist is yet to release any songs</small> </div>');
             }
 
-            displayCorrector(currentWindowSize, false);
+            displayCorrector(currentWindowSize);
             setTimeout(function () {
                 callAContainer(false, "ArtistInfo_Container", false);
             }, 150);
@@ -2604,7 +2962,7 @@ $(document).on("submit", "#GetPlaylistInfo_Form", function (event) {
             let imageUrl = $("#" + response.result.id + "-PlaylistInfo_Img").attr("src");
             imageUrl = imageUrl == undefined ? null : imageUrl;
             playlistInfoSampler(response.result.id, response.result.name, imageUrl, new Date(response.result.createdAt), response.result.songsQty, response.userId, response.result.userId, response.result.user.nickname, response.result.user.imgUrl, null, response.isSaved);
-            displayCorrector(currentWindowSize, false);
+            displayCorrector(currentWindowSize);
             setTimeout(function () {
                 slideContainers(null, "PlaylistInfo_Container");
             }, 150);
@@ -3462,7 +3820,7 @@ $("#SearchForGenres_Form").on("submit", function (event) {
                     genreBtn.attr("id", response.result[index].id + "-AddAsGenre_Btn");
                     $("#FoundGenresListed_Box").append(genreBtn);
                 });
-                displayCorrector(currentWindowSize, false);
+                displayCorrector(currentWindowSize);
                 setTimeout(function () {
                     callAContainer(false, "ChooseGenres_Container", false);
                 });
@@ -4898,8 +5256,11 @@ function secondsToRegularDuration(durationInSeconds = 0) {
 }
 
 function regularToSecondsDuration(durationInMins = 0, seconds = 0) {
-    let fullDuration = durationInMins * 60 + seconds;
-    return fullDuration;
+    if (durationInMins != null && seconds != null) {
+        let fullDuration = parseInt(durationInMins) * 60 + parseInt(seconds);
+        return fullDuration;
+    }
+    else return -1;
 }
 
 function favoriteSampler(songsQty) {
@@ -5204,7 +5565,7 @@ function createHeadlessContainer(id, headerHtml, body, openOnCreate = false) {
             $("#" + id + "-Header").css("border", "none");
             $("#" + id + "-Header").css("background-color", "transparent");
         }
-        displayCorrector(currentWindowSize, false);
+        displayCorrector(currentWindowSize);
         //if (currentWindowSize > 1024) {
         //    $(".box-lg-part").css("left", "37%");
         //    $(".box-lg-part").css("width", "63%");
@@ -5604,7 +5965,7 @@ function createTutorialContainer(header = null, nonUniqueIdentifierName = null, 
             $("#TutorialDots_Box").append(dotBox);
             $("#TutorialSamples_Box").append(mainBox);
 
-            displayCorrector(currentWindowSize, false);
+            displayCorrector(currentWindowSize);
             setTimeout(function () {
                 callASmContainer(false, "Tutorials_Container");
             }, 150);
@@ -5683,50 +6044,155 @@ function slideContainers(closingContainerId, id) {
     }
 }
 
-function callASmContainer(callByClassname, id) {
-    let cardOpened = false;
+$(document).on("mousedown", ".box-card-manager", function () {
+    let activeCardsQty = openedSmContainers.length;
+    if (activeCardsQty > 1) {
+        createSmContainer("ActiveSmCards", "Active Cards", null, null, null, false);
+        $("#ActiveSmCards_Box").empty();
+        for (let i = 0; i < openedSmContainers.length; i++) {
+            let cardTitle = $("#" + openedSmContainers[i]).attr("data-title");
+            let cardNameSeparator = $("<br/>");
+            let cardMainBox = elementDesigner("div", "box-standard hstack gap-2", null);
+            let cardSampleBox = elementDesigner("div", "box-listed box-reopen w-100", null);
+            let cardSampleInfoBox = elementDesigner("div", "box-standard", null);
+            let cardSampleBtnsBox = elementDesigner("div", "box-standard ms-auto", null);
+            let cardNameLbl = elementDesigner("span", "h6", cardTitle != undefined ? cardTitle : "Untitled Card");
+            let cardSmallSpan = elementDesigner("small", "card-text text-muted", "Tap to reopen");
+            let cardRemoveBtn = elementDesigner("button", "btn btn-standard btn-remove-the-card btn-sm", ' <i class="fa-solid fa-xmark"></i> ');
+
+            cardMainBox.attr("id", openedSmContainers[i] + "-CardInfo_Box");
+            cardRemoveBtn.attr("id", openedSmContainers[i] + "-RemoveTheCard_Btn");
+
+            cardSampleInfoBox.append(cardNameLbl);
+            cardSampleInfoBox.append(cardNameSeparator);
+            cardSampleInfoBox.append(cardSmallSpan);
+            cardSampleBtnsBox.append(cardRemoveBtn);
+            cardSampleBox.append(cardSampleInfoBox);
+            cardMainBox.append(cardSampleBox);
+            cardMainBox.append(cardSampleBtnsBox);
+
+            $("#ActiveSmCards_Box").append(cardMainBox);
+        }
+        let cardsQtyLbl = elementDesigner("p", "card-text text-muted text-center mt-2", null);
+        let cardsOnlyQtySpan = elementDesigner("small", "card-text fw-500", null);
+        let cardsQtyTextSpan = elementDesigner("small", "card-text", null);
+        cardsOnlyQtySpan.attr("id", "ActiveCardsQty_Span");
+        cardsQtyTextSpan.attr("id", "ActiveCardsText_Span");
+        cardsQtyLbl.append(cardsOnlyQtySpan);
+        cardsQtyLbl.append(cardsQtyTextSpan);
+        cardsOnlyQtySpan.html(activeCardsQty);
+        if (activeCardsQty > 1) cardsQtyTextSpan.text(" active cards");
+        else cardsQtyTextSpan.text(" active card");
+
+        $("#ActiveSmCards_Box").append(cardsQtyLbl);
+        displayCorrector(currentWindowSize);
+        setTimeout(function () {
+            callASmContainer(false, "ActiveSmCards_Container", true);
+        }, 150);
+    }
+});
+
+$(document).on("mousedown", ".box-reopen", function () {
+    let thisId = getTrueId($(this).attr("id"), false);
+    if (thisId != undefined) {
+        uncallASmContainer(false, "ActiveSmCards_Container");
+        setTimeout(function () {
+            callASmContainer(false, thisId, false);
+        }, 600);
+    }
+});
+
+$(document).on("mousedown", ".btn-remove-the-card", function () {
+    let thisId = getTrueId($(this).attr("id"), false);
+    if (thisId != undefined) {
+        //.div-swiper
+        unpushLastSmContainerFromList(thisId);
+        hideBySlidingToLeft(false, null, thisId + "-CardInfo_Box");
+        let getLastCardId = getLastOpenedSmContainer();
+        setTimeout(function () {
+            uncallASmContainer(false, "ActiveSmCards_Container", true);
+        }, 300);
+        setTimeout(function () {
+            $(this).remove();
+            slideSmContainers(thisId, getLastCardId);
+        }, 900);
+    }
+});
+
+function uncallCardManager() {
+    $(".box-card-manager").removeClass("active");
+    $(".box-card-manager").css("bottom", "-1200px");
+    setTimeout(function () {
+        $(".box-card-manager").empty();
+        $(".box-card-manager").fadeOut(300);
+    }, 300);
+}
+
+function callASmContainer(callByClassname, id, doNotTrack = false) {
+    //createSmContainer();
     let alertBottom = 0;
+    let cardOpened = 0;
+    let anyCardOpened = false;
+    let lastOpenedContainer = null;
     let isPlayerActive = $(".ongaku-player-box").css("bottom");
     let anySideBar = document.getElementsByClassName("side-navbar");
+    let checkCardManagerAvailability = document.getElementById("SmCardsManager_Box");
 
     $(".btn-sticky-at-bottom").css("opacity", 0);
-    $(".box-sticky-at-bottom").css("opacity", 0);
-
     if (anySideBar != null && anySideBar.length > 0) {
         $(".box-sm-part-inner").css("left", "6%");
         $(".box-sm-part-inner").css("width", "93.25%");
     }
-    if (isPlayerActive != undefined) isPlayerActive = parseInt(parseInt($(".ongaku-player-box").css("bottom")) + $(".ongaku-player-box").innerHeight());
-    if (callByClassname) {
-        let elements = document.getElementsByClassName(id);
-        if (elements.length > 0) {
-            for (let i = 0; i < elements.length; i++) {
-                if ($("#" + elements[i].id).hasClass("active")) {
-                    cardOpened = true;
-                    break;
-                }
-            }
+
+    if (!doNotTrack) pushSmContainerToList(id);
+    if (checkCardManagerAvailability == null) {
+        let cardManagerItem = elementDesigner("div", "box-card-manager mx-auto", null);
+        cardManagerItem.attr("id", "SmCardsManager_Box");
+        $("body").append(cardManagerItem);
+    }
+    else $("#SmCardsManager_Box").empty();
+
+    if (isPlayerActive != undefined) isPlayerActive = parseInt(parseInt($(".ongaku-player-box").css("bottom")) + parseInt($(".ongaku-player-box").innerHeight()));
+    if (openedSmContainers.length > 0) {
+        lastOpenedContainer = getLastOpenedSmContainer();
+        for (let i = 0; i < openedSmContainers.length; i++) {
+            let sliderDot;
+            if (openedSmContainers[i] == lastOpenedContainer) sliderDot = elementDesigner("div", "slider-dots-lg active", null);
+            else sliderDot = elementDesigner("div", "slider-dots-lg", null);
+            sliderDot.attr("id", openedSmContainers[i] + "-Slider_Dot");
+            $("#SmCardsManager_Box").append(sliderDot);
+
+            if ($("#" + openedSmContainers[i]).hasClass("active")) anyCardOpened = true;
         }
-        else cardOpened = false;
+
+        if (openedSmContainers.length > 1) {
+            $("#SmCardsManager_Box").fadeIn(0);
+            $("#SmCardsManager_Box").addClass("active");
+            $("#SmCardsManager_Box").css("bottom", bottomNavbarH + 25 + "px");
+            alertBottom = (parseInt($("#SmCardsManager_Box").innerHeight()) + 5);
+        }
+        else alertBottom = 0;
     }
     else {
-        if ($("#" + id).hasClass("active")) cardOpened = true;
-        else cardOpened = false;
+        alertBottom = 0;
+        anyCardOpened = false;
     }
 
-    if (parseInt(currentWindowSize) < 1024) {
-        alertBottom = bottomNavbarH;
-        if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
-    }
-    else {
-        alertBottom = 10;
-        if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) alertBottom += isPlayerActive;
+    if (!callByClassname) {
+        if ($("#" + id).hasClass("active")) cardOpened = 2;
+        else if ($("#" + id).hasClass("passive")) cardOpened = 1;
+        else cardOpened = 0;
     }
 
+    if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) {
+        if (!$(".ongaku-player-box").hasClass("ongaku-player-box-enlarged")) alertBottom += isPlayerActive;
+    }
+    alertBottom += 10;
     if (callByClassname) {
-        if (cardOpened) {
+        if (anyCardOpened) {
             $(".box-sm-part-inner").fadeIn(0);
             $(".box-sm-part-inner").removeClass("active");
+            $(".box-sm-part-inner").removeClass("passive");
             $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
             setTimeout(function () {
                 $(".box-sm-part-inner").css("bottom", "-1200px");
@@ -5737,86 +6203,136 @@ function callASmContainer(callByClassname, id) {
             setTimeout(function () {
                 $(".box-sm-part-inner").css("bottom", alertBottom + "px");
             }, 900);
+            return 900;
         }
         else {
             $(".box-sm-part-inner").fadeIn(0);
+            $(".box-sm-part-inner").removeClass("passive");
             $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
             setTimeout(function () {
                 $(".box-sm-part-inner").addClass("active");
                 $(".box-sm-part-inner").css("bottom", alertBottom + "px");
             }, 300);
+            return 300;
         }
     }
     else {
-        if (cardOpened) {
+        if (!anyCardOpened) {
             $("#" + id).fadeIn(0);
+            $("#" + id).addClass("active");
+            $("#" + id).removeClass("passive");
             $("#" + id).css("bottom", alertBottom + 45 + "px");
-            $(".box-sm-part-inner").removeClass("active");
             setTimeout(function () {
-                $("#" + id).css("bottom", "-1200px");
-                unpushLastSmContainerFromList(id);
-            }, 300);
-            setTimeout(function () {
-                $("#" + id).css("bottom", alertBottom + 45 + "px");
-            }, 600);
-            setTimeout(function () {
-                pushSmContainerToList(id);
-                $("#" + id).addClass("active");
                 $("#" + id).css("bottom", alertBottom + "px");
-            }, 900);
+            }, 300);
+            return 300;
         }
         else {
-            $("#" + id).fadeIn(0);
-            $(".box-sm-part-inner").removeClass("active");
-            $("#" + id).css("bottom", alertBottom + 45 + "px");
-            setTimeout(function () {
-                pushSmContainerToList(id);
-                $("#" + id).addClass("active");
-                $("#" + id).css("bottom", alertBottom + "px");
-            }, 300);
+            if (cardOpened == 0) {
+                makePassiveAllActiveSmContainers(openedSmContainers);
+                setTimeout(function () {
+                    $("#" + id).fadeIn(0);
+                    $("#" + id).removeClass("passive");
+                    $("#" + id).addClass("active");
+                    $("#" + id).css("bottom", alertBottom + 45 + "px");
+                }, 300);
+                setTimeout(function () {
+                    $("#" + id).css("bottom", alertBottom + "px");
+                }, 600);
+                return 600;
+            }
+            else if (cardOpened == 1) {
+                makePassiveAllActiveSmContainers(openedSmContainers);
+                $("#" + id).css("bottom", alertBottom + 45 + "px");
+                setTimeout(function () {
+                    $("#" + id).removeClass("passive");
+                    $("#" + id).css("bottom", "-1200px");
+                }, 300);
+                setTimeout(function () {
+                    $("#" + id).addClass("active");
+                    $("#" + id).css("bottom", alertBottom + 45 + "px");
+                }, 600);
+                setTimeout(function () {
+                    $("#" + id).css("bottom", alertBottom + "px");
+                }, 900);
+                return 900;
+            }
+            else {
+                $("#" + id).removeClass('active');
+                $("#" + id).removeClass("passive");
+                $("#" + id).css("bottom", "-1200px");
+                setTimeout(function () {
+                    $("#" + id).addClass('active');
+                    $("#" + id).css("bottom", alertBottom + 45 + "px");
+                }, 300);
+                setTimeout(function () {
+                    $("#" + id).css("bottom", alertBottom + "px");
+                }, 600);
+                return 600;
+            }
         }
+        //Sync
     }
 }
 
-function uncallASmContainer(callByClassname, id) {
+function uncallASmContainer(callByClassname, id, doNotReopenLastCard = false) {
     let alertBottom = 0;
     let lastSmContainerId = null;
     let isPlayerActive = $(".ongaku-player-box").css("bottom");
     if (isPlayerActive != undefined) isPlayerActive = parseInt(isPlayerActive) + parseInt($(".ongaku-player-box").innerHeight());
     else isPlayerActive = 0;
 
-    if (parseInt(currentWindowSize) < 1024) alertBottom = bottomNavbarH + isPlayerActive;
-    else alertBottom = isPlayerActive;
+    if (parseInt(currentWindowSize) < 1024) alertBottom = bottomNavbarH;
+    else alertBottom = 10;
+    if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) {
+        if (!$(".ongaku-player-box").hasClass("ongaku-player-box-enlarged")) alertBottom += isPlayerActive;
+    }
 
     if (callByClassname) {
+        $(".box-sm-part-inner").removeClass("active");
+        $(".box-sm-part-inner").removeClass("passive");
         $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
         setTimeout(function () {
             $(".box-sm-part-inner").css("bottom", "-1200px");
         }, 300);
-        setTimeout(function () {
-            $(".box-sm-part-inner").fadeOut(0);
-            $(".box-sm-part-inner").removeClass("active");
-            $(".box-sm-part-inner").removeClass("backgrounded");
-            lastSmContainerId = getLastOpenedSmContainer();
-            if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
-        }, 600);
+        if (!doNotReopenLastCard) {
+            setTimeout(function () {
+                $(".box-sm-part-inner").fadeOut(0);
+                lastSmContainerId = getLastOpenedSmContainer();
+                if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
+            }, 600);
+        }
     }
     else {
+        $("#" + id).removeClass("active");
+        $("#" + id).removeClass("passive");
         $("#" + id).css("bottom", alertBottom + 45 + "px");
         setTimeout(function () {
-            $("#" + id).removeClass("active");
-            $("#" + id).removeClass("backgrounded");
             $("#" + id).css("bottom", "-1200px");
             unpushLastSmContainerFromList(id);
+            if (openedSmContainers.length <= 1) uncallCardManager();
         }, 300);
-        setTimeout(function () {
-            $("#" + id).fadeOut(0);
-            lastSmContainerId = getLastOpenedSmContainer();
-            if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
-        }, 600);
+        if (!doNotReopenLastCard) {
+            setTimeout(function () {
+                $("#" + id).fadeOut(0);
+                lastSmContainerId = getLastOpenedSmContainer();
+                if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
+            }, 600);
+        }
     }
     $(".btn-sticky-at-bottom").css("opacity", 1);
     $(".box-sticky-at-bottom").css("opacity", 1);
+}
+
+function makePassiveAllActiveSmContainers(openSmContainers = []) {
+    if (openSmContainers.length > 0) {
+        for (let i = 0; i < openSmContainers.length; i++) {
+            if ($("#" + openSmContainers[i]).hasClass("active")) {
+                $("#" + openSmContainers[i]).addClass("passive");
+                $("#" + openSmContainers[i]).removeClass("active");
+            }
+        }
+    }
 }
 
 function getLastOpenedSmContainer() {
@@ -5827,9 +6343,14 @@ function getLastOpenedSmContainer() {
 function pushSmContainerToList(elementId) {
     if (elementId != null || elementId != undefined) {
         if (openedSmContainers.length > 0) {
-            if (openedSmContainers[openedSmContainers.length - 1] != elementId) openedSmContainers.push(elementId);
+            for (let i = 0; i < openedSmContainers.length; i++) {
+                if (openedSmContainers[i] == elementId) {
+                    openedSmContainers.splice(i, 1);
+                }
+            }
         }
-        else openedSmContainers.push(elementId);
+        openedSmContainers.push(elementId);
+
         return openedSmContainers;
     }
     else return null;
@@ -5971,10 +6492,64 @@ function uncallAStickyBox(closeAll = false, id, baseHtml, buttonElementId) {
     }
 }
 
-function callAContainer(callByClassname, id, doNotList) {
-    let alertBottom = bottomNavbarH;
-    if (callByClassname) {
+function uncallPlayerBox(callByClassname = false, id) {
+    let bottomHeight = 0;
+    if (!callByClassname) {
+        bottomHeight = parseInt($("." + id).css("bottom"));
+        $("." + id).css("bottom", bottomHeight + 35 + "px");
+        setTimeout(function () {
+            $("." + id).css("bottom", "-1200px");
+            $("." + id).fadeIn(0);
+        }, 350);
+        setTimeout(function () {
+            $("." + id).fadeIn(0);
+        },  700);
+    }
+    else {
+        bottomHeight = parseInt($("#" + id).css("bottom"));
+        $("#" + id).css("bottom", bottomHeight + 35 + "px");
+        setTimeout(function () {
+            $("#" + id).css("bottom", "-1200px");
+        }, 350);
+        setTimeout(function () {
+            $("#" + id).fadeIn(0);
+        }, 700);
+    }
+    playerPosition = -1200;
+}
+
+function callPlayerBox(callByClassname = false, id) {
+    let bottomHeight = 0;
+    if (currentWindowSize < 1024) bottomHeight = bottomNavbarH;
+    playerPosition = bottomHeight + 10;
+
+    if (!callByClassname) {
+        $("#" + id).fadeIn(0);
+        $("#" + id).css("bottom", bottomHeight + 30 + "px");
+        setTimeout(function () {
+            $("#" + id).css("bottom", bottomHeight + 5 + "px");
+        }, 350);
+        setTimeout(function () {
+            $("#" + id).css("bottom", bottomHeight + 10 + "px");
+        }, 700);
+    }
+    else {
         $("." + id).fadeIn(0);
+        $("." + id).css("bottom", bottomHeight + 30 + "px");
+        setTimeout(function () {
+            $("." + id).css("bottom", bottomHeight + 5 + "px");
+        }, 350);
+        setTimeout(function () {
+            $("." + id).css("bottom", bottomHeight + 10 + "px");
+        }, 700);
+    }
+}
+
+function callAContainer(callByClassname, id, doNotList) {
+    let alertBottom = bottomNavbarH
+    lgPartContainerCorrector(currentWindowSize, playerPosition);
+
+    if (callByClassname) {
         setTimeout(function () {
             $("." + id).css("bottom", alertBottom + 24 + "px");
         }, 600);
@@ -6104,7 +6679,7 @@ function createHeadlessSmContainer(id, body, openOnCreate = false) {
 function createSmContainer(id, title, body, headerBtn1 = null, headerBtn2 = null, openOnCreate = false) {
     let divExists = document.getElementById(id + "_Container");
     if (divExists == null) {
-        $("body").append('<div class="box-sm-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-sm-part-header p-2"><div class="box-standard"><div class="hstack gap-1" id="' + id + '-Header_Box">            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button><span class="h5 ms-1 pt-1">' + title + '</span> <button type="button" class="btn btn-standard btn-close-sm-container btn-sm ms-auto" id="' + id + '_Container-Close_Btn">Done</button></div></div></div> <div class="box-standard p-1" id="' + id + '_Box"> </div> </div>');
+        $("body").append('<div class="box-sm-part-inner" id="' + id + '_Container" data-title="' + title + '"><div class="div-swiper div-swiper-sm mx-auto" id="' + id + '_Container-SwiperSm"></div><div class="box-standard p-2" id="' + id + '_Box"></div></div>');
         $("#" + id + "_Box").append(body);
         if (headerBtn1 != null) {
             let firstButton = $(headerBtn1);
@@ -6130,7 +6705,7 @@ function createSmContainer(id, title, body, headerBtn1 = null, headerBtn2 = null
     }
 
     if (openOnCreate) {
-        displayCorrector(currentWindowSize, false);
+        displayCorrector(currentWindowSize);
         callASmContainer(false, id + "_Container");
     }
 }
@@ -6215,7 +6790,14 @@ function audioPlayerTypeSwitch(element, type) {
                         $("#" + element + "_StandardTrackButtons_Box").fadeIn(300);
                     }, 300);
                     break;
-                    //Lyric Sync buttons
+                //Ad and track preview buttons
+                case 1:
+                    $(".ongaku-player-album-box").html(' <i class="fa-solid fa-ellipsis fa-fade"></i> ');
+                    setTimeout(function () {
+                        $("#" + element + "_PreviewAndAdButtons_Box").fadeIn(300);
+                    }, 300);
+                    break;
+                //Lyric Sync buttons
                 case 2:
                     $(".ongaku-player-album-box").html(' <i class="fa-solid fa-arrows-rotate"></i> ');
                     setTimeout(function () {
@@ -6677,84 +7259,43 @@ function forwardSlider(currentStep, maxStep, id) {
     }
 }
 
-function callTheMusicIsland(currentWidth) {
-    let newBotNavbarH = 0;
-    $(".ongaku-player-box").fadeIn(0);
+function lgPartContainerCorrector(currentWidth, playerPosition) {
     if (parseInt(currentWidth) < 1024) {
-        newBotNavbarH = bottomNavbarH + 35;
-        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        setTimeout(function () {
-            newBotNavbarH -= 35;
-            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        }, 350);
-        setTimeout(function () {
-            newBotNavbarH += 10;
-            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        }, 700);
+        if (playerPosition > 0) $(".box-lg-part").css("padding-bottom", playerPosition + 10 + "px");
+        else $(".box-lg-part").css("padding-bottom", 0);
     }
-    else {
-        newBotNavbarH = 56;
-        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        setTimeout(function () {
-            newBotNavbarH -= 48;
-            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        }, 350);
-        setTimeout(function () {
-            newBotNavbarH += 4;
-            $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        }, 700);
-    }
+    else $(".box-lg-part").css("padding-bottom", 0);
 }
 
-function uncallTheMusicIsland(currentWidth) {
-    let newBotNavbarH = 0;
-    if (parseInt(currentWidth) < 1024) {
-        newBotNavbarH = bottomNavbarH + 32;
-        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        setTimeout(function () {
-            $(".ongaku-player-box").css("bottom", "-1200px");
-        }, 300);
-    }
-    else {
-        newBotNavbarH = 24;
-        $(".ongaku-player-box").css("bottom", newBotNavbarH + "px");
-        setTimeout(function () {
-            $(".ongaku-player-box").css("bottom", "-1200px");
-        }, 300);
-    }
-}
-
-function displayCorrector(currentWidth, onPageStart) {
+function displayCorrector(currentWidth) {
     if (parseInt(currentWidth) < 1024) {
         $(".box-lg-part").css("left", "0");
         $(".box-lg-part").css("width", "100%");
         $(".box-lg-part-header").css("left", 0);
         $(".box-lg-part-header").css("width", "100%");
-        $(".box-vertical-switcher").css("width", "98.25%");
-        $(".box-vertical-switcher").css("left", "0.75%");
         $(".box-lg-part-inner").css("left", "0.75%");
         $(".box-lg-part-inner").css("width", "98.25%");
+
+        $(".box-vertical-switcher").css("width", "98.25%");
+        $(".box-vertical-switcher").css("left", "0.75%");
+
         $(".box-sm-part").css("left", "-1200px");
         $(".box-sm-part").css("width", "100%");
         $(".box-sm-part-inner").css("left", "0.75%");
         $(".box-sm-part-inner").css("width", "98.25%");
-        $(".bottom-navbar").css("width", "100%");
+
+        $(".box-card-manager").css("left", "0.75%");
+        $(".box-card-manager").css("width", "98.25%");
+
         $(".bottom-navbar").css("left", 0);
+        $(".bottom-navbar").css("width", "100%");
+
         $(".ongaku-alert").css("left", "1%");
         $(".ongaku-alert").css("width", "98.5%");
-        $(".ongaku-player-box").css("width", "98.25%");
+
         $(".ongaku-player-box").css("left", "0.75%");
-        if (onPageStart) {
-            setTimeout(function () {
-                $(".box-sm-part").css("left", 0);
-                $(".box-lg-part").css("bottom", "-1200px");
-                $(".box-lg-part").fadeOut(0);
-                $(".box-sm-part-inner").fadeOut(0);
-            }, 300);
-        }
-        else {
-            $(".box-sm-part").css("left", "-1200px");
-        }
+        $(".ongaku-player-box").css("width", "98.25%");
+        $(".ongaku-player-box").css("bottom", bottomNavbarH + 10 + "px");
     }
     else {
         $(".box-lg-part").css("left", "37%");
@@ -6763,28 +7304,30 @@ function displayCorrector(currentWidth, onPageStart) {
         $(".box-lg-part-header").css("width", "63%");
         $(".box-lg-part-inner").css("left", "37.5%");
         $(".box-lg-part-inner").css("width", "62%");
+
         $(".box-vertical-switcher").css("width", "62%");
         $(".box-vertical-switcher").css("left", "37.5%");
+
         $(".box-sm-part").css("left", 0);
         $(".box-sm-part").css("width", "37%");
         $(".box-sm-part-inner").css("left", "0.4%");
         $(".box-sm-part-inner").css("width", "36%");
+
+        $(".box-card-manager").css("left", "0.4%");
+        $(".box-card-manager").css("width", "36%");
+
         $(".bottom-navbar").css("width", "63%");
         $(".bottom-navbar").css("left", "37%");
+
         $(".ongaku-alert").css("left", "37.5%");
         $(".ongaku-alert").css("width", "62%");
-        $(".ongaku-player-box").css("width", "36%");
+
         $(".ongaku-player-box").css("left", "0.4%");
-        $(".ongaku-player-box").css("bottom", "12px");
-        $(".bottom-navbar").fadeIn(350);
-        $(".box-lg-part").fadeIn(350);
+        $(".ongaku-player-box").css("width", "36%");
+        $(".ongaku-player-box").css("bottom", "10px");
+
         $(".ongaku-alert").fadeIn(350);
-        if (onPageStart) {
-            setTimeout(function () {
-                $(".box-lg-part").fadeOut(0);
-                $(".box-sm-part-inner").fadeOut(0);
-            }, 300);
-        }
+        $(".bottom-navbar").fadeIn(350);
     }
 }
 
@@ -6871,7 +7414,7 @@ function callDateAndTimeContainer(targetValueElemenetId, dateResultDisplay, curr
     else hideTimeBar();
 
     if (openOnCall) {
-        displayCorrector(currentWindowSize, false);
+        displayCorrector(currentWindowSize);
         setTimeout(function () {
             callAContainer(false, "DateAndTime_Container", false);
         }, 150);
@@ -8009,7 +8552,7 @@ function callAProposal(icon, header, description, positiveButtonHtml, positiveBu
         uncallAProposal();
     }, timeTotalDuration * 1000);
 
-    displayCorrector(currentWindowSize, false);
+    displayCorrector(currentWindowSize);
     setTimeout(function () {
         callASmContainer(false, "Proposal_Container");
     }, 150);
@@ -8156,7 +8699,7 @@ function imagePreviewer(images, saveTargetFormId, orderTargetId, isMultiple = tr
             }
             $("#LoadedImagesQty_Span").html(imagesLength);
             if (openPreviewBox) {
-                displayCorrector(currentWindowSize, false);
+                displayCorrector(currentWindowSize);
                 callAContainer(false, "ImagePreview_Container");
             }
 
@@ -8285,7 +8828,7 @@ function audioPreviewer(files, saveTargetFormId, orderTargetId, isMultiple = tru
     }
 
     if (openPreviewBox) {
-        displayCorrector(currentWindowSize, false);
+        displayCorrector(currentWindowSize);
         setTimeout(function () {
             callAContainer(false, "AudioPreview_Container", false);
         }, 150);
@@ -8449,7 +8992,7 @@ function contentPreviewer(contentTitleIds = [], contentElementIds = [], previewT
         }
         else $("#ContentPreview_Stats_Box").fadeOut(300);
 
-        displayCorrector(currentWindowSize, false);
+        displayCorrector(currentWindowSize);
         setTimeout(function () {
             callAContainer(false, "ContentPreviewer_Container", false);
         });
@@ -8550,7 +9093,8 @@ function handleTouchMove(evt) {
 $(document).on("dblclick", ".div-swiper", function (event) {
     let trueId = getTrueId(event.target.id, false);
     if (trueId != undefined) {
-        uncallAContainer(false, trueId);
+        if ($(this).hasClass("div-swiper-sm")) uncallASmContainer(false, trueId, false);
+        else uncallAContainer(false, trueId);
     }
 });
 
@@ -8561,12 +9105,14 @@ $(document).on("touchmove", ".div-swiper", function (event) {
     let moveDirection = handleTouchMove(event);
     if (moveDirection == 0) {
         let trueId = getTrueId(event.target.id, false);
-        uncallAContainer(false, trueId);
+        if ($(this).hasClass("div-swiper-sm")) uncallASmContainer(false, trueId, false);
+        else uncallAContainer(false, trueId);
     }
     else if (moveDirection == 1) {
         let trueId = getTrueId(event.target.id);
         if (trueId != "") {
-            callAContainer(false, trueId, false);
+            if ($(this).hasClass("div-swiper-sm")) callASmContainer(false, trueId, false);
+            else callAContainer(false, trueId, false);
         }
     }
 
@@ -8585,7 +9131,6 @@ function smPartEnlarger(currentWidth) {
             $(".ongaku-player-box").css("left", "7.5%");
             $(".ongaku-player-box").css("width", "93.25%");
             $(".div-vertical-swiper").css("margin-left", "99.25%");
-            $(".box-lg-part").fadeOut(0);
         }, 350);
         setTimeout(function () {
             $(".box-sm-part").css("width", "100%");
@@ -8602,7 +9147,7 @@ function smPartDwindler(currentWidth) {
         $(".box-sm-part").css("left", 0);
         $(".box-sm-part").css("width", "37%");
         $(".div-vertical-swiper").css("margin-left", "98%");
-        displayCorrector(currentWidth, false);
+        displayCorrector(currentWidth);
         setTimeout(function () {
             callAContainer(false, lastContainerId, true);
         }, 900);

@@ -5,6 +5,16 @@
 }
 
 <div class="box-sm-part shadow-sm">
+@*     <div class="bottom-fixed-sm-announcebar">
+        <div class="hstack gap-2">
+            <div class="bottom-fixed-sm-announcebar-icon">
+            </div>
+            <div class="bottom-fixed-sm-announcebar-body">
+
+            </div>
+        </div>
+    </div> *@
+
     <div class="div-vertical-swiper"></div>
     <div class="d-none">
         <form method="get" asp-controller="User" asp-action="Search" id="SearchForUsers_Form">
@@ -44,7 +54,7 @@
         <input type="hidden" id="CurrentUserNickname_Val" value="@UserInfo.Nickname" />
     </div>
 
-    @* <div class="box-sm-part-inner active" id="Primary_Container" style="display: block; bottom: 145px;">
+@*     <div class="box-sm-part-inner active" id="Primary_Container" style="display: block; bottom: 145px;">
         <div class="box-standard p-2" id="Tutorials_Box">
             <div class="div-swiper mx-auto"></div>
             <div class="box-standard mt-2" id="TutorialSamples_Box">
@@ -98,14 +108,20 @@
                 </div>
                 <button type="button" class="btn btn-standard btn-sliders-slide-to-right ms-2" id="TutorialSample_Box-ToRight_Btn" data-index="0" data-family="lyrics-sync-tutorials"> <i class="fa-solid fa-circle-right"></i> </button>
             </div>
-        </div>     
+        </div>      *@
 
-                            <div class="slider-dots active" id="0-TutorialDot_Box"></div>
+@*                             <div class="slider-dots active" id="0-TutorialDot_Box"></div>
                     <div class="slider-dots" id="1-TutorialDot_Box"></div>
-                    <div class="slider-dots" id="2-TutorialDot_Box"></div>
+                    <div class="slider-dots" id="2-TutorialDot_Box"></div> *@
+@*     </div> *@
+
+@*     <div class="box-sm-part-inner active" id="Primary_Container">
+        <div class="div-swiper div-swiper-sm mx-auto" id="Primary_Container-SwiperSm"></div>
+        <div class="box-standard p-2" id="Primary_Box">
+        </div>
     </div> *@
 
-    @* <div class="box-sm-part-inner" id="Proposal_Container">
+@*     <div class="box-sm-part-inner active" id="Primary_Container">
         <div class="box-standard p-2" id="Proposal_Box">
             <div class="box-standard text-center p-1">
                 <h2 class="h2" id="Proposal_Icon_Lbl"> <i class="fa-solid fa-question"></i> </h2>
@@ -898,10 +914,17 @@
                     <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward btn-sm"> <i class="fa-solid fa-forward"></i> </button>
                 </div>
+                <div class="box-audio-player-buttons" id="OngakuPlayer_Audio_PreviewAndAdButtons_Box" style="display: none;">
+                    <button type="button" class="btn btn-ongaku-player btn-stop-lyric-sync-preview btn-stop-lyric-sync-preview-sm btn-tooltip btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Stop lyric-sync previewing"> <i class="fa-solid fa-stop"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-track-backward-for btn-tooltip btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Rewind 15s" data-rewind-for="15"> <i class="fa-solid fa-arrow-rotate-left"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_PreviewAndAdPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-track-forward-for btn-tooltip btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Jump ahead 15s" data-rewind-for="15"> <i class="fa-solid fa-arrow-rotate-right"></i> </button>
+                </div>
                 <div class="box-audio-player-buttons" id="OngakuPlayer_Audio_LyricSyncButtons_Box" style="display: none;">
-                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-undo-last-sync btn-sm me-1" id="OngakuPlayer_LyricSyncUndo_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Undo latest sync"><i class="fa-solid fa-arrow-rotate-left"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-sync-instrumental-break btn-sm me-1" id="OngakuPlayer_SyncInstrumentalBreak_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Add instrumental break"> <i class="fa-solid fa-guitar"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-undo-last-sync btn-sm super-disabled me-1" id="OngakuPlayer_LyricSyncUndo_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Undo latest sync"><i class="fa-solid fa-arrow-rotate-left"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-tooltip btn-sync-lyrics btn-sm me-1" id="OngakuPlayer_LyricSyncAccept_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Accept current row with this timing"> <i class="fa-solid fa-arrows-rotate"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-un-undo-last-sync btn-sm super-disabled me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Cancel last undo"> <i class="fa-solid fa-arrow-rotate-right"></i> </button>
+                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-undo-total-prepare btn-sm super-disabled me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Clear all saved timestamps and start from the beginning"> <i class="fa-solid fa-arrow-rotate-right"></i> </button>
                     <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_LyricSyncPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
                 </div>
                 <div class="hstack gap-1 mt-1">
@@ -1223,7 +1246,7 @@
                     <button type="submit" class="btn btn-standard super-disabled" id="LyricSync_SbmtBtn"> <i class="fa-solid fa-check-double"></i> Save</button>
                 </form>
             </div>
-            <button type="button" class="btn btn-standard ms-auto"> <i class="fa-regular fa-eye"></i> Preview</button>
+            <button type="button" class="btn btn-standard btn-lyric-sync-preview ms-auto"> <i class="fa-regular fa-eye"></i> Preview</button>
         </div>
     </div>
     <div class="box-lg-part-body mt-5" id="Primary_Box">
@@ -1233,6 +1256,7 @@
                 <button type="button" class="btn btn-standard btn-sm ms-auto"> <i class="fa-regular fa-copy"></i> Copy</button>
             </div>
             <div class="box-standard p-1">
+                <input type="hidden" id="LyricSync_Lyrics_Val" />
                 <div class="lyric-box" id="TimeSync_Lyrics_Box">
                 </div>
             </div>
@@ -1249,13 +1273,8 @@
                     <button type="button" class="btn btn-cybepunked btn-tooltip btn-sm text-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Remove timing and assign it to the chosen line (repeated timings are not accepted)"> <i class="fa-solid fa-xmark"></i> </button>
                 </div>
             </div>
-            <div class="box-console-log-box pt-0" id="LyricSync_Console_Box">
-                <div class="d-none">
-                    <input type="hidden" id="LyricSync_CurrentRowIndex_Val" value="0" />
-                    <input type="hidden" id="LyricSync_CurrentTimestamp_Val" value="0" />
-                    <input type="hidden" id="LyricSync_PreviousTimestamp_Val" value="0" />
-                    <input type="hidden" id="LyricSync_LastUndoTimestamp_Val" value="0" />
-                </div>
+
+            <div class="box-console-log-box pt-0 " id="LyricSync_Console_Box">
                 <div id="LyricSync_Stats_Box">
                     <div class="row">
                         <div class="col col-1 header-start-table-cell text-center">
@@ -1279,16 +1298,16 @@
                             <span class="console-log-text text-muted">00:00 to --:--</span>
                         </div>
                         <div class="col col-6 regular-end-table-cell text-center" id="0-Lyrics_Col_Box">
-                            <span class="console-log-text">apply to show here</span>
+                            <span class="console-log-text">start to show here</span>
                         </div>
                         <div class="col col-2 regular-end-table-cell text-center" id="0-Lyrics_Col_Box">
-                            <button type="button" class="btn btn-cybepunked btn-sm me-2"> <i class="fa-solid fa-clock-rotate-left"></i> </button>
-                            <button type="button" class="btn btn-cybepunked btn-sm text-danger"> <i class="fa-solid fa-xmark"></i> </button>
+                            <button type="button" class="btn btn-cybepunked btn-sm me-2" disabled> <i class="fa-solid fa-clock-rotate-left"></i> </button>
+                            <button type="button" class="btn btn-cybepunked btn-sm text-danger" disabled> <i class="fa-solid fa-xmark"></i> </button>
                         </div>
                     </div>
                 </div>
                 <div class="box-standard mt-2">
-                    <small class="card-text text-muted" id="LyricSync_TotalInfo_Span">No final result information yet</small>
+                    <small class="card-text text-muted"> <i class="fa-solid fa-quote-right"></i> <span id="LyricSync_TotalRowsQty_Span">No</span> <span id="LyricSync_TotalRowsQtyText_Span">lines synced</span>, <span id="LyricSync_LyricLinesQty_Span">no</span> <span id="LyricSync_LyricLinesQtyText_Span">lyric lines synced</span>, <span id="LyricSync_InstrumentalBreaksQty_Span">no</span> <span id="LyricSync_IntrumentalBreaksQtyText_Span"> instrumental breaks applied</span></small>
                 </div>
             </div>
         </div>

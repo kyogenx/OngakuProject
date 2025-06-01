@@ -6,7 +6,7 @@ namespace OngakuProject.ViewModels
 {
     public class LyricSync_VM
     {
-        public int Id { get; set; }
+        public string? Id { get; set; }
         [Required(ErrorMessage = "Choose correct timestamp for this part")]
         public TimeSpan[]? Timestamps { get; set; }
         [Required(ErrorMessage = "Enter content for this timestamp")]

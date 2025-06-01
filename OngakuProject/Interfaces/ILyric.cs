@@ -8,6 +8,7 @@ namespace OngakuProject.Interfaces
         public Task<string?> AddLyricSyncAsync(LyricSync_VM Model);
         public Task<string?> EditLyricSyncAsync(LyricSync_VM Model);
         public Task<string?> DeleteLyricSyncAsync(string? Id, int UserId, int TrackId);
-        public Task<TrackRaven>? GetSyncedLyricsAsync(string? Id);
+        public Task<Lyrics?> GetLyricsAsync(int Id);
+        public Task<TrackRaven?> GetSyncedLyricsAsync(string? Id);
     }
 }

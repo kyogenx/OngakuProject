@@ -412,12 +412,6 @@ namespace OngakuProject.Repositories
             return 0;
         }
 
-        public async Task<Lyrics?> GetLyricsAsync(int Id)
-        {
-            if (Id > 0) return await _context.Lyrics.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).Select(t => new Lyrics { Id = t.Id, Content = t.Content, LanguageId = t.LanguageId, Language = t.Language != null ? new Language { Name = t.Language.Name } : null }).FirstOrDefaultAsync();
-            else return null;
-        }
-
         public async Task<int> AddToFavoritesAsync(Favorites_VM Model)
         {
             int WasTheTrackAddedBefore = await _context.Favorites.AsNoTracking().Where(t => t.UserId == Model.UserId && t.TrackId == Model.TrackId && !t.IsDeleted).Select(t => t.Id).FirstOrDefaultAsync();

@@ -9,8 +9,9 @@ namespace OngakuProject.Data
         private static IDocumentStore CreateDocumentStore()
         {
             string? DbName = "OngakuNoSqlDb";
-            //string? ServerURL = "https://a.ongaku.ravendb.community"; Cloud URL (certificate needed)
-            string? ServerURL = "http://127.0.0.1:63160";
+            //string? ServerURL = "https://a.ongaku.ravendb.community"; //Cloud URL (certificate needed)
+            //string? ServerURL = "http://127.0.0.1:63160"; //PC
+            string? ServerURL = "http://127.0.0.1:55373"; //Notebook
 
             IDocumentStore documentStore = new DocumentStore()
             {
