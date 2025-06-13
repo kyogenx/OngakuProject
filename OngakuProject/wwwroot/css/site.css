@@ -225,7 +225,7 @@ body {
     border-radius: 10px 10px 1px 1px;
     border-top: 1px solid #f0f0f0;
     border-right: 1px solid #f0f0f0;
-    background-color: black;
+    background-color: #fdfdfd;
     overflow-y: auto;
     overflow-x: hidden;
     bottom: -1200px;
@@ -491,7 +491,7 @@ body {
 }
 
 .bottom-navbar {
-    z-index: 10000;
+    z-index: 100000;
     padding: 8px;
     border-radius: 1px 1px 0 0;
     background-color: #f8f9fa;
@@ -679,75 +679,202 @@ body {
 }
 
 .ongaku-player-box {
-    z-index: 10000;
+    z-index: 20000;
     height: auto;
-    border: 1px solid #f0f0f0;
-    min-height: 75px;
-    max-height: 75%;
+    max-height: 16%;
     border-radius: 10px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background-color: #f8f9fa;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: all ease 0.35s;
-    bottom: -1200px;
-    display: block;
+    background-color: #fdfdfd;
+    border: 1px solid #f0f0f0;
+    left: 0;
+    width: 37%;
     position: fixed;
-}
-.ongaku-player-box-enlarged {
-    max-height: 85%;
-    min-height: 50%;
-    height: auto;
+    bottom: -1200px;
+    display: none;
     transition: all ease 0.35s;
 }
+.ongaku-player-main-info-box {
+    width: 100%;
+    padding: 8px;
+    transition: all ease 0.3s;
+}
+.ongaku-player-album-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+    object-fit: contain;
+    transition: all ease 0.3s;
+}
+.ongaku-player-album-box {
+    width: 70px;
+    height: 70px;
+    color: #2b2b2b;
+    font-size: 40px;
+    text-align: center;
+    border-radius: 10px;
+    padding: 4px 8px 4px 8px;
+    background-color: #f0f0f0;
+    transition: all ease 0.3s;
+}
+
+.ongaku-player-info-box {
+    color: #2b2b2b;
+    margin-left: 4px;
+    margin-right: 4px;
+    transition: all ease 0.3s;
+}
+.ongaku-track-name-lbl {
+    color: #2b2b2b;
+    font-weight: 500;
+    font-size: 21px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: all ease 0.3s;
+}
+.ongaku-artist-name-lbl {
+    color: #6c757d;
+    font-weight: 500;
+    font-size: 16.5px;
+    transition: all ease 0.3s;
+}
+
+.ongaku-track-duration-line {
+    height: 2px;
+    width: 100%;
+    border-radius: 1px;
+    background-color: #f0f0f0;
+    transition: all ease 0.15s;
+}
+.ongaku-track-duration-line:hover,
+.ongaku-track-duration-line:active {
+    height: 6px;
+}
+.ongaku-track-current-duration-line {
+    cursor: pointer;
+    width: 0;
+    height: 100%;
+    background-color: #2b2b2b;
+    border-radius: 99px;
+    transition: all ease 0.15s;
+}
+
 .ongaku-player-bg-box {
     padding: 6px;
     border-radius: 10px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
-.ongaku-player-album-img {
-    border-radius: 10px;    
-    height: 65px;
-    width: 65px;
-    object-fit: cover;
+
+
+.btn-ongaku-player {
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 10px;
+    color: #2b2b2b;
+    background-color: transparent;
     transition: all ease 0.3s;
 }
-.ongaku-player-album-box {
+.btn-ongaku-player:hover,
+.btn-ongaku-player:active {
+    background-color: #f0f0f0;
+}
+.btn-ongaku-player.passive {
+    color: #6c757d;
+}
+.btn-ongaku-player.rounded {
+    border-radius: 99px !important;
+}
+.btn-ongaku-player.columned {
+    width: 100%;
+}
+
+.ongaku-player-box-enlarged {
+    padding: 8px;
+    z-index: 20000;
+    height: auto;
+    box-shadow: none;
+    border: 1px solid #f0f0f0 !important;
+    background-color: transparent;
+    min-height: 35%;
+    max-height: 80%;
+    bottom: -1200px;
+    position: fixed;
+    display: none;
+    left: 37%;
+    width: 63%;
+    transition: all ease 0.35s;
+}
+
+.ongaku-track-name-lbl.enlarged {
+    font-size: 50px;
+}
+.ongaku-artist-name-lbl.enlarged {
+    font-size: 30px;
+    font-weight: normal;
+}
+
+.btn-ongaku-player.enlarged {
+    font-size: 1.45rem;
+    border: 1px solid transparent;
+}
+.btn-ongaku-player.enlarged:hover,
+.btn-ongaku-player.enlarged:active {
+    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    transform: scale(1.125);
+}
+.btn-ongaku-player.enlarged.columned {
+    width: 100%;
+}
+
+.ongaku-track-duration-lbl {
+    color: #6c757d;
+    font-size: 19px;
+    transition: all ease 0.3s;
+}
+
+.ongaku-track-duration-line.enlarged {
+    background-color: transparent;
+    backdrop-filter: blur(8px);
+    border: 1px solid #f0f0f0;
+    border-radius: 99px;
+    margin-top: 3px;
+    height: 7.5px;
+    width: 100%;
+}
+
+.ongaku-player-album-img.enlarged {
+    border-radius: 10px;
+    height: 225px;
+    width: 225px;
+    object-fit: cover;
+    display: none;
+    transition: all ease 0.3s;
+}
+.ongaku-player-album-box.enlarged {
     border-radius: 10px;
     background-color: #f0f0f0;
-    height: 65px;
-    width: 65px;
-    font-size: 43px;
+    height: 225px;
+    width: 225px;
+    font-size: 150px;
     text-align: center;
     color: #2b2b2b;
     transition: all ease 0.3s;
 }
 
-.ongaku-player-bg-box-enlarged {
-    padding: 10px;
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: none;
-}
-.ongaku-player-album-img-enlarged {
-    border-radius: 10px;
-    height: 205px;
-    width: 205px;
-    object-fit: cover;
+.ongaku-player-additionals-box {
+    padding: 8px;
+    height: auto;
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    max-height: 350px;
     transition: all ease 0.3s;
 }
-.ongaku-player-album-box-enlarged {
-    border-radius: 10px;
-    background-color: #f0f0f0;
-    height: 205px;
-    width: 205px;
-    font-size: 140px;
-    text-align: center;
-    color: #2b2b2b;
-    transition: all ease 0.3s;
+.ongaku-player-additional-buttons-box {
+    padding: 6px;
+    border-radius: 99px;
 }
 
 .ongaku-player-album-img-sm {
@@ -767,82 +894,6 @@ body {
     color: #2b2b2b;
     transition: all ease 0.3s;
 }
-.ongaku-track-name-lbl {
-    cursor: pointer;
-    font-weight: 500;
-    padding: 0;
-    border-radius: 10px;
-    color: #2b2b2b;
-    transition: all ease 0.3s;
-}
-.ongaku-track-name-lbl:hover,
-.ongaku-track-name-lbl:active {
-    padding-left: 3px;
-    opacity: 0.9;
-}
-
-.ongaku-artist-name-lbl {
-    cursor: pointer;
-    border-radius: 10px;
-    padding: 0;
-    color: #f0f0f0;
-    transition: all ease 0.3s;
-}
-.ongaku-artist-name-lbl:hover,
-.ongaku-artist-name-lbl:active {
-    opacity: 0.9;
-    padding-left: 3px;
-}
-
-.ongaku-track-duration-line {
-    cursor: pointer;
-    height: 5px;
-    width: 100%;
-    border-radius: 99px;
-    background-color: #e0e0e0;
-    transition: all ease 0.3s;
-}
-.ongaku-track-current-duration-line {
-    height: 100%;
-    width: 0;
-    border-radius: 99px;
-    background-color: black;
-    transition: all ease 0.4s;
-}
-
-.ongaku-track-duration-line-enlarged {
-    cursor: pointer;
-    height: 8px;
-    width: 100%;
-    border-radius: 99px;
-    background-color: #e0e0e0;
-    transition: all ease 0.3s;
-}
-.ongaku-track-current-duration-line-enlarged {
-    height: 100%;
-    width: 0;
-    border-radius: 99px;
-    background-color: black;
-    transition: all ease 0.4s;
-}
-
-.ongaku-track-duration-line:hover,
-.ongaku-track-duration-line:active {
-    background-color: #f0f0f0;
-}
-.ongaku-track-duration-line-enlarged:hover,
-.ongaku-track-duration-line-enlarged:active {
-    background-color: #f0f0f0;
-}
-
-.ongaku-queue-box {
-    height: auto;
-    max-height: 310px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    border-radius: 10px;
-    transition: all ease 0.35s;
-}
 
 .ongaku-div-swiper {
     cursor: pointer;
@@ -857,27 +908,35 @@ body {
     background-color: #e0e0e0;
 }
 
-.btn-ongaku-player {
-    padding: 4px 8px 4px 8px;
-    cursor: pointer;
+.liquid-glass {
     border-radius: 10px;
-    text-align: center;
-    color: #2b2b2b;
-    background-color: transparent;
-    transition: all ease 0.3s;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.btn-ongaku-player-enlarged {
-    width: 100%;
-    font-size: 1.5rem;
-}
-
-.btn-ongaku-player-rounded {
+.btn-glass {
+    width: auto;
+    padding: 12px 24px;
+    font-weight: 500;
     border-radius: 99px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #2b2b2b;
+    cursor: pointer;
+    transition: all ease 0.3s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
-.btn-ongaku-player:hover,
-.btn-ongaku-player:active {
-    background-color: #f0f0f0;
+.btn-glass.columned {
+    width: 100%;
+}
+.btn-glass:hover,
+.btn-glass:active {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
 }
 
 .btn-announcer {
@@ -966,33 +1025,44 @@ body {
 }
 
 .dropdown {
-    z-index: 100000;
     padding: 6px;
+    z-index: 100000;
 }
 .dropdown-menu {
-    padding: 2.5px;
+    padding: 6px;
     z-index: 100000;
-    width: auto !important;
-    border-radius: 10px;
+    border-radius: 15px;
     border: 1px solid #f0f0f0;
-    background-color: rgba(248, 249, 250, 0.95);
-    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 .dropdown-item {
+    white-space: nowrap;
+    text-overflow: ellipsis;
     margin-top: 1.5px;
     margin-bottom: 1.5px;
     width: 100%;
     cursor: pointer;
     color: #2b2b2b;
-    white-space: nowrap;
-    border-radius: 10px;
+    border-radius: 15px;
     background-color: transparent;
     transition: all ease 0.3s;
 }
 .dropdown-item:hover,
 .dropdown-item:active {
     background-color: #f0f0f0;
+}
+.dropdown-divider {
+    border: 1px solid #f0f0f0;
+}
+
+.indicator-span {
+    padding: 2px 6px;
+    color: #2b2b2b;
+    font-weight: 500;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    transition: all ease 0.3s;
 }
 
 .artist-page-avatar-box {
@@ -1585,10 +1655,6 @@ body {
     border-radius: 99px !important;
 }
 
-.dropdown-item {
-    white-space: normal;
-}
-
 .box-forced-bottom {
     bottom: 0;
     position: absolute;
@@ -1648,11 +1714,9 @@ body {
 }
 
 .bg-chosen {
-    border-radius: 10px;
     background-color: #2b2b2b;
 }
 .bg-chosen-bright {
-    border-radius: 10px;
     background-color: #f0f0f0;
 }
 
@@ -2113,11 +2177,54 @@ body {
     width: auto;
 }
 
-.untouchable {
-    pointer-events: none;
+@media (max-width: 389.90px) {
+    .btn-ongaku-player {
+        font-size: 10px;
+    }
+    .ongaku-player-album-img {
+        width: 45px;
+        height: 45px;
+    }
+    .ongaku-player-album-box {
+        width: 45px;
+        height: 45px;
+        font-size: 25px;
+    }
+    .ongaku-track-name-lbl {
+        font-size: 16px;
+    }
+    .ongaku-artist-name-lbl {
+        display: none;
+    }
+    .ongaku-player-album-img.enlarged {
+        width: 85%;
+        aspect-ratio: 1 / 1;
+    }
+    .ongaku-player-album-box.enlarged {
+        width: 85%;
+        aspect-ratio: 1 / 1;
+    }
+    .ongaku-track-name-lbl.enlarged {
+        font-size: 28px;
+    }
+    .ongaku-artist-name-lbl.enlarged {
+        font-size: 17px;
+    }
+    .ongaku-track-duration-lbl {
+        font-size: 15px;
+    }
+
+    .ongaku-player-additionals-box {
+        border-radius: 0;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .ongaku-player-additional-buttons-box {
+        padding: 0;
+    }
 }
 
-@media (max-width: 767.98px) {
+@media (min-width: 390px) and (max-width: 767.98px) {
     html {
         font-size: 14px;
     }
@@ -2132,6 +2239,53 @@ body {
     }
     .best-search-result-box {
         height: 210px;
+    }
+
+    .btn-ongaku-player {
+        font-size: 14px;
+    }
+    .ongaku-player-album-img {
+        width: 45px;
+        height: 45px;
+    }
+    .ongaku-player-album-box {
+        width: 45px;
+        height: 45px;
+        font-size: 26px;
+    }
+    .ongaku-track-name-lbl {
+        font-size: 13.5px;
+    }
+    .ongaku-artist-name-lbl {
+        font-size: 10.5px;
+    }
+
+    .ongaku-player-album-img.enlarged {
+        width: 85%;
+        aspect-ratio: 1 / 1;
+    }
+    .ongaku-player-album-box.enlarged {
+        width: 85%;
+        aspect-ratio: 1 / 1;
+    }
+
+    .ongaku-track-name-lbl.enlarged {
+        font-size: 28px;
+    }
+    .ongaku-artist-name-lbl.enlarged {
+        font-size: 17px;
+    }
+    .ongaku-track-duration-lbl {
+        font-size: 15px;
+    }
+
+    .ongaku-player-additionals-box {
+        border-radius: 0;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .ongaku-player-additional-buttons-box {
+        padding: 0;
     }
 
     .ongaku-player-album-img-enlarged {
@@ -2164,7 +2318,7 @@ body {
         font-size: 3rem;
     }
 }
-
+/*Redesign new media player for lower devices (<1024px)*/
 @media (min-width: 768px) and (max-width: 1024px) {
     html {
         font-size: 15px;
@@ -2191,6 +2345,25 @@ body {
 
     .w-50-lg {
         width: 100%;
+    }
+
+    .btn-ongaku-player {
+        font-size: 12px;
+    }
+    .ongaku-player-album-img {
+        width: 60px;
+        height: 60px;
+    }
+    .ongaku-player-album-box {
+        width: 60px;
+        height: 60px;
+        font-size: 35px;
+    }
+    .ongaku-track-name-lbl {
+        font-size: 16px;
+    }
+    .ongaku-artist-name-lbl {
+        font-size: 12px;
     }
 
     .ongaku-player-album-img-enlarged {
@@ -2231,9 +2404,27 @@ body {
     html {
         font-size: 16px;
     }
-
     .avatar-page-title {
         font-size: 3.5rem;
+    }
+
+    .btn-ongaku-player {
+        font-size: 13px;
+    }
+    .ongaku-player-album-img {
+        width: 55px;
+        height: 55px;
+    }
+    .ongaku-player-album-box {
+        width: 55px;
+        height: 55px;
+        font-size: 30px;
+    }
+    .ongaku-track-name-lbl {
+        font-size: 18px;
+    }
+    .ongaku-player-artist-names-lbl {
+        font-size: 14px;
     }
 }
 

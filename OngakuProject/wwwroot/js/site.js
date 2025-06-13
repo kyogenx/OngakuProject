@@ -25,6 +25,7 @@ let reserveQueue = [];
 //function callASmContainer(); function displayCorrector
 window.onload = function () {
     displayCorrector(currentWindowSize);
+    mediaPlayerCorrector(currentWindowSize, false);
     bottomNavbarH = $(".bottom-navbar").innerHeight();
     callPlayerBox(true, "ongaku-player-box");
     setTimeout(function () {
@@ -36,8 +37,9 @@ window.onload = function () {
 window.onresize = function () {
     currentWindowSize = window.innerWidth;
     displayCorrector(currentWindowSize);
-    bottomNavbarH = $(".bottom-navbar").innerHeight();
     setTimeout(function () {
+        bottomNavbarH = $(".bottom-navbar").innerHeight();
+        mediaPlayerCorrector(currentWindowSize, true);
         lgPartContainerCorrector(currentWindowSize, playerPosition);
     }, 350);
 }
@@ -893,16 +895,13 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
             $("#GetTrackCredits_Id_Val").val(response.result.id);
             if (response.result.isFavorite) {
                 $(".btn-track-favor-unfavor").html(' <i class="fa-solid fa-star"></i> ');
-                $(".btn-track-favor-unfavor-lg").html(' <i class="fa-solid fa-star"></i> ');
                 $("#AddOrRemoveTheTrackAsFavorite_Form").attr("action", "/Playlists/RemoveFromFavorites");
             }
             else {
                 $(".btn-track-favor-unfavor").html(' <i class="fa-regular fa-star"></i> ');
-                $(".btn-track-favor-unfavor-lg").html(' <i class="fa-regular fa-star"></i> ');
                 $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/AddToFavorites");
             }
             $(".btn-track-favor-unfavor").attr("data-id", response.result.id);
-            $(".btn-track-favor-unfavor-lg").attr("data-id", response.result.id);
 
             $("#OngakuPlayer_Type_Val").val(response.type);
             $("#StreamTheTrack_Form").submit();
@@ -4629,6 +4628,38 @@ $(document).on("mousedown", ".ongaku-track-duration-line, .ongaku-track-duration
     }
 });
 
+$(document).on("mouseleave", ".ongaku-track-duration-line", function () {
+    let audioPlayer = $(this).attr("data-audio-player");
+    if (audioPlayer != undefined) {
+        clearInterval(intervalValue);
+        $("#OngakuPlayer_Forward_Btn").html(' <i class="fa-solid fa-forward"></i> ');
+        $("#OngakuPlayer_Backward_Btn").html(' <i class="fa-solid fa-backward"></i>');
+    }
+});
+
+$(document).on("mouseenter", ".ongaku-track-duration-line", function () {
+    let audioPlayer = $(this).attr("data-audio-player");
+    if (audioPlayer != undefined) {
+        let durations = getAudioPlayerDuration(audioPlayer);
+        if (durations != null) {
+            let currentDurationInTime = secondsToRegularDuration(durations[0]);
+            let timeLeft = secondsToRegularDuration(durations[1] - durations[0]);
+            $("#OngakuPlayer_Forward_Btn").html("<span class='fw-500'>-" + timeLeft[0] + ":" + timeLeft[1] + "</span>");
+            $("#OngakuPlayer_Backward_Btn").html("<span class='fw-500'>" + currentDurationInTime[0] + ":" + currentDurationInTime[1] + "</span>");
+        }
+
+        intervalValue = setInterval(function () {
+            durations = getAudioPlayerDuration(audioPlayer);
+            if (durations != null) {
+                currentDurationInTime = secondsToRegularDuration(durations[0]);
+                timeLeft = secondsToRegularDuration(durations[1] - durations[0]);
+                $("#OngakuPlayer_Forward_Btn").html("<span class='fw-500'>-" + timeLeft[0] + ":" + timeLeft[1] + "</span>");
+                $("#OngakuPlayer_Backward_Btn").html("<span class='fw-500'>" + currentDurationInTime[0] + ":" + currentDurationInTime[1] + "</span>");
+            }
+        }, 500);
+    }
+});
+
 $("audio").on("ended", function () {
     let thisId = $(this).attr("id");
     if (thisId != undefined) {
@@ -5006,10 +5037,10 @@ $(document).on("mousedown", ".btn-ongaku-player-extend", function () {
 });
 
 $(document).on("dblclick", ".ongaku-player-box", function () {
-    if (!$(this).hasClass("ongaku-player-box-enlarged")) enlargeMusicIsland(currentWindowSize);
+    if (!$(this).hasClass("ongaku-player-box-enlarged")) enlargeMediaPlayer(currentWindowSize);
 });
 $(document).on("mousedown", ".ongaku-div-swiper", function () {
-    dwindleMusicIsland(currentWindowSize);
+    dwindleMediaPlayer(currentWindowSize);
 });
 
 $(document).on("touchstart", ".ongaku-player-box", function (event) {
@@ -5017,7 +5048,7 @@ $(document).on("touchstart", ".ongaku-player-box", function (event) {
 });
 $(document).on("touchmove", ".ongaku-player-box", function (event) {
     let moveDirection = handleTouchMove(event);
-    if (moveDirection == 1) enlargeMusicIsland(currentWindowSize);
+    if (moveDirection == 1) enlargeMediaPlayer(currentWindowSize);
     else if (moveDirection == 2) {
         if ($("#OngakuPlayerMainPart_Box").css("display") != "none") showBySlidingToRight(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
         else hideBySlidingToLeft(false, "OngakuPlayerMainPart_Box", "OngakuPlayerNotMainPart_Box");
@@ -7066,6 +7097,20 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
     }
 }
 
+function getAudioPlayerDuration(elementId) {
+    if (elementId != undefined || elementId != null) {
+        let audioPlayer = document.getElementById(elementId);
+        if (audioPlayer != undefined) {
+            let totalDuration = audioPlayer.duration;
+            let currentDuration = audioPlayer.currentTime;
+
+            return [currentDuration, totalDuration];
+        }
+        else return null;
+    }
+    else return null;
+}
+
 function getTrackFromQueue(songsArr = [], trackIndex = 0, trackOrderChange = 1, autoPlayOn = true) {
     if (songsArr != null) {
         trackIndex = trackIndex + trackOrderChange;
@@ -7267,6 +7312,204 @@ function lgPartContainerCorrector(currentWidth, playerPosition) {
     else $(".box-lg-part").css("padding-bottom", 0);
 }
 
+//enlargeMusicIsland
+function enlargeMediaPlayer(currentWidth) {
+    uncallSmMediaPlayer(currentWidth);
+    setTimeout(function () {
+        callLgMediaPlayer();
+    }, 750);
+}
+
+function dwindleMediaPlayer(currentWidth) {
+    uncallLgMediaPlayer();
+    setTimeout(function () {
+        callSmMediaPlayer(currentWidth);
+    }, 750);
+}
+
+function callSmMediaPlayer(currentWidth) {
+    let bottomH = 0;
+    if (parseInt(currentWidth) < 1024) bottomH = bottomNavbarH;
+    else bottomH = 10;
+
+    $(".ongaku-player-box").fadeIn(0);
+    $(".ongaku-player-box").css("bottom", bottomH + 75 + "px");
+    setTimeout(function () {
+        $(".ongaku-player-box").css("bottom", bottomH - 10 + "px");
+    }, 350);
+    setTimeout(function () {
+        $(".ongaku-player-box").css("bottom", bottomH + "px");
+    }, 700);
+}
+
+function uncallSmMediaPlayer() {
+    let bottomH = parseInt($(".ongaku-player-box").css("bottom"));
+
+    $(".ongaku-player-box").css("bottom", bottomH - 10 + "px");
+    setTimeout(function () {
+        $(".ongaku-player-box").css("bottom", bottomH + 55 + "px");
+    }, 350);
+    setTimeout(function () {
+        $(".ongaku-player-box").css("bottom", "-1200px");
+    }, 700);
+}
+
+function callLgMediaPlayer() {
+    let bottomH = bottomNavbarH;
+
+    $(".ongaku-player-box-enlarged").fadeIn(0);
+    $(".ongaku-player-box-enlarged").css("bottom", bottomH + 55 + "px");
+    setTimeout(function () {
+        $(".ongaku-player-box-enlarged").css("bottom", bottomH - 15 + "px");
+    }, 350);
+    setTimeout(function () {
+        $(".ongaku-player-box-enlarged").css("bottom", bottomH + "px");
+    }, 700);
+}
+
+function uncallLgMediaPlayer() {
+    let bottomH = bottomNavbarH;
+
+    $(".ongaku-player-box-enlarged").css("bottom", bottomH - 15 + "px");
+    setTimeout(function () {
+        $(".ongaku-player-box-enlarged").css("bottom", bottomH + 55 + "px");
+    }, 350);
+    setTimeout(function () {
+        $(".ongaku-player-box-enlarged").css("bottom", "-1200px");
+    }, 700);
+}
+
+function mediaPlayerCorrector(currentWidth, isForStart = false) {
+    let smPlayerElement = null;
+    let lgPlayerElement = null;
+
+    if (parseInt(currentWidth) < 1024) {
+        smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl">Track Title</span> <br /> <small class="ongaku-artist-name-lbl">Artist Names</small> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward me-1"> <i class="fa-solid fa-backward"></i> </button> <button type="button" class="btn btn-ongaku-player btn-play-pause-track me-1" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i></button> </div> </div> </div>');
+        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass shadow-sm" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="mt-2"> <img src="#" class="ongaku-player-album-img enlarged mx-auto" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged mx-auto" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-2"> <div> <span class="ongaku-track-name-lbl enlarged">Track Title</span> <br /> <span class="ongaku-artist-name-lbl enlarged">Artist Names</span> </div> <button type="button" class="btn btn-ongaku-player enlarged btn-ongaku-player-track-favor-unfavor btn-track-favor-unfavor ms-auto" id="EnlargedOngakuPlayer_TrackFavorUnfavor_Btn"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-1"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> </div> <div class="box-standard mt-2"> <div class="hstack gap-1"> <div class="row w-100"> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="EnlargedOngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn4Col_Box" style="display: none;"> </div> </div> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen enlarged" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="box-standard" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass bg-chosen-bright columned"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> <div class="col"> <button type="button" class="btn btn-glass columned btn-audio-shuffle"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div > </div > </div > ');
+        smPlayerElement.css("left", "0.75%");
+        smPlayerElement.css("width", "98.25%");
+        lgPlayerElement.css("left", "0.75%");
+        lgPlayerElement.css("width", "98.25%");
+    }
+    else {
+        smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br/> <span class="ongaku-artist-name-lbl" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor btn-ongaku-player-track-favor-unfavor rounded"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="ongaku-track-duration-line" data-audio-player="OngakuPlayer_Audio" id="OngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <div class="ongaku-player-main-info-box"> <div class="row"> <div class="col" id="OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward columned" id="OngakuPlayer_Backward_Btn"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track columned" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward columned" id="OngakuPlayer_Forward_Btn"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn4Col_Box" style="display: none;"> <button type="button" class="btn btn-ongaku-player columned passive"> <i class="fa-solid fa-sliders"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn5Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn6Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div> </div>');
+        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass shadow-sm" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="hstack gap-2 mt-2"> <div> <img src="#" class="ongaku-player-album-img enlarged" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ms-2 w-100"> <div> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-track-favor-unfavor btn-track-favor-unfavor enlarged float-end ms-1" id="EnlargedOngakuPlayer_TrackFavorUnfavor_Btn"> <i class="fa-regular fa-star"></i> </button> <span class="ongaku-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br /> <span class="ongaku-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="hstack gap-1 mt-2"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> <div class="box-standard mt-2"> <div class="row"> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="EnlargedOngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn4Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop enlarged text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> </div> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="box-standard" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass bg-chosen-bright columned"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> </div> <div class="col"> <button type="button" class="btn btn-glass btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-glass columned"> <i class="fa-solid fa-magnifying-glass"></i> </button> </div> </div> </div > </div > </div > ');
+
+        smPlayerElement.css("left", "0.4%");
+        smPlayerElement.css("width", "36%");
+        lgPlayerElement.css("left", "37%");
+        lgPlayerElement.css("width", "63%");
+    }
+
+    if (smPlayerElement != null && lgPlayerElement != null) {
+        if (isForStart) {
+            let trackIsFavorite = $("#EnlargedOngakuPlayer_TrackFavorUnfavor_Btn").attr("data-id");
+            let trackName = $(".ongaku-track-name-lbl").html();
+            let artistsSpan = $(".ongaku-artist-name-lbl").html();
+            let trackImgUrl = $(".ongaku-player-album-img").attr("src");
+            let trackStatus = document.getElementById("OngakuPlayer_Audio").paused;
+            trackImgUrl = trackImgUrl == "#" ? undefined : trackImgUrl;
+
+            uncallSmMediaPlayer();//enable media player sync after change;
+            $(".ongaku-player-box-enlarged").css("bottom", "-1200px");
+            setTimeout(function () {
+                $(".ongaku-player-box").remove();
+                $(".ongaku-player-box-enlarged").remove();
+                $("body").append(smPlayerElement);
+                $("body").append(lgPlayerElement);
+
+                $(".ongaku-track-name-lbl").html(trackName);
+                $(".ongaku-artist-name-lbl").html(artistsSpan);
+                if (trackIsFavorite != undefined) {
+                    $(".btn-ongaku-player-track-favor-unfavor").attr("data-id", trackIsFavorite);
+                    $(".btn-ongaku-player-track-favor-unfavor").html(' <i class="fa-solid fa-star"></i> ');
+                }
+                else {
+                    $(".btn-ongaku-player-track-favor-unfavor").attr("data-id", 0);
+                    $(".btn-ongaku-player-track-favor-unfavor").html(' <i class="fa-regular fa-star"></i> ');
+                }
+                if (!trackStatus) audioContinue("OngakuPlayer_Audio", null);
+                else audioPause("OngakuPlayer_Audio");
+                if (trackImgUrl != undefined) {
+                    $(".ongaku-player-album-img").fadeIn(0);
+                    $(".ongaku-player-album-box").fadeOut(0);
+                    $(".ongaku-player-album-img").attr("src", trackImgUrl);
+                }
+                else {
+                    $(".ongaku-player-album-box").fadeIn(0);
+                    $(".ongaku-player-album-img").fadeOut(0);
+                    $(".ongaku-player-album-img").attr("src", "#");
+                }
+
+                setTimeout(function () {
+                    callSmMediaPlayer(currentWidth);
+                }, 150);
+            }, 750);
+        }
+        else {
+            $("body").append(smPlayerElement);
+            $("body").append(lgPlayerElement);
+            setTimeout(function () {
+                callSmMediaPlayer(currentWidth);
+            }, 150);
+        }
+    } 
+}
+
+function mediaPlayerButtonSwapper(mediaPlayerId, type = 0, disableStarButton = false, casualButtonClassesArr = [], casualButtonHtmlsArr = [], casualButtonIdsArr = []) {
+    if (mediaPlayerId != null || mediaPlayerId != undefined) {
+        const mediaPlayer = document.getElementById(mediaPlayerId);
+        if (mediaPlayer != null) {
+            let buttonsArr = [];
+            let lgButtonsArr = [];
+
+            if (disableStarButton) $(".btn-ongaku-player-track-favor-unfavor").addClass("super-disabled");
+            else $(".btn-ongaku-player-track-favor-unfavor").removeClass("super-disabled");
+
+            if (casualButtonClassesArr != null && casualButtonHtmlsArr != null && casualButtonIdsArr != null) {
+                if ((casualButtonClassesArr.length == casualButtonHtmlsArr.length) && (casualButtonClassesArr.length == casualButtonIdsArr.length)) {
+                    for (let i = 0; i < casualButtonClassesArr.length; i++) {
+                        let button = elementDesigner("button", "btn btn-ongaku-player columned " + casualButtonClassesArr[i], casualButtonHtmlsArr[i]);
+                        let buttonLg = button.addClass("enlarged");
+                        button.attr("id", casualButtonIdsArr[i]);
+                        buttonLg.attr("id", "Enlarged_" + casualButtonIdsArr[i]);
+                        buttonsArr.push(button);
+                        lgButtonsArr.push(buttonLg);
+                    }
+                }
+            }
+            else {
+                switch (parseInt(type)) {
+                    case 0:
+                        let button1 = elementDesigner("button", "btn btn-ongaku-player btn-ongaku-player-backward columned", ' <i class="fa-solid fa-backward"></i> ');
+                        let button2 = elementDesigner("button", "btn btn-ongaku-player btn-ongaku-play-pause columned", ' <i class="fa-solid fa-house"></i> ');
+                        let button3 = elementDesigner("button", "btn btn-ongaku-player btn-ongaku-player-forward columned", ' <i class="fa-solid fa-forward"></i> ');
+                        let button4 = elementDesigner("button", "btn btn-ongaku-player btn-ongaku-player-backward columned", ' <i class="fa-solid fa-backward"></i> ');
+                        buttonsArr.push(button1);
+                        buttonsArr.push(button2);
+                        buttonsArr.push(button3);
+                        buttonsArr.push(button4);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (buttonsArr.length > 0) {
+                for (let i = 0; i < buttonsArr.length; i++) {
+                    console.log(mediaPlayerId + "_Btn" + i + "Col_Box");
+                    $("#" + mediaPlayerId + "_Btn" + i + "Col_Box").empty();
+                    $("#" + mediaPlayerId + "_Btn" + i + "Col_Box").append(buttonsArr[i]);
+                }
+            }
+        }
+    }
+}
+
+$("body").on("dblclick", function () {
+    mediaPlayerButtonSwapper("OngakuPlayer_Audio", 0, false, null, null, null);
+});
+
 function displayCorrector(currentWidth) {
     if (parseInt(currentWidth) < 1024) {
         $(".box-lg-part").css("left", "0");
@@ -7295,7 +7538,8 @@ function displayCorrector(currentWidth) {
 
         $(".ongaku-player-box").css("left", "0.75%");
         $(".ongaku-player-box").css("width", "98.25%");
-        $(".ongaku-player-box").css("bottom", bottomNavbarH + 10 + "px");
+        $(".ongaku-player-box.enlarged").css("left", "0.75%");
+        $(".ongaku-player-box.enlarged").css("width", "98.25%");
     }
     else {
         $(".box-lg-part").css("left", "37%");
@@ -7324,7 +7568,8 @@ function displayCorrector(currentWidth) {
 
         $(".ongaku-player-box").css("left", "0.4%");
         $(".ongaku-player-box").css("width", "36%");
-        $(".ongaku-player-box").css("bottom", "10px");
+        $(".ongaku-player-box.enlarged").css("left", "37%");
+        $(".ongaku-player-box.enlarged").css("width", "63%");
 
         $(".ongaku-alert").fadeIn(350);
         $(".bottom-navbar").fadeIn(350);
@@ -8325,135 +8570,6 @@ function singleSampler(isForAuthor = false, isFavorite = false, id, status = -1,
         trackQueue.songs.push(id);
         trackOrderInQueue = 0;
     });
-}
-
-function dwindleMusicIsland(currentWidth) {
-    if (currentWidth < 1025) {
-        let botNavbarH = bottomNavbarH - 8;
-        $(".ongaku-player-box").css("bottom", botNavbarH);
-        $(".ongaku-player-box").css("left", "0.75%");
-        $(".ongaku-player-box").css("width", "98.25%");
-        $(".ongaku-player-box").removeClass("ongaku-player-box-enlarged");
-        $(".ongaku-player-bg-box-enlarged").fadeOut(0);
-        setTimeout(function () {
-            $(".ongaku-player-bg-box").fadeIn(300);
-        }, 300);
-
-        setTimeout(function () {
-            botNavbarH += 32;
-            $(".ongaku-player-box").css("bottom", botNavbarH);
-        }, 400);
-        setTimeout(function () {
-            botNavbarH -= 14;
-            $(".ongaku-player-box").css("bottom", botNavbarH);
-        }, 800);
-    }
-    else {
-        let anySideBar = document.getElementsByClassName("side-navbar");
-        if (anySideBar != null && anySideBar.length > 0) {
-            let playerBottomV = parseInt($(".ongaku-player-box").css("bottom"));
-            botNavbarH = playerBottomV + 6;
-            $(".ongaku-player-bg-box-enlarged").fadeOut(300);
-            setTimeout(function () {
-                botNavbarH -= 18;
-                $(".ongaku-player-bg-box").fadeIn(300);
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-            }, 300);
-            setTimeout(function () {
-                botNavbarH += 12;
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-            }, 650);
-        }
-        else {
-            let botNavbarH = 0;
-            let playerBottomV = parseInt($(".ongaku-player-box").css("bottom"));
-            $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-            $(".ongaku-player-box").css("left", 0);
-            $(".ongaku-player-box").css("width", "36%");
-            $(".ongaku-player-box").removeClass("ongaku-player-box-enlarged");
-            $(".ongaku-player-bg-box-enlarged").fadeOut(0);
-            setTimeout(function () {
-                $(".ongaku-player-bg-box").fadeIn(300);
-            }, 300);
-
-            setTimeout(function () {
-                botNavbarH += 24;
-                $(".ongaku-player-box").css("left", "0.4%");
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-                $(".box-sm-part-inner").css("bottom", botNavbarH + playerBottomV + "px");
-            }, 400);
-            setTimeout(function () {
-                botNavbarH -= 12;
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-                $(".box-sm-part-inner").css("bottom", botNavbarH + playerBottomV + 6 + "px");
-            }, 800);
-        }
-    }
-}
-
-function enlargeMusicIsland(currentWidth) {
-    if (currentWidth < 1025) {
-        let botNavbarH = bottomNavbarH + 36;
-        $(".ongaku-player-box").css("bottom", botNavbarH);
-        $(".ongaku-player-box").css("left", "0.75%");
-        $(".ongaku-player-box").css("width", "98.25%");
-        $(".ongaku-player-box").addClass("ongaku-player-box-enlarged");
-
-        $(".ongaku-player-bg-box").fadeOut(300);
-        setTimeout(function () {
-            $(".ongaku-player-bg-box-enlarged").fadeIn(300);
-        }, 300);
-        setTimeout(function () {
-            botNavbarH -= 28;
-            $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-        }, 400);
-        setTimeout(function () {
-            botNavbarH += 4;
-            $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-        }, 800);
-    }
-    else {
-        let anySideBar = document.getElementsByClassName("side-navbar");
-        if (anySideBar != null && anySideBar.length > 0) {
-            botNavbarH = 6;
-            $(".ongaku-player-bg-box").fadeOut(300);
-            setTimeout(function () {
-                botNavbarH += 36;
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-                $(".ongaku-player-bg-box-enlarged").fadeIn(300);
-            }, 300);
-            setTimeout(function () {
-                botNavbarH -= 30;
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-            }, 650);
-        }
-        else {
-            let botNavbarH = bottomNavbarH + 36;
-            let playerBottomV = parseInt($(".ongaku-player-box").css("bottom"));
-            $(".ongaku-player-box").css("bottom", botNavbarH);
-            $(".ongaku-player-box").css("left", "40%");
-            $(".ongaku-player-box").css("width", "62%");
-            $(".ongaku-player-box").addClass("ongaku-player-box-enlarged");
-
-            $(".ongaku-player-bg-box").fadeOut(300);
-            $(".box-sm-part-inner").css("bottom", playerBottomV + botNavbarH + 12 + "px");
-            setTimeout(function () {
-                $(".ongaku-player-bg-box-enlarged").fadeIn(300);
-            }, 300);
-            setTimeout(function () {
-                botNavbarH -= 28;
-                $(".ongaku-player-box").css("left", "34.5%");
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-                $(".box-sm-part-inner").css("bottom", "-2px");
-            }, 400);
-            setTimeout(function () {
-                botNavbarH += 4;
-                $(".ongaku-player-box").css("left", "37.5%");
-                $(".ongaku-player-box").css("bottom", botNavbarH + "px");
-                $(".box-sm-part-inner").css("bottom", "10px");
-            }, 800);
-        }
-    }
 }
 
 function animahider(byClassname, elementId) {
