@@ -1,0 +1,465 @@
+﻿
+@{
+    User? UserInfo = ViewBag.UserInfo;
+    ViewData["Title"] = "Test";
+}
+
+<div class="box-sm-part shadow-sm">
+    <div class="d-none" id="OngakuPlayer_Guts_Box">
+        <form method="get" action="/Track/Load" id="LoadTheTrack_Form">
+            <input type="hidden" name="Id" id="OngakuPlayer_TrackId_Val" value="0" />
+            <input type="hidden" name="PlaylistId" id="OngakuPlayer_PlaylistId_Val" value="0" />
+            <input type="hidden" name="Type" id="OngakuPlayer_Type_Val" value="0" />
+        </form>
+        <form method="get" action="/Track/StreamAudio" id="StreamTheTrack_Form">
+            <input type="hidden" name="Id" id="StreamTheTrack_Id_Val" />
+            <input type="hidden" name="Url" id="StreamTheTrack_Url_Val" />
+        </form>
+        <form method="post" action="/Playlists/Unfavor" id="RemoveFromFavorites_Form">
+            <input type="hidden" name="Id" id="UnfavorThePlaylist_Id_Val" />
+        </form>
+        <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
+        <form method="post" action="/Subscribtion/Subscribe" id="SubscribeForArtist_Form">
+            <input type="hidden" id="SubscribeForArtist_Id_Val" name="Id" value="0" />
+        </form>
+        <form method="post" action="/Subscribtion/Unsubscribe" id="UnsubscribeForArtist_Form">
+            <input type="hidden" id="UnsubscribeForArtist_Id_Val" name="Id" value="0" />
+        </form>
+    </div>
+    <div class="div-vertical-swiper"></div>
+    <div class="d-none">
+        <form method="get" asp-controller="User" asp-action="Search" id="SearchForUsers_Form">
+            <input type="hidden" name="Type" id="SearchForUsers_Type_Val" value="1" />
+            <input type="hidden" name="Keyword" id="SearchForUsers_Keyword_Val" />
+        </form>
+        <form method="get" asp-controller="Genre" asp-action="Search" id="SearchForGenres_Form">
+            <input type="hidden" name="Type" id="SearchForGenres_Type_Val" value="1" />
+            <input type="hidden" name="Keyword" id="SearchForGenres_Keyword_Val" />
+        </form>
+        <form method="get" asp-controller="Miscellaneous" asp-action="GetLanguages" id="GetLanguages_Form">
+            <input type="hidden" name="Keyword" id="GetLanguages_Keyword_Val" />
+            <input type="hidden" name="Type" id="GetLanguages_Type_Val" value="0" />
+        </form>
+        <input type="hidden" id="CurrentUserInfo_Id_Val" value="@UserInfo.Id" />
+        <form method="get" asp-controller="Track" asp-action="GetSingleInfo" id="GetSingleInfo_Form">
+            <input type="hidden" name="Id" id="GSI_Id_Val" value="0" />
+            <input type="hidden" name="IsForAuthor" id="GSI_IsForAuthor_Val" value="false" />
+        </form>
+        <form method="get" asp-controller="Playlists" asp-action="GetInfo" id="GetPlaylistInfo_Form">
+            <input type="hidden" name="Id" id="GPI_Id_Val" value="0" />
+            <input type="hidden" name="UserId" value="@UserInfo.Id" />
+        </form>
+        <form method="get" asp-controller="Playlists" asp-action="CheckShortnameAvailability" id="CheckShortnameAvailability_Form">
+            <input type="hidden" name="Id" id="CSA_Id_Val" value="0" />
+            <input type="hidden" name="Shortname" id="CSA_Shortname_Val" />
+        </form>
+        <form method="get" asp-controller="Artist" asp-action="GetInfo" id="GetArtistInfo_Form">
+            <input type="hidden" name="Id" id="GetArtistInfo_Id_Val" value="0" />
+        </form>
+        <form method="post" action="/Playlists/AddOrRemoveTheTrackAsFavorite" id="AddOrRemoveTheTrackAsFavorite_Form">
+            <input type="hidden" name="TrackId" id="ARTAF_Id_Val" value="0" />
+        </form>
+        <form method="post" action="/Playlists/SaveOrUnsave" id="SaveOrRemoveThePlaylist_Form">
+            <input type="hidden" name="Id" id="SORTP_Id_Val" value="0" />
+        </form>
+        <input type="hidden" id="CurrentUserNickname_Val" value="@UserInfo.Nickname" />
+    </div>
+
+    @*     <div class="box-sm-part-inner active" id="Primary_Container" style="display: block; bottom: 145px;">
+        <div class="box-standard p-2" id="Tutorials_Box">
+            <div class="div-swiper mx-auto"></div>
+            <div class="box-standard mt-2" id="TutorialSamples_Box">
+                <div class="box-sm-part-sliding lyric-sync-tutorials" id="0-TutorialSample_Box">
+                    <div class="box-tutorial row">
+                        <div class="col col-3">
+                            <div class="tutorial-icon"> <i class="fa-solid fa-arrows-rotate anime-sync-forever"></i> </div>
+                        </div>
+                        <div class="col col-9">
+                            <span class="card-text white-space-on">Welcome to <span class="fw-500">Lyric Sync</span>!<br /><br />Easily align your track’s lyrics with the music timeline, making playback smoother and karaoke more enjoyable for everyone. We recommend reading these quick tips before you start syncing. They will help you understand everything you need to do here</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-sm-part-sliding to-right lyric-sync-tutorials" id="1-TutorialSample_Box">
+                    <div class="box-tutorial row">
+                        <div class="col col-3">
+                            <div class="tutorial-icon"> <i class="fa-solid fa-play"></i> </div>
+                        </div>
+                        <div class="col col-9">
+                            <div class="card-text white-space-on">Start by exploring the audio player.<br />New controls have been added to assist with syncing. Hover or tap each button below to see its function
+                                <div class="box-standard bg-light row p-1 pt-0 mt-1">
+                                  <div class="col">
+                                        <button type="button" class="btn btn-standard btn-tooltip text-center w-100" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="This button cancels last sync and restore previous timestamp"> <i class="fa-solid fa-arrow-rotate-left"></i> </button>
+                                  </div>
+                                  <div class="col">
+                                        <button type="button" class="btn btn-standard btn-tooltip text-center w-100" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="This button applies current timestamp to this lyric line"> <i class="fa-solid fa-arrows-rotate"></i> </button>
+                                  </div>
+                                  <div class="col">
+                                        <button type="button" class="btn btn-standard btn-tooltip text-center w-100" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="This button is redoing previous sync (if available)"> <i class="fa-solid fa-arrow-rotate-right"></i> </button>
+                                  </div>
+                                  <div class="col">
+                                        <button type="button" class="btn btn-standard btn-tooltip text-center w-100" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Standard play/pause buttons. Paused audios are not available for syncinc"> <i class="fa-solid fa-play"></i> <i class="fa-solid fa-pause"></i> </button>
+                                  </div>
+                              </div>  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-sm-part-sliding to-right lyric-sync-tutorials" id="2-TutorialSample_Box">
+                    <div class="box-tutorial hstack gap-1">
+                        <div class="tutorial-icon"> <i class="fa-regular fa-circle-check"></i> </div>
+                        <div class="ms-2">
+                            <span class="card-text white-space-on">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box-standard hstack gap-2 text-center mt-2">
+                <button type="button" class="btn btn-standard btn-sliders-slide-to-left me-2" id="TutorialSample_Box-ToLeft_Btn" data-index="0"> <i class="fa-solid fa-circle-left"></i> </button>
+                <div class="box-standard text-center mx-auto" id="TutorialDots_Box">
+                </div>
+                <button type="button" class="btn btn-standard btn-sliders-slide-to-right ms-2" id="TutorialSample_Box-ToRight_Btn" data-index="0" data-family="lyrics-sync-tutorials"> <i class="fa-solid fa-circle-right"></i> </button>
+            </div>
+        </div>      *@
+
+    @*                             <div class="slider-dots active" id="0-TutorialDot_Box"></div>
+                    <div class="slider-dots" id="1-TutorialDot_Box"></div>
+                    <div class="slider-dots" id="2-TutorialDot_Box"></div> *@
+    @*     </div> *@
+
+    @*     <div class="box-sm-part-inner active" id="Primary_Container">
+        <div class="div-swiper div-swiper-sm mx-auto" id="Primary_Container-SwiperSm"></div>
+        <div class="box-standard p-2" id="Primary_Box">
+        </div>
+    </div> *@
+
+    @*     <div class="box-sm-part-inner active" id="Primary_Container">
+        <div class="box-standard p-2" id="Proposal_Box">
+            <div class="box-standard text-center p-1">
+                <h2 class="h2" id="Proposal_Icon_Lbl"> <i class="fa-solid fa-question"></i> </h2>
+                <h4 class="h4" id="Proposal_Header_Lbl">Proposal Header</h4>
+                <small class="card-text text-muted white-space-on" id="Proposal_Description_Span">Proposal description (short)</small>
+            </div>
+            <div class="row mt-3">
+                <div class="col" id="ProposalSubmit_Box">
+                    <button type="button" class="btn btn-standard-bolded btn-classic-styled w-100" id="ProposalSubmit_Btn">Submit</button>
+                    <div class="box-standard" id="ProposalForForms_Box" style="display: none;"></div>
+                </div>
+                <div class="col" id="ProposalCancel_Box">
+                    <button type="button" class="btn btn-standard-bolded btn-close-sm-part-container bg-chosen-bright w-100" id="Proposal_Container-BtnClose"> <i class="fa-regular fa-circle-xmark"></i> Cancel</button>
+                </div>
+            </div>
+            <div class="box-bordered text-center mt-2 p-2">
+                <span class="h6">Time Left</span>
+                <br />
+                <small class="card-text text-muted" id="Proposal_Timer_Span">01:00</small>
+            </div>
+        </div>
+    </div> *@
+
+    @* <div class="box-standard p-1">
+        <div class="playlist-box">
+            <div class="hstack gap-1">
+                <div>
+                    <div class="release-img-box-sm"> <i class="fa-solid fa-wave-square"></i> </div>
+                </div>
+                <div class="ms-1">
+                    <span class="h6">Playlist Name</span>
+                    <br />
+                    <small class="card-text text-muted"><small class="badge-standard"> <i class="fa-solid fa-wave-square"></i> Playlist</small> ∙ 100 songs</small>
+                </div>
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-standard ms-auto" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li><button type="button" class="dropdown-item"></button></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div> *@
+
+    @* <div class="p-1">
+        <div class="box-standard p-1">
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-standard text-center w-100"> <i class="fa-solid fa-folder-plus"></i> <br /> Add Playlist</button>
+                </div>
+            </div>
+        </div>
+    </div> *@
+</div>
+
+@* <div class="box-lg-part shadow-sm" id="EditTrackLyrics_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="EditTrackLyrics_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="EditTrackLyrics_Container-Header_Lbl">Edit Lyrics</span>
+            </div>
+            <div class="ms-auto" id="DeleteTrackLyrics_Box" style="display: none;">
+                <form method="post" action="/Track/DeleteLyrics" id="DeleteTrackLyrics_Form">
+                    <input type="hidden" name="Id" id="DTL_Id_Val" value="0" />
+                    <button type="submit" class="btn btn-standard btn-sm text-danger super-disabled" id="DeleteTrackLyrics_SbmtBtn"> <i class="fa-solid fa-trash-can"></i> Delete</button>
+                </form>
+            </div>
+        </div>
+        <div class="box-bordered mt-1 p-1">
+            <div class="hstack gap-1">
+                <div>
+                    <img src="#" class="release-img-sm" id="ETL_Img" style="display: none;" />
+                    <div class="release-img-box-sm" id="ETL_Img_Box"> <i class="fa-solid fa-music"></i> </div>
+                </div>
+                <div class="ms-1">
+                    <span class="h6" id="ETL_TrackTitle_Lbl">Track Title</span>
+                    <br />
+                    <small class="card-text text-muted" id="ETL_TrackArtists_Span">Artists (all)</small>
+                </div>
+                <button type="button" class="btn btn-standard btn-previewer btn-tooltip btn-sm ms-auto" id="EditTrackLyricsPreview_BtnOpen" data-previewer-title="Lyrics Previewer" data-titles="UTL_Content_Title" data-content="UTL_Content_Val" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Review the lyrics before confirming"> <i class="fa-solid fa-eye"></i> </button>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="EditTrackLyrics_Box">
+        // <div class="box-bordered text-center p-2 mt-5">
+            <h2 class="h2"> <i class="fa-solid fa-candy-cane"></i> </h2>
+            <h4 class="h4">Wordplays (Hints)</h4>
+            <small class="card-text text-muted">Identify select sections of the lyrics and incorporate nuanced wordplay elements to enrich their meaning</small>
+            <div class="box-standard text-start mt-3">
+                <span class="lyric-text">Never knowin' when to stop<br />Sunglasses indoors<br />Par for the course<div class="hint-span" id="HintExample_Span" data-hint="He’s at a lavish club, with go-go dancers and a fly scene. Moving around real cool and decked out head to toe, all to try and mask his loneliness">Lights in the floors and sweat on the walls<br />Cages and poles</div></span>
+            </div>
+        </div>
+        <div class="box-standard mt-2">
+            <span class="form-label fw-500 ms-1">Hint</span>
+            <div class="hstack gap-1 mt-1">
+                <div>
+                    <input type="hidden" id="UTL_HintText_Val" />
+                    <button type="button" class="btn btn-standard-bordered btn-form-replacer btn-sm" id="HintPlacer_Val-BtnReplacer" data-target="UTL_Hint_Val" data-initial-target="UTL_HintText_Val"> <i class="fa-solid fa-plus"></i> Add Hint</button>
+                </div>
+                <div class="vr"></div>
+                <div class="box-standard x-row-sliding-only-box ms-1" id="HintPlacer_Val-Box">
+                </div>
+            </div>
+            <textarea class="form-control form-textarea mt-2" rows="1" id="HintPlacer_Val" placeholder="Place your hint here"></textarea>
+        </div>
+        <div class="box-standard x-row-sliding-only-box mt-2" id="HintPlacer_Val-Box">
+
+        </div>
+        <div class="box-bordered mh-340 mt-2 p-2" id="HintPreview_Box">
+        </div>//
+        <div class="mt-5 pt-3">
+            <form method="post" action="/Track/UpdateLyrics" id="UpdateTrackLyrics_Form">
+                <div>
+                    <span class="form-label fw-500 ms-1" id="UTL_Content_Title">Lyrics</span>
+                    <div class="mt-1">
+                        <input type="hidden" name="Hint" id="UTL_Hint_Val" />
+                        <input type="hidden" name="Id" id="UTL_TrackId_Val" value="0" />
+                        <button type="button" class="btn btn-standard-bordered btn-sm super-disabled opacity-100 me-1"> <i class="fa-solid fa-text-width"></i> Characters: <span id="UTL_Content_Val-Indicator_Span">0/4 000</span></button>
+                        <button type="button" class="btn btn-standard-bordered super-disabled opacity-100 btn-sm me-1"> <i class="fa-solid fa-align-left"></i> Rows: <span id="UTL_Content_Val-RowsIndicator_Span">0</span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-tooltip btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Start syncing tracks lyrics. Perfect feature for a karaoke-style experience" id="TimeSyncLyrics_Btn"> <i class="fa-solid fa-group-arrows-rotate"></i> Live Lyrics</button>
+                        <button type="button" class="btn btn-standard-bordered btn-add-hint btn-tooltip btn-sm" data-value="UTL_Content_Val" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Drop a clever hint to reveal the deeper layers — wordplay, themes, or hidden gems. Shown whenever a listener hovers over the lyrics"> <i class="fa-solid fa-candy-cane"></i> Add Hint </button> 
+                    </div>
+                    <textarea class="form-control form-textarea form-control-guard mt-1" rows="1" name="Content" id="UTL_Content_Val" placeholder="Paste lyrics here..." maxlength="4000" data-min-length="1" data-target="UpdateTrackLyrics_SbmtBtn"></textarea>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Paste the lyrics of the track here. Please review all necessary information in the section above, and edit as needed using the editor</small>
+                </div>
+                <div class="mt-3">
+                    <span class="form-label fw-500 ms-1">Language</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard btn-tooltip btn-sm float-end ms-1" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="This setting helps with recommendations. If your track includes multiple languages, please select the primary one.<br/>Translations are available as a basic feature for <span class='fw-500'>all included languages</span>"> <i class="fa-solid fa-circle-info"></i> </button>
+                        <button type="button" class="btn btn-standard-bordered btn-get-form-languages btn-sm" id="GetAvailableLanguages_Btn"> <i class="fa-solid fa-language"></i> Choose a Language</button>
+                    </div>
+                    <input type="hidden" name="LanguageId" id="UTL_LanguageId_Val" value="0" />
+                    <input type="text" class="form-control mt-1" placeholder="Choose a language from the list" id="UTL_LanguageDisplay_Val" readonly />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="UTL_LanguageId_Val-Warn">Tap the button to view all available languages. Select the primary language of your track — this is used commonly for recommendations</small>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="UpdateTrackLyrics_SbmtBtn">Save Lyrics</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> *@
+
+ <div class="box-lg-part shadow-sm" id="EditTrackCredits_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="div-swiper mx-auto" id="EditTrackCredits_Container-Swiper"></div>
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button>
+            <div class="ms-2">
+                <span class="h5" id="EditTrackCredits_Container-Header_Lbl">Edit Credits</span>
+            </div>
+        </div>
+        <div class="box-bordered mt-1 p-1">
+            <div class="hstack gap-1">
+                <div>
+                    <img src="#" class="release-img-sm" id="ETC_Img" style="display: none;" />
+                    <div class="release-img-box-sm" id="ETC_Img_Box"> <i class="fa-solid fa-music"></i> </div>
+                </div>
+                <div class="ms-1">
+                    <span class="h6" id="ETC_TrackTitle_Lbl">Track Title</span>
+                    <br/>
+                    <small class="card-text text-muted" id="ETC_TrackArtists_Span">Artists (all)</small>
+                </div>
+                <button type="button" class="btn btn-standard btn-open-container btn-tooltip btn-sm ms-auto" id="EditTrackCreditsPreview_Container-OpenBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-html="true" data-bs-title="Preview all the track credits you’ve added"> <i class="fa-solid fa-eye"></i> </button>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="EditTrackCredits_Box">
+        <div class="box-vertical-switcher shadow-sm" id="SomeShitListed_Box">
+            <div class="box-vertical-switcher-header hstack gap-1">
+                <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button>
+            </div>
+            <div class="mt-1" id="SomeShitListed_Box-Items_Box">
+                <span class="h5" id="SomeShitListed_Box-MembersQty_Lbl"></span>
+                <div></div>
+                <small class="card-text text-muted">Tap on each to remove</small>
+                <div class="mt-2" id="SomeShitListed_Box-MembersListed_Box">
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 pt-3">
+            <form method="post" action="/Track/UpdateCredits" id="UpdateTrackCredits_Form">
+                <div>
+                    <span class="form-label fw-500 ms-1">Main Vocalist(s)</span>
+                    <div class="mt-1">
+                        <input type="hidden" name="Id" id="ETC_TrackId_Val" value="0" />
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_MainVocalist_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn" data-prototype="ETC_MainVocalist_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="MainVocalist" id="ETC_MainVocalist_Val-0" placeholder="Enter the name of main vocalist" maxlength="250" data-index="0" data-update="ETCP_MainVocalists_Span" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="ms-1 mt-1">
+                    <small class="card-text text-muted" id="ETC_MainVocalist_Val-Warn" data-list="false">Have more than one main vocalist? Tap the button to add additional fields</small>
+                </div>
+                <div class="mt-3" id="ETC_Composer_Box">
+                    <span class="form-label fw-500 ms-1">Composer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Composer_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn1"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn1" data-prototype="ETC_Composer_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Composer" id="ETC_Composer_Val-0" placeholder="Enter the name of composer" maxlength="250" data-index="0" data-update="ETCP_Composer_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted" id="ETC_Composer_Val-Warn">All fields except <span class="fw-500">Main Vocalist(s)</span> are optional and can be skipped</small>
+                </div>
+                <div class="mt-3" id="ETC_Lyricist_Box">
+                    <span class="form-label fw-500 ms-1">Lyricist(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Lyricist_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn2"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn2" data-prototype="ETC_Lyricist_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Lyricist" id="ETC_Lyricist_Val-0" placeholder="Enter the name of lyricist" maxlength="250" data-index="0" data-update="ETCP_Lyricist_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_Producers_Box" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Producer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Producer_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn3"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn3" data-prototype="ETC_Producer_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Producer" id="ETC_Producer_Val-0" placeholder="Enter the name of producer" maxlength="250" data-index="0" data-update="ETCP_Producer_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_Arranger_Box" data-input="ETC_Arranger_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Arranger(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Arranger_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn4"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn4" data-prototype="ETC_Arranger_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Arranger" id="ETC_Arranger_Val-0" placeholder="Enter the name of arranger" maxlength="250" data-index="0" data-update="ETCP_Arranger_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_FeaturedArtists_Box" data-input="ETC_FeaturedArtists_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Featured Artist(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_FeaturedArtists_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn5"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn5" data-prototype="ETC_FeaturedArtists_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="FeaturedArtists" id="ETC_FeaturedArtists_Val-0" placeholder="Enter the name of featured artist" maxlength="250" data-index="0" data-update="ETCP_FeaturedArtists_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_Instrumentalists_Box" data-input="ETC_Instrumentalists_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Instrumentalist(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_Instrumentalists_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn6"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn6" data-prototype="ETC_Instrumentalists_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="Instrumentalists" id="ETC_Instrumentalists_Val-0" placeholder="Enter the name of instrumentalist" maxlength="250" data-index="0" data-update="ETCP_Instrumentalists_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_MixingEngineers_Box" data-input="ETC_MixingEngineers_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Mixing Engineer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_MixingEngineers_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn7"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn7" data-prototype="ETC_MixingEngineers_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="MixingEngineers" id="ETC_MixingEngineers_Val-0" placeholder="Enter the name of mixing engineer" maxlength="250" data-index="0" data-update="ETCP_MixingEngineers_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_MasteringEngineers_Box" data-input="ETC_MasteringEngineers_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Mastering Engineer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_MasteringEngineers_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn8"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn8" data-prototype="ETC_MixingEngineers_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="MasteringEngineers" id="ETC_MasteringEngineers_Val-0" placeholder="Enter the name of mastering engineer" maxlength="250" data-index="0" data-update="ETCP_MasteringEngineers_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_RecordingEngineers_Box" data-input="ETC_RecordingEngineers_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Recording Engineer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_RecordingEngineers_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn9"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn9" data-prototype="ETC_RecordingEngineers_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="RecordingEngineers" id="ETC_RecordingEngineers_Val-0" placeholder="Enter the name of recording engineer" maxlength="250" data-index="0" data-update="ETCP_RecordingEngineers_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="mt-3" id="ETC_SoundDesigners_Box" data-input="ETC_SoundDesigners_Val" style="display: none;">
+                    <span class="form-label fw-500 ms-1">Sound Designer(s)</span>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-add-element btn-sm" data-prototype="ETC_SoundDesigners_Val-0" data-remove-btn="SomeShitListed_Box-OpenBtn10"> <i class="fa-solid fa-plus"></i> Add More</button>
+                        <button type="button" class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm super-disabled" id="SomeShitListed_Box-OpenBtn10" data-prototype="ETC_SoundDesigners_Val-0" style="display: none;"> <i class="fa-solid fa-xmark"></i> Remove</button>
+                        <input type="text" class="form-control form-control-juxtaposed mt-1" name="RecordingEngineers" id="ETC_SoundDesigners_Val-0" placeholder="Enter the name of recording engineer" maxlength="250" data-index="0" data-update="ETCP_SoundDesigners_Val" data-target="EditTrackCredits_SbmtBtn" />
+                    </div>
+                </div>
+                <div class="box-sticky-at-bottom mx-auto shadow-sm" id="RoleSticky_Box">
+                    <div class="box-sticky-at-bottom-header">
+                        <div class="hstack gap-1">
+                            <span class="h6">Choose Roles to Add</span>
+                        </div>
+                    </div>
+                    <div class="box-standard mt-1">
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100" id="ETC_Producers_Box-BtnShow">Producer(s) <span class="float-end"> <i class="fa-solid fa-gears"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100" id="ETC_Arranger_Box-BtnShow">Arranger(s) <span class="float-end"> <i class="fa-solid fa-wave-square"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_FeaturedArtists_Box-BtnShow">Featured Artist(s) <span class="float-end"> <i class="fa-solid fa-user-plus"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_Instrumentalists_Box-BtnShow">Instrumentalist(s) <span class="float-end"> <i class="fa-solid fa-guitar"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_MixingEngineers_Box-BtnShow">Mixing Engineer(s) <span class="float-end"> <i class="fa-solid fa-gears"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_MasteringEngineers_Box-BtnShow">Mastering Engineer(s) <span class="float-end"> <i class="fa-solid fa-code-pull-request"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_RecordingEngineers_Box-BtnShow">Recording Engineer(s) <span class="float-end"> <i class="fa-solid fa-headset"></i> </span></button>
+                        <button type="button" class="btn btn-standard-bordered btn-show-field-box w-100 mt-2" id="ETC_SoundDesigners_Box-BtnShow">Sound Designer(s) <span class="float-end"> <i class="fa-solid fa-braille"></i> </span></button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sticky-at-bottom btn-open-sticky-box mx-auto shadow-sm" id="RoleSticky_Box-BtnOpen">Add More Roles</button>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="EditTrackCredits_SbmtBtn">Save Credits</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="box-lg-part-inner" id="EditTrackCreditsPreview_Container">
+    <div class="box-lg-inner-part-header p-2" id="EditTrackCreditsPreview_Container-Header_Box">
+        <div class="hstack gap-1">
+            <h5 class="h5">Credits Preview</h5>
+            <button type="button" class="btn btn-standard btn-sm ms-auto" id="EditTrackCreditsPreview-CloseBtn">Close</button>
+        </div>
+    </div>
+    <div class="box-standard mt-2 p-2" id="EditTrackCreditsPreview_Box">
+        <div class="box-bordered p-2">
+            <span class="h6" id="ETCP_MainVocalists_Span-Header">Main Vocalist</span>
+            <br />
+            <small class="card-text" id="ETCP_MainVocalists_Span">Undefined</small>
+        </div>
+    </div>
+</div>
+

@@ -1,7 +1,10 @@
 ﻿let currentWindowSize = window.innerWidth;
+let userOSInfo = null;
 let currentPageUrl;
+let alertBottomValue = 0;
 let bottomNavbarH = 0;
 let intervalValue;
+let kawaiiAlertTimeoutValue;
 let timeoutValue;
 let resizeTimeout;
 let playerPosition = 0;
@@ -14,34 +17,56 @@ let dayOfWeekShortArr = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 let monthsShortArr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 let trackOrderInQueue = 0;
 let reserveOrderInQueue = 0;
+
+let internalVolume = 50;
+let playbackRateMultiplier = 1;
 let trackQueue = { songs: [], orderChanger: 1, autoPlay: false };
 let reserveQueue = [];
 
+let swipeTimeout = 0;
+let resizeTimer = 0;
+let lastScrollTop = 0;
+let lastResizeWidth = 0;
+let lastResizeHeight = 0;
+
+//GetFavorite
 //localItemFilter(); SearchForGenres_Form Update Favorites btn-show-field-box EditTrackLyrics
 //imagePreviewer() type='file' UpdateTrackCredits_Form Playlists .div-swiper
 //SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form LoadTheTrack_Form GetPlaylists
 //FUNCTION TERRITORY playlistInfoSampler();
-
-//function callASmContainer(); function displayCorrector
+//function callAContainer callAModal
+//function callASmContainer(); function displayCorrector function callASmContainer() function enlargeMediaPlayer()
 window.onload = function () {
     displayCorrector(currentWindowSize);
-    mediaPlayerCorrector(currentWindowSize, false);
-    bottomNavbarH = $(".bottom-navbar").innerHeight();
-    callPlayerBox(true, "ongaku-player-box");
+    currentWindowSize = window.innerWidth;
+    bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + 5;
+
+    mediaPlayerCorrector(currentWindowSize, true);
     setTimeout(function () {
         callAContainer(false, "Primary_Container");
-    }, 700);
+    }, 300);
+
+    lastResizeWidth = currentWindowSize;
+    lastResizeHeight = window.innerHeight;
     currentPageUrl = window.location.href;
 }
 
 window.onresize = function () {
-    currentWindowSize = window.innerWidth;
-    displayCorrector(currentWindowSize);
-    setTimeout(function () {
-        bottomNavbarH = $(".bottom-navbar").innerHeight();
-        mediaPlayerCorrector(currentWindowSize, true);
-        lgPartContainerCorrector(currentWindowSize, playerPosition);
-    }, 350);
+    clearTimeout(resizeTimeout);
+    resizeTimer = setTimeout(function () {
+        if (lastResizeHeight !== window.innerHeight && lastResizeWidth !== window.innerWidth) {
+            currentWindowSize = window.innerWidth;
+            bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + parseFloat($("#MainBotton_Navbar").css("bottom"));
+            displayCorrector(currentWindowSize);
+            mediaPlayerCorrector(currentWindowSize, false);
+            setTimeout(function () {
+                lgPartContainerCorrector(playerPosition);
+            }, 750);
+
+            lastResizeWidth = currentWindowSize;
+            lastResizeHeight = window.innerHeight;
+        }
+    }, 300);
 }
 
 $("#CheckAccountByEmail_Form").on("submit", function (event) {
@@ -891,7 +916,6 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
             $("#StreamTheTrack_Id_Val").val(response.result.id); 
             $("#StreamTheTrack_Url_Val").val(response.result.trackFileUrl);
 
-            $("#GetTrackLyrics_Id_Val").val(response.result.id);
             $("#GetTrackCredits_Id_Val").val(response.result.id);
             if (response.result.isFavorite) {
                 $(".btn-track-favor-unfavor").html(' <i class="fa-solid fa-star"></i> ');
@@ -901,11 +925,21 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
                 $(".btn-track-favor-unfavor").html(' <i class="fa-regular fa-star"></i> ');
                 $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/AddToFavorites");
             }
-            $(".btn-track-favor-unfavor").attr("data-id", response.result.id);
 
+            console.log(response);
+            console.log(response.result.lyricsId);
+            if (response.result.lyricsId == null) {
+                $("#GetTrackLyrics_Id_Val").val(0);
+                buttonDisabler(false, "GetTrackLyrics_SbmtBtn", null);
+            }
+            else {
+                $("#GetTrackLyrics_Id_Val").val(response.result.id);
+                buttonUndisabler(false, "GetTrackLyrics_SbmtBtn", null);
+            }
+            $(".btn-track-favor-unfavor").attr("data-id", response.result.id);
             $("#OngakuPlayer_Type_Val").val(response.type);
             $("#StreamTheTrack_Form").submit();
-            buttonUndisabler(false, "GetTrackLyrics_SbmtBtn", null);
+
             buttonUndisabler(false, "GetTrackCredits_SbmtBtn", null);
             buttonUndisabler(true, "btn-play-pause-track-lg", ' <i class="fa-solid fa-pause"></i> Pause');
             buttonUndisabler(true, "btn-track-favor-unfavor", null);
@@ -1258,8 +1292,8 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
             }, 150);
             uncallASmContainer(false, "StudioMusic_Container");
         }
-        if (response.success) {
-            if (response.type == 0) {
+        else if (response.type == 0) {
+            if (response.success) {
                 $("#OngakuPlayer_LyricsMain_Box").remove();
                 const lyricsMainBox = $("<div class='box-standard box-standard-player' id='OngakuPlayer_LyricsMain_Box'></div>");
                 const lyricsBox = $("<div class='box-bordered mh-250 mt-2 p-1 pt-2 pb-2'></div>");
@@ -1294,9 +1328,15 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
                 slideBoxes(true, "box-standard-player", "OngakuPlayer_LyricsMain_Box");
                 slideBoxes(false, "OngakuPlayer_MainAddLayer_Box", "OngakuPlayer_NonMainAddLayer_Box");
             }
-            else if (response.type == 2) {
-                //Sync
-                //createTutorialContainer(null, "LyricSyncTutorials", "lyric-sync-tutorials", ['<i class="fa-solid fa-arrows-rotate anime-sync-forever"></i>', '<i class="fa-regular fa-lightbulb"></i>'], ['Welcome to <span class="fw-500">Lyric Sync</span>!<br /><br />Easily align your track’s lyrics with the music timeline, making playback smoother and karaoke more enjoyable for everyone. We recommend reading these quick tips before you start syncing. They will help you understand everything you need to do here', 'Start by exploring the audio player.<br />New controls have been added to assist with syncing. Hover or tap each button below to see its function']);
+            else {
+
+            }
+            buttonUnchooser(true, "btn-ongaku-player-additional");
+            buttonDisabler(false, "GetTrackLyrics_SbmtBtn", baseHtml);
+            callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;"></i>', null, null, "This track has no lyrics... yet", 3.25, "Close", -1, null);
+        }
+        else {
+            if (response.success) {
                 let rowedText = rowsToSpan("LyricSyncRow_Span", response.result.content, ["lyric-text", "lyric-row-choose"]);
                 if (rowedText[1].length > 0) {
                     $("#TimeSync_RowNumber_Span").text(1);
@@ -1318,16 +1358,51 @@ $(document).on("submit", "#GetTrackLyrics_Form", function (event) {
                     $("#OngakuPlayer_Type_Val").val(2);
                     $("#LoadTheTrack_Form").submit();
                 }
+                else buttonDisabler(false, "TimeSyncLyrics_Btn", null);
             }
         }
-        else {
-            if (response.type == 0) {
-                buttonUnchooser(true, "btn-ongaku-player-additional");
-                buttonDisabler(false, "GetTrackLyrics_SbmtBtn", baseHtml);
-                callAlert('<i class="fa-solid fa-xmark fa-shake" style="--fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.75s;"></i>', null, null, "This track has no lyrics... yet", 3.25, "Close", -1, null);
-            }
-            else buttonDisabler(false, "TimeSyncLyrics_Btn", null);
-        }
+        //if (response.success) {
+        //    if (response.type == 0) {
+        //        $("#OngakuPlayer_LyricsMain_Box").remove();
+        //        const lyricsMainBox = $("<div class='box-standard box-standard-player' id='OngakuPlayer_LyricsMain_Box'></div>");
+        //        const lyricsBox = $("<div class='box-bordered mh-250 mt-2 p-1 pt-2 pb-2'></div>");
+        //        const lyricStatsBox = $("<div class='badge-bar shadow-sm'></div>");
+        //        const lyricsTimeSynced = $("<span class='badge-icon btn-tooltip me-2' data-bs-toggle='tooltip' data-bs-placement='bottom' data-bs-custom-class='tooltip-standard shadow-sm' data-bs-html='true' data-bs-title='This song is synced'> <i class='fa-solid fa-arrows-rotate'></i> </span>");
+        //        const lyricsTranslated = $("<span class='badge-icon btn-tooltip me-2' data-bs-toggle='tooltip' data-bs-placement='bottom' data-bs-custom-class='tooltip-standard shadow-sm' data-bs-html='true' data-bs-title='This song is synced'></span>");
+        //        const lyricsLanguage = $("<span class='badge-icon btn-tooltip' data-bs-toggle='tooltip' data-bs-placement='bottom' data-bs-custom-class='tooltip-standard shadow-sm' data-bs-html='true' data-bs-title='Translations for this song are available'></span>");
+
+        //        const lyricsText = $("<p class='lyric-text'></span>");
+        //        lyricsTimeSynced.html(' <i class="fa-solid fa-group-arrows-rotate"></i> ');
+        //        lyricsTimeSynced.attr("data-bs-title", "This song's lyrics are not synced");
+        //        lyricsLanguage.html(' <i class="fa-solid fa-earth-americas"></i> ' + response.result.language.name);
+        //        lyricsLanguage.attr("data-bs-title", "This song's native language is <span class='fw-500'>" + response.result.language.name + "</span>");
+        //        lyricsTranslated.html(' <i class="fa-solid fa-language"></i> ');
+        //        lyricsTranslated.addClass("super-disabled");
+        //        lyricStatsBox.append(lyricsTimeSynced);
+        //        lyricStatsBox.append(lyricsTranslated);
+        //        lyricStatsBox.append(lyricsLanguage);
+
+        //        lyricsText.html(response.result.content);
+        //        lyricsBox.append(lyricsText);
+        //        lyricsBox.append(lyricStatsBox);
+        //        lyricsMainBox.append(lyricsBox);
+        //        $("#OngakuPlayer_NonMainAddLayer_Box").append(lyricsMainBox);
+
+        //        $(".btn-double-slide-boxes").attr("data-is-active", true);
+        //        $("#GetTrackLyrics_SbmtBtn").attr("data-is-active", true);
+        //        buttonUnchooser(true, "btn-ongaku-player-additional");
+        //        buttonChooser(false, "GetTrackLyrics_SbmtBtn", false);
+        //        buttonUndisabler(false, "GetTrackLyrics_SbmtBtn", baseHtml);
+        //        formButtonDeactivator("GetTrackLyrics_SbmtBtn", ["btn-double-slide-boxes"], ["data-close-first", "data-close-second", "data-open-box", "data-is-active"], [".box-standard-player", "#OngakuPlayer_LyricsMain_Box", "#OngakuPlayer_MainAddLayer_Box", false]);
+        //        slideBoxes(true, "box-standard-player", "OngakuPlayer_LyricsMain_Box");
+        //        slideBoxes(false, "OngakuPlayer_MainAddLayer_Box", "OngakuPlayer_NonMainAddLayer_Box");
+        //    }
+        //    else if (response.type == 2) {
+        //        //Sync
+        //        //createTutorialContainer(null, "LyricSyncTutorials", "lyric-sync-tutorials", ['<i class="fa-solid fa-arrows-rotate anime-sync-forever"></i>', '<i class="fa-regular fa-lightbulb"></i>'], ['Welcome to <span class="fw-500">Lyric Sync</span>!<br /><br />Easily align your track’s lyrics with the music timeline, making playback smoother and karaoke more enjoyable for everyone. We recommend reading these quick tips before you start syncing. They will help you understand everything you need to do here', 'Start by exploring the audio player.<br />New controls have been added to assist with syncing. Hover or tap each button below to see its function']);
+
+        //        }
+        //    }
     });
 });
 
@@ -1769,29 +1844,20 @@ $(document).on("mousedown", ".btn-track-backward-for", function () {
     let audioPlayer = document.getElementById("OngakuPlayer_Audio");
     if (audioPlayer != null) {
         let rewindDuration = $(this).attr("data-rewind-for");
-        if (rewindDuration != undefined) {
-            let currentTime = audioPlayer.currentTime;
-            currentTime -= parseInt(rewindDuration);
-            currentTime = currentTime < 0 ? 0 : currentTime;
-            $(".btn-track-backward-for").html(' <i class="fa-solid fa-arrow-rotate-left anime-rewind-shift"></i> ');
+        rewindDuration = rewindDuration == undefined ? 15 : rewindDuration;
+        audioPlayerRewind(audioPlayer.id, rewindDuration, true, false);
+        $(".btn-track-backward-for").html(' <i class="fa-solid fa-arrow-rotate-left anime-rewind-shift"></i> ');
+        //function audioEdit
 
-            audioEdit("OngakuPlayer_Audio", null, null, null, currentTime);
-        }
     }
 });
 $(document).on("mousedown", ".btn-track-forward-for", function () {
     let audioPlayer = document.getElementById("OngakuPlayer_Audio");
     if (audioPlayer != null) {
         let rewindDuration = $(this).attr("data-rewind-for");
-        if (rewindDuration != undefined) {
-            let totalDuration = audioPlayer.duration;
-            let currentTime = audioPlayer.currentTime;
-            currentTime += parseInt(rewindDuration);
-            currentTime = currentTime >= totalDuration ? totalDuration : currentTime;
-            $(".btn-track-forward-for").html(' <i class="fa-solid fa-arrow-rotate-right anime-sync-shift"></i> ');
-
-            audioEdit("OngakuPlayer_Audio", null, null, null, currentTime);
-        }
+        rewindDuration = rewindDuration == undefined ? 15 : rewindDuration;
+        audioPlayerRewind(audioPlayer.id, rewindDuration, false, false);
+        $(".btn-track-forward-for").html(' <i class="fa-solid fa-arrow-rotate-right anime-sync-shift"></i> ');
     }
 });
 
@@ -3491,22 +3557,45 @@ $(document).on("mousedown", ".btn-exit-photo-mode", function () {
     }, 300);
 });
 
-$(document).on("mousedown", ".btn-slide-boxes", function () {
-    let closingBoxId = $(this).attr("data-close-box");
-    let openingBoxId = $(this).attr("data-open-box");
-    let thisId = $(this).attr("id");
-    if (thisId != undefined && closingBoxId != undefined && openingBoxId != undefined) {
-        slideBoxes(false, closingBoxId, openingBoxId);
-        $("#" + thisId).attr("data-open-box", closingBoxId);
-        $("#" + thisId).attr("data-close-box", openingBoxId);
-        if ($("#" + thisId).hasClass("bg-chosen") || $("#" + thisId).hasClass("bg-chosen-bright")) {
-            buttonUnchooser(false, thisId);
+function boxSlider(byClassname = false, boxElementId = null, triggerButtonId = null) {
+    if (boxElementId != undefined || boxElementId != null) {
+        if (byClassname) {
+            $(".slide-box").addClass("closing");
+            $("." + boxElementId).addClass("opening");
+            $("." + boxElementId).removeClass("closing");
+
+            setTimeout(function () {
+                $(".slide-box").fadeOut(0);
+                $(".slide-box").removeClass("closing");
+                $("." + boxElementId).fadeIn(0);
+                $("." + boxElementId).removeClass("opening");
+            }, 300);
         }
         else {
-            let needBold = $(this).attr("data-bold");
-            if (needBold != undefined) buttonChooser(false, thisId, true);
-            else buttonChooser(false, thisId, false);
+            $(".slide-box").addClass("closing");
+            $("#" + boxElementId).addClass("opening");
+            $("#" + boxElementId).removeClass("closing");
+
+            setTimeout(function () {
+                $(".slide-box").fadeOut(0);
+                $(".slide-box").removeClass("closing");
+                $("#" + boxElementId).fadeIn(0);
+                $("#" + boxElementId).removeClass("opening");
+            }, 300);
         }
+
+        if (triggerButtonId != null || triggerButtonId != undefined) {
+            $(".btn-slide-boxes").removeClass("bg-chosen-bright");
+            $("#" + triggerButtonId).addClass("bg-chosen-bright");
+        }
+    }
+}
+
+$(document).on("mousedown", ".btn-slide-boxes", function () {
+    let targetBox = $(this).attr("data-box");
+    let isByClassname = $(this).attr("data-by-classname");
+    if (targetBox != undefined) {
+        boxSlider(isByClassname != undefined ? isByClassname : false, targetBox, $(this).attr("id"));
     }
 });
 
@@ -3534,7 +3623,7 @@ $(document).on("mousedown", ".btn-double-slide-boxes", function () {
         }
         $(".btn-double-slide-boxes").attr("data-is-active", true);
         isActive = isActive == "false" ? false : true;
-        console.log(isActive);
+
         if (isActive) {
             $(firstClose).fadeOut(300);
             $(open).fadeOut(300);
@@ -4998,15 +5087,36 @@ $(document).on("mousedown", ".btn-playback-rate", function () {
     }
 });
 
+$(document).on("mousedown", ".btn-volume-down", function () {
+    let target = $(this).attr("data-target");
+    target = target == undefined ? "OngakuPlayer_Audio" : target;
+    if (target != undefined) {
+        internalVolume -= 2;
+        audioEdit(target, internalVolume >= 0 ? internalVolume : 0, null, null, null);
+    }
+});
+
+$(document).on("mousedown", ".btn-volume-up", function () {
+    let target = $(this).attr("data-target");
+    target = target == undefined ? "OngakuPlayer_Audio" : target;
+    if (target != undefined) {
+        internalVolume += 2;
+        audioEdit(target, internalVolume <= 100 ? internalVolume : 100, null, null, null);
+    }
+});
+
 $(document).on("mousedown", ".btn-volume-mute", function () {
     let target = $(this).attr("data-target");
+    target = target == undefined ? "OngakuPlayer_Audio" : target;
     if (target != undefined) {
-        audioEdit(target, 0, null, null, null);
+        internalVolume = 0;
+        audioEdit(target, internalVolume, null, null, null);
     }
 });
 
 $(document).on("mousedown", ".btn-volume-max", function () {
     let target = $(this).attr("data-target");
+    target = target == undefined ? "OngakuPlayer_Audio" : target;
     if (target != undefined) {
         audioEdit(target, 100, null, null, null);
     }
@@ -5015,6 +5125,7 @@ $(document).on("mousedown", ".btn-volume-max", function () {
 $(document).on("input", ".volume-range-slider", function () {
     let currentValue = parseFloat($(this).val());
     let target = $(this).attr("data-target");
+    target = target == undefined ? "OngakuPlayer_Audio" : target;
 
     if (target != undefined && currentValue != undefined) {
         audioEdit(target, currentValue, null, null, null);
@@ -5042,6 +5153,17 @@ $(document).on("dblclick", ".ongaku-player-box", function () {
 $(document).on("mousedown", ".ongaku-div-swiper", function () {
     dwindleMediaPlayer(currentWindowSize);
 });
+$(document).on("touchstart", ".ongaku-div-swiper", function (event) {
+    handleTouchStart(event);
+});
+$(document).on("touchmove", ".ongaku-div-swiper", function (event) {
+    let moveDirection = handleTouchMove(event);
+    if (moveDirection == 1) enlargeMediaPlayer(currentWindowSize);
+    else dwindleMediaPlayer(currentWindowSize);
+
+    xDown = null;
+    yDown = null;
+});
 
 $(document).on("touchstart", ".ongaku-player-box", function (event) {
     handleTouchStart(event);
@@ -5059,6 +5181,97 @@ $(document).on("touchmove", ".ongaku-player-box", function (event) {
 
     xDown = null;
     yDown = null;
+});
+
+$(document).on("mousedown", ".btn-prev-page", function () {
+    let maxPageQty = $(this).attr("data-max-pages");
+    let currentPage = $(this).attr("data-current-page");
+    let paginationMainId = getTrueId($(this).attr("id"), false);
+    if (paginationMainId != undefined && currentPage != undefined && maxPageQty != undefined) {
+        slideToPrevPage(paginationMainId, currentPage, maxPageQty);
+    }
+});
+
+$(document).on("mousedown", ".btn-next-page", function () {
+    let maxPageQty = $(this).attr("data-max-pages");
+    let currentPage = $(this).attr("data-current-page");
+    let paginationMainId = getTrueId($(this).attr("id"), false);
+    if (paginationMainId != undefined && currentPage != undefined && maxPageQty != undefined) {
+        slideToNextPage(paginationMainId, currentPage, maxPageQty);
+    }
+});
+
+$(document).on("touchstart", ".pagination-child-box", function (event) {
+    handleTouchStart(event);
+});
+$(document).on("touchmove", ".pagination-child-box", function (event) {
+    let moveDirection = handleTouchMove(event);
+    let maxPages = $(this).attr("data-max-pages");
+    let currentPage = getTrueId($(this).attr("id"), false);
+    let paginationMainId = getTrueId($(this).attr("id"), true);
+    if (paginationMainId != undefined && currentPage != undefined && maxPages != undefined) {
+        if (swipeTimeout == 0) {
+            clearTimeout(swipeTimeout);
+            swipeTimeout = setTimeout(function () {
+                if (moveDirection == 3) slideToNextPage(paginationMainId, currentPage, maxPages);
+                else if (moveDirection == 2) slideToPrevPage(paginationMainId, currentPage, maxPages);
+                swipeTimeout = 0;
+            }, 100);
+        }
+    }
+
+    //xDown = null;
+    //yDown = null;
+});
+
+
+$(document).on("keydown", function (event) {
+    event.preventDefault();
+    const keyCode = event.keyCode;
+    const metaKey = event.metaKey;
+    const altKey = event.altKey;
+    const ctrlKey = event.ctrlKey;
+    const shiftKey = event.shiftKey;
+
+    if (userOSInfo == null) {
+        getOSInfo().then(response => {
+            userOSInfo = response
+            shortcutImplementation(userOSInfo, keyCode, metaKey, ctrlKey, altKey, shiftKey);
+        });
+    }
+    else shortcutImplementation(userOSInfo, keyCode, metaKey, ctrlKey, altKey, shiftKey);
+});
+
+$("#ShowBasicShortcutsInfo_Btn").on("mousedown", function () {
+    getOSInfo().then(userOSInfo => {
+        createModal("KeyboardShortcuts", "Keyboard Shortcuts", '<div class="pagination-parent-box mx-auto" id="KeyboardShortcutsPagination_Box"> <div class="pagination-child-box faded" id="0-KeyboardShortcutsPagination_Box" data-max-pages="1"> <div> <small class="card-text">Play/Pause Track <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">S</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Go to Next Track <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">D</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Go to Previous Track <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">A</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Loop the Track <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">R</span> </span></small> </div> <div class="box-border-top pt-2 mt-1"> <small class="card-text">Enlarge Media Player <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon"><i class="fa-regular fa-circle-up"></i> </span> </span></small> </div> <div class="mt-2"> <small class="card-text">Minimize Media Player <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon"><i class="fa-regular fa-circle-down"></i> </span> </span></small> </div> <div class="box-border-top pt-2 mt-1"> <small class="card-text">Volume Down <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon"><i class="fa-regular fa-circle-left"></i> </span> </span></small> </div> <div class="mt-2"> <small class="card-text">Volume Up <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon"><i class="fa-regular fa-circle-right"></i> </span> </span></small> </div> <div class="mt-2"> <small class="card-text">Volume Mute <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">F </span> </span></small> </div> <div class="box-border-top pt-2 mt-1"> <small class="card-text">Home Page <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">H</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Open Chats <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">C</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Open Library <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">A</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Start Search <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">S</span> </span></small> </div> </div> <div class="pagination-child-box" id="1-KeyboardShortcutsPagination_Box" data-max-pages="1"> <div> <small class="card-text">Favorite/Unfavorite Current Track <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-meta-key-shortcut me-1"> <i class="fa-brands fa-microsoft"></i> </span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">S</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Change Playback Rate <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon">Q</span> </span></small> </div> <div class="mt-2"> <small class="card-text">Rewind for 15 sec <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon"><i class="fa-solid fa-minus"></i> </span> </span></small> </div> <div class="mt-2"> <small class="card-text">Fast-Forward for 15 sec <span class="float-end ms-1"> <span class="uncolored-badge-icon kbd-main-shortcut me-1">Alt</span><span class="uncolored-badge-icon kbd-secondary-shortcut me-1">Shift</span><span class="uncolored-badge-icon"><i class="fa-solid fa-plus"></i> </span> </span></small> </div> </div> <div class="pagination-info-box hstack gap-1 mt-2"> <div class="pagination-buttons-box"> <button type="button" class="btn btn-pagination btn-prev-page" data-current-page="0" data-max-pages="1" id="KeyboardShortcutsPagination_Box-ToPrev_Btn"> <i class="fa-solid fa-angle-left"></i> </button> </div> <div class="pagination-index-box mx-auto"> <div class="pagination-index-dot active" id="0-KeyboardShortcutsPagination_Box_PaginationDot"></div> <div class="pagination-index-dot" id="1-KeyboardShortcutsPagination_Box_PaginationDot"></div> </div> <div class="pagination-buttons-box ms-auto"> <button type="button" class="btn btn-pagination btn-next-page" data-current-page="0" data-max-pages="1" id="KeyboardShortcutsPagination_Box-ToNext_Btn"> <i class="fa-solid fa-angle-right"></i> </button> </div> </div> </div>', true, '<small class="card-text text-muted">These shortcuts fit for <span class="fw-500 platform-info" id="PlatformInformation_Span"> <i class="fa-brands fa-microsoft"></i> Windows</span></small>', false);
+        setTimeout(function () {
+            switch (userOSInfo) {
+                case "Windows":
+                    $(".platform-info").html(' <i class="fa-brands fa-microsoft"></i> ' + userOSInfo);
+                    break;
+                case "Linux":
+                    $(".platform-info").html(' <i class="fa-brands fa-linux"></i> ' + userOSInfo);
+                    break;
+                case "Mac":
+                    $(".kbd-main-shortcut").html("⌥ Option");
+                    $(".kbd-meta-key-shortcut").html("⌘ Command");
+                    $(".platform-info").html(' <i class="fa-brands fa-apple"></i> ' + userOSInfo);
+                    break;
+                case "Android":
+                    $(".platform-info").html(' <i class="fa-brands fa-android"></i> ' + userOSInfo + ' <span class="fw-normal">(external keyboard required)</span>');
+                    break;
+                case "iOS":
+                    $(".kbd-main-shortcut").html("⌥ Option");
+                    $(".platform-info").html(' <i class="fa-brands fa-apple"></i> ' + userOSInfo + ' <span class="fw-normal">(external keyboard required)</span>');
+                    break;
+                default:
+                    $(".platform-info").html(' <i class="fa-brands fa-microsoft"></i> ' + userOSInfo);
+                    break;
+            }
+            callAModal(false, "KeyboardShortcuts_Modal");
+        }, 150);
+    });
 });
 
 //# FUNCTION TERRIROY #//
@@ -6160,14 +6373,12 @@ function uncallCardManager() {
 }
 
 function callASmContainer(callByClassname, id, doNotTrack = false) {
-    //createSmContainer();
     let alertBottom = 0;
-    let cardOpened = 0;
-    let anyCardOpened = false;
     let lastOpenedContainer = null;
+    let isThisCardStocked = openedSmContainers.includes(id);
     let isPlayerActive = $(".ongaku-player-box").css("bottom");
     let anySideBar = document.getElementsByClassName("side-navbar");
-    let checkCardManagerAvailability = document.getElementById("SmCardsManager_Box");
+    //let checkCardManagerAvailability = document.getElementById("SmCardsManager_Box");
 
     $(".btn-sticky-at-bottom").css("opacity", 0);
     if (anySideBar != null && anySideBar.length > 0) {
@@ -6175,140 +6386,70 @@ function callASmContainer(callByClassname, id, doNotTrack = false) {
         $(".box-sm-part-inner").css("width", "93.25%");
     }
 
-    if (!doNotTrack) pushSmContainerToList(id);
-    if (checkCardManagerAvailability == null) {
-        let cardManagerItem = elementDesigner("div", "box-card-manager mx-auto", null);
-        cardManagerItem.attr("id", "SmCardsManager_Box");
-        $("body").append(cardManagerItem);
-    }
-    else $("#SmCardsManager_Box").empty();
-
     if (isPlayerActive != undefined) isPlayerActive = parseInt(parseInt($(".ongaku-player-box").css("bottom")) + parseInt($(".ongaku-player-box").innerHeight()));
-    if (openedSmContainers.length > 0) {
-        lastOpenedContainer = getLastOpenedSmContainer();
-        for (let i = 0; i < openedSmContainers.length; i++) {
-            let sliderDot;
-            if (openedSmContainers[i] == lastOpenedContainer) sliderDot = elementDesigner("div", "slider-dots-lg active", null);
-            else sliderDot = elementDesigner("div", "slider-dots-lg", null);
-            sliderDot.attr("id", openedSmContainers[i] + "-Slider_Dot");
-            $("#SmCardsManager_Box").append(sliderDot);
+    if (parseInt(currentWindowSize) < 1024) alertBottom += bottomNavbarH;
+    alertBottom += isPlayerActive;
 
-            if ($("#" + openedSmContainers[i]).hasClass("active")) anyCardOpened = true;
-        }
-
-        if (openedSmContainers.length > 1) {
-            $("#SmCardsManager_Box").fadeIn(0);
-            $("#SmCardsManager_Box").addClass("active");
-            $("#SmCardsManager_Box").css("bottom", bottomNavbarH + 25 + "px");
-            alertBottom = (parseInt($("#SmCardsManager_Box").innerHeight()) + 5);
-        }
-        else alertBottom = 0;
+    if (callByClassname) {
+        $(".box-sm-part-inner").addClass("passive");
+        $(".box-sm-part-inner").removeClass("active");
+        $("." + id).addClass("active");
+        $("." + id).removeClass("passive");
+        setTimeout(function () {
+            $("." + id).css("bottom", alertBottom + 45 + "px");
+        }, 300);
+        setTimeout(function () {
+            $("." + id).css("bottom", alertBottom + "px");
+        }, 600);
+        setTimeout(function () {
+            $("." + id).css("bottom", alertBottom + 10 + "px");
+        }, 900);
     }
     else {
-        alertBottom = 0;
-        anyCardOpened = false;
-    }
+        $("#" + id).fadeIn(0);
+        lastOpenedContainer = getLastOpenedSmContainer();
 
-    if (!callByClassname) {
-        if ($("#" + id).hasClass("active")) cardOpened = 2;
-        else if ($("#" + id).hasClass("passive")) cardOpened = 1;
-        else cardOpened = 0;
-    }
-
-    if (isPlayerActive != undefined && parseInt(isPlayerActive) > 0) {
-        if (!$(".ongaku-player-box").hasClass("ongaku-player-box-enlarged")) alertBottom += isPlayerActive;
-    }
-    alertBottom += 10;
-    if (callByClassname) {
-        if (anyCardOpened) {
-            $(".box-sm-part-inner").fadeIn(0);
-            $(".box-sm-part-inner").removeClass("active");
-            $(".box-sm-part-inner").removeClass("passive");
-            $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+        if (lastOpenedContainer != null && isThisCardStocked) {
+            $("#" + lastOpenedContainer).css("bottom", alertBottom + 25 + "px");
             setTimeout(function () {
-                $(".box-sm-part-inner").css("bottom", "-1200px");
+                $("#" + id).css("bottom", alertBottom + 200 + "px");
+                $("#" + lastOpenedContainer).css("bottom", alertBottom - 150 + "px");
             }, 300);
             setTimeout(function () {
-                $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+                $("#" + lastOpenedContainer).addClass("passive");
+                $("#" + lastOpenedContainer).removeClass("active");
+                $("#" + id).addClass("active");
+                $("#" + id).removeClass("passive");
+                $("#" + id).css("bottom", alertBottom + "px");
+                $("#" + lastOpenedContainer).css("bottom", alertBottom + 10 + "px");
             }, 600);
             setTimeout(function () {
-                $(".box-sm-part-inner").css("bottom", alertBottom + "px");
+                $("#" + id).css("bottom", alertBottom + 10 + "px");
             }, 900);
-            return 900;
         }
         else {
-            $(".box-sm-part-inner").fadeIn(0);
-            $(".box-sm-part-inner").removeClass("passive");
-            $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
-            setTimeout(function () {
-                $(".box-sm-part-inner").addClass("active");
-                $(".box-sm-part-inner").css("bottom", alertBottom + "px");
-            }, 300);
-            return 300;
-        }
-    }
-    else {
-        if (!anyCardOpened) {
-            $("#" + id).fadeIn(0);
+            $(".box-sm-part-inner").addClass("passive");
+            $(".box-sm-part-inner").removeClass("active");
             $("#" + id).addClass("active");
             $("#" + id).removeClass("passive");
-            $("#" + id).css("bottom", alertBottom + 45 + "px");
+            setTimeout(function () {
+                $("#" + id).css("bottom", alertBottom + 45 + "px");
+            }, 300);
             setTimeout(function () {
                 $("#" + id).css("bottom", alertBottom + "px");
-            }, 300);
-            return 300;
+            }, 600);
+            setTimeout(function () {
+                $("#" + id).css("bottom", alertBottom + 10 + "px");
+                $(".box-sm-part-inner").css("bottom", alertBottom + 10 + "px");
+            }, 900);
         }
-        else {
-            if (cardOpened == 0) {
-                makePassiveAllActiveSmContainers(openedSmContainers);
-                setTimeout(function () {
-                    $("#" + id).fadeIn(0);
-                    $("#" + id).removeClass("passive");
-                    $("#" + id).addClass("active");
-                    $("#" + id).css("bottom", alertBottom + 45 + "px");
-                }, 300);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + "px");
-                }, 600);
-                return 600;
-            }
-            else if (cardOpened == 1) {
-                makePassiveAllActiveSmContainers(openedSmContainers);
-                $("#" + id).css("bottom", alertBottom + 45 + "px");
-                setTimeout(function () {
-                    $("#" + id).removeClass("passive");
-                    $("#" + id).css("bottom", "-1200px");
-                }, 300);
-                setTimeout(function () {
-                    $("#" + id).addClass("active");
-                    $("#" + id).css("bottom", alertBottom + 45 + "px");
-                }, 600);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + "px");
-                }, 900);
-                return 900;
-            }
-            else {
-                $("#" + id).removeClass('active');
-                $("#" + id).removeClass("passive");
-                $("#" + id).css("bottom", "-1200px");
-                setTimeout(function () {
-                    $("#" + id).addClass('active');
-                    $("#" + id).css("bottom", alertBottom + 45 + "px");
-                }, 300);
-                setTimeout(function () {
-                    $("#" + id).css("bottom", alertBottom + "px");
-                }, 600);
-                return 600;
-            }
-        }
-        //Sync
+
+        if (!doNotTrack) pushSmContainerToList(id);
     }
 }
-
+//release-img
 function uncallASmContainer(callByClassname, id, doNotReopenLastCard = false) {
     let alertBottom = 0;
-    let lastSmContainerId = null;
     let isPlayerActive = $(".ongaku-player-box").css("bottom");
     if (isPlayerActive != undefined) isPlayerActive = parseInt(isPlayerActive) + parseInt($(".ongaku-player-box").innerHeight());
     else isPlayerActive = 0;
@@ -6320,37 +6461,36 @@ function uncallASmContainer(callByClassname, id, doNotReopenLastCard = false) {
     }
 
     if (callByClassname) {
-        $(".box-sm-part-inner").removeClass("active");
-        $(".box-sm-part-inner").removeClass("passive");
-        $(".box-sm-part-inner").css("bottom", alertBottom + 45 + "px");
+        $("." + id).css("bottom", alertBottom + 45 + "px");
         setTimeout(function () {
-            $(".box-sm-part-inner").css("bottom", "-1200px");
+            $("." + id).addClass("passive");
+            $("." + id).removeClass("active");
+            $("." + id).css("bottom", "-1200px");
         }, 300);
-        if (!doNotReopenLastCard) {
-            setTimeout(function () {
-                $(".box-sm-part-inner").fadeOut(0);
-                lastSmContainerId = getLastOpenedSmContainer();
-                if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
-            }, 600);
-        }
+        setTimeout(function () {
+            $("." + id).fadeOut(0);
+            $(".box-sm-part-inner").addClass('active');
+            $(".box-sm-part-inner").removeClass('passive');
+        }, 600);
     }
     else {
-        $("#" + id).removeClass("active");
-        $("#" + id).removeClass("passive");
+        unpushLastSmContainerFromList(id);
+        let lastOpenedContainer = getLastOpenedSmContainer();
         $("#" + id).css("bottom", alertBottom + 45 + "px");
         setTimeout(function () {
+            $("#" + id).addClass("passive");
+            $("#" + id).removeClass("active");
             $("#" + id).css("bottom", "-1200px");
-            unpushLastSmContainerFromList(id);
-            if (openedSmContainers.length <= 1) uncallCardManager();
         }, 300);
-        if (!doNotReopenLastCard) {
-            setTimeout(function () {
-                $("#" + id).fadeOut(0);
-                lastSmContainerId = getLastOpenedSmContainer();
-                if (lastSmContainerId != null) callASmContainer(false, lastSmContainerId);
-            }, 600);
-        }
+        setTimeout(function () {
+            $("#" + id).fadeOut(0);
+            if (lastOpenedContainer != null) {
+                $("#" + lastOpenedContainer).addClass('active');
+                $("#" + lastOpenedContainer).removeClass("passive");
+            }
+        }, 600);
     }
+
     $(".btn-sticky-at-bottom").css("opacity", 1);
     $(".box-sticky-at-bottom").css("opacity", 1);
 }
@@ -6401,9 +6541,9 @@ function unpushLastSmContainerFromList(elementId) {
 
 function uncallAContainer(callByClassname, id) {
     let newOpenedContainersArr = [];
-    let alertBottom = bottomNavbarH;
+    let alertBottom = 0;
     if (callByClassname) {
-        $(".box-lg-part").css("bottom", alertBottom + 32 + "px");
+        $(".box-lg-part").css("bottom", alertBottom + 24 + "px");
         setTimeout(function () {
             $(".box-lg-part").css("bottom", "-1200px");
         }, 300);
@@ -6418,7 +6558,7 @@ function uncallAContainer(callByClassname, id) {
         }
     }
     else {
-        $("#" + id).css("bottom", alertBottom + 32 + "px");
+        $("#" + id).css("bottom", alertBottom + 24 + "px");
         setTimeout(function () {
             $("#" + id).css("bottom", "-1200px");
         }, 300);
@@ -6523,63 +6663,170 @@ function uncallAStickyBox(closeAll = false, id, baseHtml, buttonElementId) {
     }
 }
 
-function uncallPlayerBox(callByClassname = false, id) {
-    let bottomHeight = 0;
-    if (!callByClassname) {
-        bottomHeight = parseInt($("." + id).css("bottom"));
-        $("." + id).css("bottom", bottomHeight + 35 + "px");
-        setTimeout(function () {
-            $("." + id).css("bottom", "-1200px");
-            $("." + id).fadeIn(0);
-        }, 350);
-        setTimeout(function () {
-            $("." + id).fadeIn(0);
-        },  700);
-    }
-    else {
-        bottomHeight = parseInt($("#" + id).css("bottom"));
-        $("#" + id).css("bottom", bottomHeight + 35 + "px");
-        setTimeout(function () {
-            $("#" + id).css("bottom", "-1200px");
-        }, 350);
-        setTimeout(function () {
-            $("#" + id).fadeIn(0);
-        }, 700);
-    }
-    playerPosition = -1200;
+async function getOSInfo() {
+    const platform = navigator.platform.toLowerCase();
+    const userAgent = navigator.userAgent.toLowerCase();
+
+    if (platform.includes("win")) return "Windows";
+    if (platform.includes("linux")) return "Linux";
+    if (platform.includes("mac")) return "Mac";
+    if (/android/.test(userAgent)) return "Android";
+    if (/iphone|ipad|ipod/.test(userAgent)) return 'iOS';
+
+    return "Unknown";
 }
 
-function callPlayerBox(callByClassname = false, id) {
-    let bottomHeight = 0;
-    if (currentWindowSize < 1024) bottomHeight = bottomNavbarH;
-    playerPosition = bottomHeight + 10;
+function shortcutImplementation(osInfo = null, keyCode = 0, metaKeyPressed = false, ctrlPressed = false, altPressed = false, shiftPressed = false) {
+    if (osInfo != null || osInfo != undefined) {
+        let isMac = false;
+        let audioPlayer = null;
 
-    if (!callByClassname) {
-        $("#" + id).fadeIn(0);
-        $("#" + id).css("bottom", bottomHeight + 30 + "px");
-        setTimeout(function () {
-            $("#" + id).css("bottom", bottomHeight + 5 + "px");
-        }, 350);
-        setTimeout(function () {
-            $("#" + id).css("bottom", bottomHeight + 10 + "px");
-        }, 700);
+        if (osInfo.toLowerCase() == "mac" || osInfo.toLowerCase() == "ios") isMac = true;
+        if (isMac) ctrlPressed = metaKeyPressed; //Mac
+
+        if (altPressed && shiftPressed) {
+            switch (parseInt(keyCode)) {
+                case 83:
+                    audioPlayer = audioPlayer == null ? document.getElementById("OngakuPlayer_Audio") : audioPlayer;
+                    if (audioPlayer.paused) audioContinue(audioPlayer.id, null);
+                    else audioPause(audioPlayer.id);
+                    break;
+                case 68:
+                    $(".btn-ongaku-player-forward").mousedown();
+                    break;
+                case 65:
+                    $(".btn-ongaku-player-backward").mousedown();
+                    break;
+                case 82:
+                    $(".btn-audio-loop").mousedown();
+                    break;
+                case 38:
+                    enlargeMediaPlayer(currentWindowSize);
+                    break;
+                case 40:
+                    dwindleMediaPlayer(currentWindowSize);
+                    break;
+                case 72:
+                    let pathName = (window.location.pathname).toLowerCase();
+                    if (pathName == "/" || pathName == "/home/index") slideContainers(null, "Primary_Container");
+                    else window.location.href = "/Home/Index";
+                    break;
+                case 90:
+                    $("#GetPlaylists_Type_Val").val(0);
+                    $("#GetPlaylists_Form").submit();
+                    break;
+                case 37:
+                    internalVolume = internalVolume <= 2 ? 0 : internalVolume - 2;
+                    audioEdit("OngakuPlayer_Audio", internalVolume, null, null, null, true);
+                    break;
+                case 39:
+                    internalVolume = internalVolume <= 98 ? internalVolume + 2 : 100;
+                    audioEdit("OngakuPlayer_Audio", internalVolume, null, null, null, true);
+                    break;
+                case 70:
+                    internalVolume = 0;
+                    audioEdit("OngakuPlayer_Audio", internalVolume, null, null, null, true);
+                    break;
+                case 81:
+                    playbackRateMultiplier += 0.5;
+                    playbackRateMultiplier = playbackRateMultiplier > 2.5 ? 0.5 : playbackRateMultiplier;
+                    audioEdit("OngakuPlayer_Audio", null, playbackRateMultiplier, null, null, true);
+                    break;
+                case 189:
+                    audioPlayerRewind("OngakuPlayer_Audio", 15, false, true);
+                    break;
+                case 187:
+                    audioPlayerRewind("OngakuPlayer_Audio", 15, true, true);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
-    else {
-        $("." + id).fadeIn(0);
-        $("." + id).css("bottom", bottomHeight + 30 + "px");
+}
+function slideToPrevPage(paginationMainId, currentPage, maxPages) {
+    if ((paginationMainId != null || paginationMainId != undefined) && (currentPage <= maxPages && currentPage >= 0)) {
+        maxPages = parseInt(maxPages);
+        currentPage = parseInt(currentPage);
+        let prevPage = currentPage > 0 ? currentPage - 1 : maxPages;
+
+        $(".btn-next-page").addClass("super-disabled");
+        $(".btn-prev-page").addClass("super-disabled");
+        $("#" + currentPage + "-" + paginationMainId).removeClass("faded");
+        $("#" + currentPage + "-" + paginationMainId).addClass("fading");
         setTimeout(function () {
-            $("." + id).css("bottom", bottomHeight + 5 + "px");
-        }, 350);
+            $("#" + currentPage + "-" + paginationMainId).removeClass("fading");
+            $("#" + prevPage + "-" + paginationMainId).addClass("fading");
+        }, 250);
         setTimeout(function () {
-            $("." + id).css("bottom", bottomHeight + 10 + "px");
-        }, 700);
+            $("#" + prevPage + "-" + paginationMainId).removeClass("fading");
+            $("#" + prevPage + "-" + paginationMainId).addClass("faded");
+            $(".btn-next-page").removeClass("super-disabled");
+            $(".btn-prev-page").removeClass("super-disabled");
+        }, 500);
+        $(".pagination-index-dot").removeClass("active");
+        $("#" + prevPage + "-" + paginationMainId + "_PaginationDot").addClass("active");
+        $("#" + paginationMainId + "-ToPrev_Btn").attr("data-current-page", prevPage);
+        $("#" + paginationMainId + "-ToNext_Btn").attr("data-current-page", prevPage);
     }
 }
 
-function callAContainer(callByClassname, id, doNotList) {
-    let alertBottom = bottomNavbarH
-    lgPartContainerCorrector(currentWindowSize, playerPosition);
+function slideToNextPage(paginationMainId, currentPage, maxPages) {
+    if ((paginationMainId != null || paginationMainId != undefined) && (currentPage <= maxPages && currentPage >= 0)) {
+        maxPages = parseInt(maxPages);
+        currentPage = parseInt(currentPage);
+        let nextPage = currentPage == maxPages ? 0 : currentPage + 1;
 
+        $(".btn-next-page").addClass("super-disabled");
+        $(".btn-prev-page").addClass("super-disabled");
+        $("#" + currentPage + "-" + paginationMainId).removeClass("faded");
+        $("#" + currentPage + "-" + paginationMainId).addClass("fading");
+        setTimeout(function () {
+            $("#" + currentPage + "-" + paginationMainId).removeClass("fading");
+            $("#" + nextPage + "-" + paginationMainId).addClass("fading");
+        }, 250);
+        setTimeout(function () {
+            $("#" + nextPage + "-" + paginationMainId).removeClass("fading");
+            $("#" + nextPage + "-" + paginationMainId).addClass("faded");
+            $(".btn-next-page").removeClass("super-disabled");
+            $(".btn-prev-page").removeClass("super-disabled");
+        }, 500);
+
+        $(".pagination-index-dot").removeClass("active");
+        $("#" + nextPage + "-" + paginationMainId + "_PaginationDot").addClass("active");
+        $("#" + paginationMainId + "-ToPrev_Btn").attr("data-current-page", nextPage);
+        $("#" + paginationMainId + "-ToNext_Btn").attr("data-current-page", nextPage);
+    }
+}
+
+async function createModal(id, title, body, hasFooter = false, footerBody, openOnCreate = false) {
+    if ((id != null || id != undefined) || (body != null || body != undefined)) {
+        $("body").append('<div class="modal fade" id="' + id + '_Modal" tabindex="-1" aria-labelledby="' + id + '_Modal_Lbl" aria-hidden="true"> <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="btn btn-modal-close float-end ms-1" data-bs-dismiss="modal" aria-label="Close"> <i class="fa-solid fa-xmark"></i> </button> <h5 class="modal-title" id="' + id + '_Modal_Lbl">Modal Title</h5> </div> <div class="modal-body" id="' + id + '_ModalBody"> </div> <div class="modal-footer" id="' + id + '_ModalFooter"> </div> </div> </div> </div>');
+        if (title != null || title != undefined) $("#" + id + "_Modal_Lbl").html(title);
+        else $("#" + id + "_Modal_Lbl").fadeOut(0);
+
+        $("#" + id + "_ModalBody").html(body);
+
+        if (!hasFooter) $("#" + id + "_ModalFooter").fadeOut(0);
+        else $("#" + id + "_ModalFooter").html(footerBody);
+
+        if (openOnCreate) {
+            setTimeout(function () {
+                $("#" + id + "_Modal").modal("show");
+            }, 300);
+        }
+    }
+}
+
+function callAModal(callByClassname = false, id = null) {
+    if (id != undefined || id != null) {
+        if (callByClassname) $("." + id).modal("show");
+        else $("#" + id).modal("show");
+    }
+}
+
+async function callAContainer(callByClassname, id, doNotList) {
+    let alertBottom = 0;
     if (callByClassname) {
         setTimeout(function () {
             $("." + id).css("bottom", alertBottom + 24 + "px");
@@ -6601,54 +6848,158 @@ function callAContainer(callByClassname, id, doNotList) {
             $("#" + id).css("bottom", alertBottom + "px");
         }, 300);
     }
-    if (!doNotList) openedContainers.push(id); 
+
+    if (!doNotList) openedContainers.push(id);
+    setTimeout(function () {
+        lgPartContainerCorrector(playerPosition);
+    }, 300);
+}
+
+function callKawaiiAlert(purpose = 0, bodyHtml = null, additionalIcon = null, additionalValue = 0, additionalBtnAction = null, duration = 3, isDestructable = true) {
+    if (purpose != null || purpose != undefined) {
+        let bottomH = alertBottomValue;
+        if ($("#Ongaku_Alert").hasClass("active") && currentWindowSize >= 1024) bottomH += parseInt($("#Ongaku_Alert").innerHeight()) + 10;
+        $("#Kawaii_Alert").css("bottom", bottomH + "px");
+        //0 - regular short alert;
+        //1 - change or edit alert (more important actions);
+        //2 - volume change alert;
+        //3 - other player settings alert;
+        //4 - alert with additional button instead of destruction button;
+        //5 - ROFL alert;
+        clearTimeout(kawaiiAlertTimeoutValue);
+        $("#KawaiiAlert_Box").empty();
+        $("#KawaiiAlert_Additional_Btn").html("");
+        $("#KawaiiAlert_Additional_Btn").fadeOut(0);
+        $("#KawaiiAlert_Additional_Btn").removeAttr("onmousedown");
+        $("#KawaiiAlert_Additional_Btn").addClass("super-disabled untouched");
+        switch (parseInt(purpose)) {
+            case 0:
+                $("#KawaiiAlert_Box").html("<span class='card-text'>" + bodyHtml + "</span>");
+                $("#KawaiiAlertIcon_Span").html(' <i class="fa-solid fa-circle-info"></i> ');
+                if (isDestructable) $(".btn-kawaii-alert-close").fadeIn(0);
+                else $(".btn-kawaii-alert-close").fadeOut(0);
+                break;
+            case 1:
+                $("#KawaiiAlert_Box").html("<span class='card-text'>" + bodyHtml + "</span>");
+                $("#KawaiiAlertIcon_Span").html(' <i class="fa-regular fa-star fa-flip" --fa-animation-duration="0.75s;" --fa-animation-iteration-count: 2;></i> ');
+                if (isDestructable) $(".btn-kawaii-alert-close").fadeIn(0);
+                else $(".btn-kawaii-alert-close").fadeOut(0);
+                break;
+            case 2:
+                additionalValue = parseFloat(additionalValue);
+                additionalValue = additionalValue != undefined ? additionalValue : 50;
+
+                $(".btn-kawaii-alert-close").fadeOut(0);
+                $("#KawaiiAlert_Additional_Btn").fadeIn(0);
+                $("#KawaiiAlertIcon_Span").html(' <i class="fa-solid fa-music"></i> ');
+                $("#KawaiiAlert_Box").html('<div class="volume-level-box"><div class="volume-level-bar"></div></div>');
+                $(".volume-level-bar").css("width", additionalValue + "%");
+                if (additionalIcon == undefined || additionalIcon == null) {
+                    if (additionalValue == 0) $("#KawaiiAlert_Additional_Btn").html(' <i class="fa-solid fa-volume-xmark p-2 pt-1 pb-1"></i> ');
+                    else if (additionalValue > 0 && additionalValue <= 33) $("#KawaiiAlert_Additional_Btn").html(' <i class="fa-solid fa-volume-off p-2 pt-1 pb-1"></i> ');
+                    else if (additionalValue > 33 && additionalValue <= 66) $("#KawaiiAlert_Additional_Btn").html(' <i class="fa-solid fa-volume-low p-2 pt-1 pb-1"></i> ');
+                    else $("#KawaiiAlert_Additional_Btn").html(' <i class="fa-solid fa-volume-high p-2 pt-1 pb-1"></i> ');
+                }
+                else $("#KawaiiAlert_Additional_Btn").html(' ' + additionalIcon + ' ');
+                break;
+            case 3:
+                if ((bodyHtml != undefined || bodyHtml != null) && (additionalIcon != undefined || additionalIcon != null) && (additionalValue != undefined || additionalValue != null)) {
+                    additionalValue = parseFloat(additionalValue);
+                    $("#KawaiiAlertIcon_Span").html(' <i class="fa-solid fa-sliders"></i> ')
+                    $(".btn-kawaii-alert-close").fadeOut(0);
+                    $("#KawaiiAlert_Additional_Btn").fadeIn(0);
+                    $("#KawaiiAlert_Additional_Btn").html(' ' + additionalIcon + ' ');
+                    $("#KawaiiAlert_Box").html(bodyHtml);
+                }
+                break;
+            case 4:
+                if (additionalBtnAction != null || additionalBtnAction != undefined) {
+                    $("#KawaiiAlertIcon_Span").html('')
+                    $(".btn-kawaii-alert-close").fadeOut(0);
+                    $("#KawaiiAlert_Additional_Btn").fadeIn(0);
+                    $("#KawaiiAlert_Additional_Btn").attr("onmousedown", additionalBtnAction);
+                    $("#KawaiiAlert_Additional_Btn").html(additionalIcon == undefined ? ' <i class="fa-regular fa-circle"></i> ' : additionalIcon);
+                }
+                break;
+            case 5:
+                $("#KawaiiAlertIcon_Span").html(' <i class="fa-solid fa-code"></i> ');
+                $("#KawaiiAlert_Box").html("<span class='card-text'>For development purposes only (DO NOT TOUCH THIS)</span>");
+                if (isDestructable) $(".btn-kawaii-alert-close").fadeIn(0);
+                else $(".btn-kawaii-alert-close").fadeOut(0);
+                break;
+            default:
+                $("#KawaiiAlertIcon_Span").html(' <i class="fa-solid fa-circle-info"></i> ');
+                if (isDestructable) $(".btn-kawaii-alert-close").fadeIn(0);
+                else $(".btn-kawaii-alert-close").fadeOut(0);
+                break;
+        }
+
+        duration = duration <= 3.5 ? duration : 2.75;
+        setTimeout(function () {
+            $("#Kawaii_Alert").fadeIn(150);
+            $("#Kawaii_Alert").addClass("active");
+            kawaiiAlertTimeoutValue = setTimeout(function () {
+                $("#Kawaii_Alert").fadeOut(150);
+                $("#Kawaii_Alert").removeClass("active");
+            }, duration * 1000);
+        }, 350);
+    }
 }
 
 function callAlert(icon, backgroundColor, foregroundColor, text, duration, buttonText, buttonActionType, buttonAction) {
+    let kawaiiAlertBottom = 0;
     let alertBottom = bottomNavbarH;
     if (icon != null) $("#OngakuAlert_Icon_Lbl").html(" " + icon + " ");
     else $("#OngakuAlert_Icon_Lbl").html(' <i class="fa-solid fa-circle-info"></i> ');
 
     clearInterval(intervalValue);
     clearTimeout(timeoutValue);
-    $(".ongaku-alert-timer").css("width", 0);
 
-    if (backgroundColor == null) {
+    if (backgroundColor != null) {
         $(".ongaku-alert").css("background-color", "#" + backgroundColor);
         $("#OngakuAlert_Btn").css("background-color", "#" + foregroundColor);
         $("#OngakuAlert_Btn").css("color", "#" + backgroundColor);
         $(".ongaku-alert-icon").css("color", "#" + foregroundColor);
         $(".ongaku-alert-text").css("color", "#" + foregroundColor);
-        $(".ongaku-alert-timer").css("background-color", "#fdfdfd");
     }
     else {
-        $(".ongaku-alert").css("background-color", "#2B2B2B");
+        $(".ongaku-alert").css("background-color", "rgba(43, 43, 43, 0.55)");
         $("#OngakuAlert_Btn").css("background-color", "#fdfdfd");
         $("#OngakuAlert_Btn").css("color", "#2B2B2B");
         $(".ongaku-alert-icon").css("color", "#fdfdfd");
         $(".ongaku-alert-text").css("color", "#fdfdfd");
-        $(".ongaku-alert-timer").css("background-color", "#fdfdfd");
     }
 
     let isVisible = isElementVisible(false, "Ongaku_Alert");
+    if ($("#Kawaii_Alert").hasClass("active") && currentWindowSize >= 1024) kawaiiAlertBottom = alertBottomValue + parseInt($("#Ongaku_Alert").innerHeight()) + 10;
+    else kawaiiAlertBottom = alertBottomValue;
+
     if (isVisible) {
         $(".ongaku-alert").fadeIn(0);
+        $(".ongaku-alert").addClass("active");
         $(".ongaku-alert").css("bottom", alertBottom + 48 + "px");
+        $("#Kawaii_Alert").css("bottom", kawaiiAlertBottom + 35 + "px");
         setTimeout(function () {
             $(".ongaku-alert").css("bottom", "-1200px");
+            $("#Kawaii_Alert").css("bottom", alertBottomValue + "px");
         }, 350);
         setTimeout(function () {
             $(".ongaku-alert").css("bottom", alertBottom + 48 + "px");
+            $("#Kawaii_Alert").css("bottom", kawaiiAlertBottom + 35 + "px");
         }, 700);
         setTimeout(function () {
             $(".ongaku-alert").css("bottom", alertBottom + 16 + "px");
+            $("#Kawaii_Alert").css("bottom", kawaiiAlertBottom + "px");
         }, 1050);
     }
     else {
         $(".ongaku-alert").fadeIn(0);
+        $(".ongaku-alert").addClass("active");
         $(".ongaku-alert").css("bottom", alertBottom + 48 + "px");
+        $("#Kawaii_Alert").css("bottom", kawaiiAlertBottom + 35 + "px");
         setTimeout(function () {
             $(".ongaku-alert").css("bottom", alertBottom + 16 + "px");
+            $("#Kawaii_Alert").css("bottom", kawaiiAlertBottom + "px");
         }, 350);
     }
 
@@ -6672,21 +7023,11 @@ function callAlert(icon, backgroundColor, foregroundColor, text, duration, butto
 
     $("#OngakuAlert_Text_Lbl").html(text);
     if (duration != Infinity) {
-        let widthPercentage = 0;
-        let stepIncreaseValue = (100 / duration) / 100;
-        $(".ongaku-alert-timer").css("width", 0);
-        intervalValue = setInterval(function () {
-            widthPercentage += stepIncreaseValue;
-            $(".ongaku-alert-timer").css("width", widthPercentage + "%");
-        }, 10);
-        duration += 0.1;
         timeoutValue = setTimeout(function () {
-            clearInterval(intervalValue);
-            $(".ongaku-alert-timer").css("width", "100%");
             uncallAlert();
+            clearInterval(intervalValue);
         }, duration * 1000);
     }
-    else $(".ongaku-alert-timer").css("width", 0);
 }
 
 function createHeadlessSmContainer(id, body, openOnCreate = false) {
@@ -6761,13 +7102,19 @@ function unsetCurrentSwitcherValues(elementId, switcherInternalIndex) {
 }
 
 function uncallAlert() {
+    let kawaiiAlertBottom = 0;
     let alertBottom = bottomNavbarH + 48;
+    if ($("#Kawaii_Alert").hasClass("active")) kawaiiAlertBottom = parseInt($("#Kawaii_Alert").css("bottom")) + 48;
+
     $(".ongaku-alert").css("bottom", alertBottom + "px");
+    if (kawaiiAlertBottom > 0) $("#Kawaii_Alert").css("bottom", kawaiiAlertBottom + "px");
     setTimeout(function () {
         $(".ongaku-alert").css("bottom", "-1200px");
+        if (kawaiiAlertBottom > 0) $("#Kawaii_Alert").css("bottom", alertBottomValue + "px");
     }, 350);
     setTimeout(function () {
         $(".ongaku-alert").fadeOut(0);
+        $(".ongaku-alert").removeClass("active");
         $(".ongaku-alert-timer").css('width', 0);
     }, 700);
     clearInterval(intervalValue);
@@ -7039,7 +7386,7 @@ function audioPause(element) {
     }
 }
 
-function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, currentTime = 0) {
+function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, currentTime = 0, needAlert = false) {
     if (element != null) {
         let audioElement = document.getElementById(element);
         if (volume != null || volume != undefined) {
@@ -7047,29 +7394,45 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
             volume = volume > 0 ? volume / 100 : 0;
             audioElement.volume = volume;
             $(".volume-range-slider").val(volume * 100);
+
+            if (needAlert) callKawaiiAlert(2, null, null, internalVolume, null, 2, false);
         }
         if (playbackSpeed != null || playbackSpeed != undefined) {
             playbackSpeed = parseFloat(playbackSpeed);
             audioElement.playbackRate = playbackSpeed;
+            let playbackAnimationDuration = 0.3 / playbackSpeed;
             $(".btn-playback-rate").html(playbackSpeed.toFixed(1) + "x");
             $(".btn-playback-rate").attr("data-speed", playbackSpeed);
+
+            if (needAlert) callKawaiiAlert(3, '<div class="test-field-box"> <div class="test-field-bar"></div> </div>', '<span class="test-field-icon">' + playbackSpeed.toFixed(1) + 'x</span>', playbackSpeed, null, 1.8, false);
+            setTimeout(function () {
+                $(".test-field-bar").animate({ width: "100%" }, playbackAnimationDuration * 1000);
+            }, 300);
         }
 
         if (loop != null || loop != undefined) {
             loop = parseInt(loop);
             loop = loop == undefined ? 0 : loop;
+            let loopStatus = null;
+            let loopStatusIcon = null;
 
             switch (parseInt(loop)) {
                 case 0:
                     $(".btn-audio-loop").addClass("text-unchosen");
                     $(".btn-audio-loop").removeClass("text-chosen");
                     $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
+
                     trackQueue.autoPlay = false;
                     trackQueue.orderChanger = 1;
+                    loopStatus = "Repeat disabled";
+                    loopStatusIcon = '<i class="fa-solid fa-repeat text-muted p-2 pt-1 pb-1"></i>';
                     break;
                 case 1:
                     trackQueue.autoPlay = true;
                     trackQueue.orderChanger = 1;
+                    loopStatus = "Playlist repeat enabled";
+                    loopStatusIcon = '<i class="fa-solid fa-repeat p-2 pt-1 pb-1"></i>';
+
                     $(".btn-audio-loop").addClass("text-chosen");
                     $(".btn-audio-loop").removeClass("text-unchosen");
                     $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
@@ -7077,11 +7440,13 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
                 case 2:
                     $(".btn-audio-loop").addClass("text-chosen");
                     $(".btn-audio-loop").removeClass("text-unchosen");
-                    $(".btn-audio-loop").html(' <span class="fa-layers fa-fw"><i class= "fa-solid fa-repeat"></i> <span class="fa-layers-counter">1</span></span>');
+                    $(".btn-audio-loop").html(' <span class="fa-layers fa-fw p-2 pt-1 pb-1"><i class= "fa-solid fa-repeat"></i> <span class="fa-layers-counter">1</span></span>');
                     if (trackQueue.songs.length > 0) {
                         trackQueue.autoPlay = true;
                         trackQueue.orderChanger = 0;
                     }
+                    loopStatus = "Single track repeat enabled";
+                    loopStatusIcon = '<i class="fa-solid fa-repeat p-2 pt-1 pb-1"></i>';
                     break;
                 default:
                     $(".btn-audio-loop").addClass("text-unchosen");
@@ -7089,11 +7454,36 @@ function audioEdit(element, volume = 100, playbackSpeed = 1.0, loop = 0, current
                     $(".btn-audio-loop").html(' <i class="fa-solid fa-repeat"></i> ');
                     trackQueue.autoPlay = false;
                     trackQueue.orderChanger = 1;
+                    loopStatus = "Repeat disabled";
+                    loopStatusIcon = '<i class="fa-solid fa-repeat text-muted"></i>';
                     break;
             }
             $(".btn-audio-loop").attr("data-status", loop);
+            if (needAlert) callKawaiiAlert(3, '<span class="card-text">' + loopStatus + '</span>', loopStatusIcon, trackQueue.orderChanger, null, 2, false);
         }
         if (currentTime != null || currentTime != undefined) audioElement.currentTime = currentTime;
+    }
+}
+
+function audioPlayerRewind(audioPlayerId, duration = 15, isForRewind = false, needAnAlert = false) {
+    if (audioPlayerId != null || audioPlayerId != undefined) {
+        let audioPlayer = document.getElementById(audioPlayerId);
+        if (audioPlayer != null) {
+            let totalDuration = audioPlayer.duration;
+            let currentTime = audioPlayer.currentTime;
+
+            if (isForRewind) {
+                currentTime += duration;
+                currentTime = currentTime <= totalDuration ? currentTime : 0;
+            }
+            else {
+                currentTime -= duration;
+                currentTime = currentTime >= 0 ? currentTime : 0;
+            }
+            audioEdit(audioPlayerId, null, null, null, currentTime);
+            duration = duration.toFixed(0);
+            if (needAnAlert && currentTime != 0) callKawaiiAlert(3, isForRewind ? "<span class='card-text'>Forwarded for " + duration + " sec</span>" : "<span class='card-text'>Rewinded for " + duration + " sec</span>", isForRewind ? '<i class="fa-solid fa-rotate-right anime-spin-shift"></i>' : '<i class="fa-solid fa-rotate-left anime-rewind-shift"></i>', currentTime, null, 2, false);
+        }
     }
 }
 
@@ -7304,105 +7694,228 @@ function forwardSlider(currentStep, maxStep, id) {
     }
 }
 
-function lgPartContainerCorrector(currentWidth, playerPosition) {
-    if (parseInt(currentWidth) < 1024) {
-        if (playerPosition > 0) $(".box-lg-part").css("padding-bottom", playerPosition + 10 + "px");
-        else $(".box-lg-part").css("padding-bottom", 0);
-    }
-    else $(".box-lg-part").css("padding-bottom", 0);
+function lgPartContainerCorrector(playerPosition_Px) {
+    playerPosition_Px += bottomNavbarH;
+    $(".box-lg-part").css("padding-bottom", playerPosition_Px + "px");
 }
 
-//enlargeMusicIsland
 function enlargeMediaPlayer(currentWidth) {
-    uncallSmMediaPlayer(currentWidth);
-    setTimeout(function () {
-        callLgMediaPlayer();
-    }, 750);
+    if (parseInt(currentWidth) < 1024) {
+        uncallSmMediaPlayer();
+        $(".ongaku-player-box-enlarged").fadeIn(0);
+        setTimeout(function () {
+            $(".ongaku-player-box-enlarged").css("bottom", bottomNavbarH + 45 + "px");
+        }, 450);
+        setTimeout(function () {
+            $(".ongaku-player-box").fadeOut(0);
+            $(".ongaku-player-box-enlarged").css("bottom", bottomNavbarH + 10 + "px");
+        }, 800);
+    }
+    else {
+        $(".ongaku-player-box-enlarged").fadeIn(0);
+        $(".ongaku-player-box").addClass("inactive");
+        $(".ongaku-player-box").css("bottom", "5.5%");
+        $(".ongaku-player-box-enlarged").css("bottom", bottomNavbarH + 45 + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", "-1200px");
+            $(".ongaku-player-box-enlarged").css("bottom", bottomNavbarH + 10 + "px");
+        }, 350);
+    }
 }
 
 function dwindleMediaPlayer(currentWidth) {
-    uncallLgMediaPlayer();
-    setTimeout(function () {
-        callSmMediaPlayer(currentWidth);
-    }, 750);
-}
-
-function callSmMediaPlayer(currentWidth) {
-    let bottomH = 0;
-    if (parseInt(currentWidth) < 1024) bottomH = bottomNavbarH;
-    else bottomH = 10;
-
-    $(".ongaku-player-box").fadeIn(0);
-    $(".ongaku-player-box").css("bottom", bottomH + 75 + "px");
-    setTimeout(function () {
-        $(".ongaku-player-box").css("bottom", bottomH - 10 + "px");
-    }, 350);
-    setTimeout(function () {
-        $(".ongaku-player-box").css("bottom", bottomH + "px");
-    }, 700);
+    if (parseInt(currentWidth) < 1024) {
+        let bottomH = parseInt($(".ongaku-player-box-enlarged").css("bottom"));
+        $(".ongaku-player-box").fadeIn(0);
+        $(".ongaku-player-box-enlarged").css("bottom", bottomH + 45 + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box-enlarged").css("bottom", "-1200px");
+        }, 350);
+        setTimeout(function () {
+            callCurrentMediaPlayer(currentWidth);
+        }, 450);
+    }
+    else {
+        $(".ongaku-player-box").fadeIn(0);
+        $(".ongaku-player-box-enlarged").css("bottom", bottomNavbarH + 45 + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", "5.5%");
+            $(".ongaku-player-box-enlarged").css("bottom", "-1200px");
+        }, 350);
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", "1.5%");
+            $(".ongaku-player-box").removeClass("inactive");
+        }, 700);
+    }
 }
 
 function uncallSmMediaPlayer() {
     let bottomH = parseInt($(".ongaku-player-box").css("bottom"));
-
-    $(".ongaku-player-box").css("bottom", bottomH - 10 + "px");
-    setTimeout(function () {
-        $(".ongaku-player-box").css("bottom", bottomH + 55 + "px");
-    }, 350);
+    $(".ongaku-player-box").css("bottom", bottomH + 45 + "px");
     setTimeout(function () {
         $(".ongaku-player-box").css("bottom", "-1200px");
-    }, 700);
-}
-
-function callLgMediaPlayer() {
-    let bottomH = bottomNavbarH;
-
-    $(".ongaku-player-box-enlarged").fadeIn(0);
-    $(".ongaku-player-box-enlarged").css("bottom", bottomH + 55 + "px");
-    setTimeout(function () {
-        $(".ongaku-player-box-enlarged").css("bottom", bottomH - 15 + "px");
     }, 350);
-    setTimeout(function () {
-        $(".ongaku-player-box-enlarged").css("bottom", bottomH + "px");
-    }, 700);
 }
 
 function uncallLgMediaPlayer() {
-    let bottomH = bottomNavbarH;
-
-    $(".ongaku-player-box-enlarged").css("bottom", bottomH - 15 + "px");
+    let bottomH = 10;
+    $(".ongaku-player-box").css("bottom", bottomH + 45 + "px");
     setTimeout(function () {
-        $(".ongaku-player-box-enlarged").css("bottom", bottomH + 55 + "px");
+        $(".ongaku-player-box").css("bottom", "-1200px");
     }, 350);
-    setTimeout(function () {
-        $(".ongaku-player-box-enlarged").css("bottom", "-1200px");
-    }, 700);
 }
 
-function mediaPlayerCorrector(currentWidth, isForStart = false) {
+function callCurrentMediaPlayer(currentWidth) {
+    let isForSmSize = false;
+    let bottomH = bottomNavbarH;
+    if (parseInt(currentWidth) < 1024) isForSmSize = true;
+
+    if (isForSmSize) {
+        $(".ongaku-player-box").fadeIn(0);
+        $(".ongaku-player-box").css("bottom", bottomH + 55 + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", bottomH + 10 + "px");
+        }, 350);
+    }
+    else {
+        bottomH = 10;
+        $(".ongaku-player-box").fadeIn(0);
+        $(".ongaku-player-box").css("bottom", bottomH + 45 + "px");
+        setTimeout(function () {
+            $(".ongaku-player-box").css("bottom", "1.25%");
+        }, 350);
+    }
+}
+
+$(document).on("focusin", ".form-control-bar-search", function () {
+    $(".bottom-navbar-adjustable").addClass("bottom-navbar-adjustable-dwindled");
+    $(".bottom-navbar-adjustable").removeClass("bottom-navbar-adjustable");
+    $(".bottom-navbar-unadjustable").addClass("bottom-navbar-unadjustable-enlarged");
+    $(".bottom-navbar-unadjustable").removeClass("bottom-navbar-unadjustable");
+});
+$(document).on("focusout", ".form-control-bar-search", function () {
+    $(".bottom-navbar-adjustable-dwindled").addClass("bottom-navbar-adjustable");
+    $(".bottom-navbar-adjustable-dwindled").removeClass("bottom-navbar-adjustable-dwindled");
+    $(".bottom-navbar-unadjustable-enlarged").addClass("bottom-navbar-unadjustable");
+    $(".bottom-navbar-unadjustable-enlarged").removeClass("bottom-navbar-unadjustable-enlarged");
+});
+
+$(document).on("mousedown", ".btn-toggleable", function () {
+    if ($(this).hasClass("bg-chosen-bright")) $(this).removeClass("bg-chosen-bright");
+    else $(this).hasClass("bg-chosen-bright");
+});
+
+$(document).on("mousedown", ".btn-open-audio-player-additionals", function () {
+    let controlsBox = $(".ongaku-control-buttons-box").clone();
+
+    $(".ongaku-duration-info-box").slideUp(300);
+    $(".btn-play-pause-track").removeClass("enlarged");
+    $(".btn-ongaku-player-forward").removeClass("enlarged");
+    $(".btn-ongaku-player-backward").removeClass("enlarged");
+    $(".btn-track-favor-unfavor").removeClass("enlarged");
+
+    $(".ongaku-enlarged-track-name-lbl").removeClass("enlarged");
+    $(".ongaku-enlarged-artist-name-lbl").removeClass("enlarged");
+    $(".ongaku-enlarged-track-name-lbl").addClass("larger");
+    $(".ongaku-enlarged-artist-name-lbl").addClass("larger");
+
+    $(".ongaku-player-album-box-enlarged").removeClass("enlarged");
+    $(".ongaku-player-album-box-enlarged").addClass("dwindled");
+    $(".ongaku-player-album-img-enlarged").removeClass("enlarged");
+    $(".ongaku-player-album-img-enlarged").addClass("dwindled");
+
+    $(".ongaku-player-upsliding-box").css("opacity", 1);
+    snapp(true, "ongaku-player-additionals-box", 0.5);
+    snapp(true, "ongaku-player-additional-buttons-box", 0.5);
+    setTimeout(function () {
+        unsnapp(true, "ongaku-player-upsliding-box", 0.5);
+    }, 500);
+});
+
+$(document).on("mousedown", ".btn-close-audio-player-additionals", function () {
+    let controlsBox = $(".ongaku-control-buttons-box").clone();
+
+    $(".ongaku-control-buttons-box").remove();
+    $(".ongaku-player-upsliding-box").css("opacity", 0);
+/*    setTimeout(function () {*/
+        $(".ongaku-player-upsliding-box").css("margin-bottom", "-1200px");
+        $(".ongaku-player-album-img-enlarged").removeClass("dwindled");
+        $(".ongaku-player-album-box-enlarged").removeClass("dwindled");
+        $(".ongaku-player-album-box-enlarged").addClass("enlarged");
+        $(".ongaku-player-album-img-enlarged").addClass("enlarged");
+        
+        $(".ongaku-duration-info-box").fadeIn(0);
+        $(".ongaku-control-buttons-box").fadeIn(0);
+        $(".ongaku-player-additionals-box").fadeIn(0);
+        $(".ongaku-track-not-enough-credits-box").fadeIn(0);
+        $(".ongaku-player-additional-buttons-box").fadeIn(0);
+        $(".ongaku-player-upsliding-box").fadeOut(0);
+        $("#OngakuPlayer_Controls_Box").append(controlsBox);
+        $(".btn-play-pause-track").addClass("enlarged");
+        $(".btn-ongaku-player-forward").addClass("enlarged");
+        $(".btn-ongaku-player-backward").addClass("enlarged");
+/*    }, 50);*/
+});
+
+function botScrollLogicCorrector(currentWidth) {
+    let scale = 0;
+    if (parseInt(currentWidth) < 1024) {
+        $(".bottom-navbar").addClass("backgrounded");
+        $(".ongaku-player-box").addClass("facefocused");
+        $(".ongaku-player-box").css("bottom", "1.75%");
+
+        scale = $("#MainBotton_Navbar")[0].getBoundingClientRect().height;
+        bottomNavbarH = scale - 25;
+        lgPartContainerCorrector(playerPosition);
+    }
+    else {     
+        $(".bottom-navbar").addClass("dwindled");
+        scale = $("#MainBotton_Navbar")[0].getBoundingClientRect().height;
+        bottomNavbarH = scale + 5;
+        lgPartContainerCorrector(playerPosition);
+    }
+}
+function topScrollLogicCorrector(currentWidth) {
+    if ($(".bottom-navbar").hasClass("backgrounded") || $(".bottom-navbar").hasClass('dwindled')) {
+        if (parseInt(currentWidth) < 1024) {
+            $(".bottom-navbar").removeClass("backgrounded");
+            $(".ongaku-player-box").removeClass("facefocused");
+            bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + 5;
+            $(".ongaku-player-box").css("bottom", bottomNavbarH + 10 + "px");
+            lgPartContainerCorrector(playerPosition);
+        }
+        else {
+            $(".bottom-navbar").removeClass("dwindled");
+            bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + 5;
+            lgPartContainerCorrector(playerPosition);
+        }
+    }
+}
+
+async function mediaPlayerCorrector(currentWidth, isForStart = false) {
     let smPlayerElement = null;
     let lgPlayerElement = null;
 
-    if (parseInt(currentWidth) < 1024) {
+    if (parseInt(currentWidth) < 1024) {       
         smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl">Track Title</span> <br /> <small class="ongaku-artist-name-lbl">Artist Names</small> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward me-1"> <i class="fa-solid fa-backward"></i> </button> <button type="button" class="btn btn-ongaku-player btn-play-pause-track me-1" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i></button> </div> </div> </div>');
-        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass shadow-sm" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="mt-2"> <img src="#" class="ongaku-player-album-img enlarged mx-auto" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged mx-auto" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-2"> <div> <span class="ongaku-track-name-lbl enlarged">Track Title</span> <br /> <span class="ongaku-artist-name-lbl enlarged">Artist Names</span> </div> <button type="button" class="btn btn-ongaku-player enlarged btn-ongaku-player-track-favor-unfavor btn-track-favor-unfavor ms-auto" id="EnlargedOngakuPlayer_TrackFavorUnfavor_Btn"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-1"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> </div> <div class="box-standard mt-2"> <div class="hstack gap-1"> <div class="row w-100"> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="EnlargedOngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn4Col_Box" style="display: none;"> </div> </div> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen enlarged" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="box-standard" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass bg-chosen-bright columned"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> <div class="col"> <button type="button" class="btn btn-glass columned btn-audio-shuffle"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div > </div > </div > ');
-        smPlayerElement.css("left", "0.75%");
-        smPlayerElement.css("width", "98.25%");
-        lgPlayerElement.css("left", "0.75%");
-        lgPlayerElement.css("width", "98.25%");
+        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="mt-2"> <img src="#" class="ongaku-player-album-img enlarged mx-auto" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged mx-auto" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-2"> <div> <span class="ongaku-track-name-lbl enlarged">Track Title</span> <br /> <span class="ongaku-artist-name-lbl enlarged">Artist Names</span> </div> <button type="button" class="btn btn-ongaku-player enlarged btn-track-favor-unfavor ms-auto"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-1"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> </div> <div class="box-standard mt-2"> <div class="hstack gap-1"> <div class="row w-100"> <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="Enlarged_OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box" style="display: none;"> </div> </div> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen enlarged"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="slide-box" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-quote-right"></i> </h2> <h4 class="h4">No Lyrics</h4> <small class="card-text text-muted">This track has no lyrics... yet...</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> <div class="col"> <button type="button" class="btn btn-glass columned btn-audio-shuffle"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div > </div > </div > ');
+        smPlayerElement.css("left", "1%");
+        smPlayerElement.css("width", "98%");
+        lgPlayerElement.css("left", "1%");
+        lgPlayerElement.css("width", "98%");
     }
     else {
         smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br/> <span class="ongaku-artist-name-lbl" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor btn-ongaku-player-track-favor-unfavor rounded"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="ongaku-track-duration-line" data-audio-player="OngakuPlayer_Audio" id="OngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <div class="ongaku-player-main-info-box"> <div class="row"> <div class="col" id="OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward columned" id="OngakuPlayer_Backward_Btn"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track columned" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward columned" id="OngakuPlayer_Forward_Btn"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn4Col_Box" style="display: none;"> <button type="button" class="btn btn-ongaku-player columned passive"> <i class="fa-solid fa-sliders"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn5Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn6Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div> </div>');
-        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass shadow-sm" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="hstack gap-2 mt-2"> <div> <img src="#" class="ongaku-player-album-img enlarged" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ms-2 w-100"> <div> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-track-favor-unfavor btn-track-favor-unfavor enlarged float-end ms-1" id="EnlargedOngakuPlayer_TrackFavorUnfavor_Btn"> <i class="fa-regular fa-star"></i> </button> <span class="ongaku-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br /> <span class="ongaku-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="hstack gap-1 mt-2"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> <div class="box-standard mt-2"> <div class="row"> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="EnlargedOngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuPlayer_Audio_Btn4Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop enlarged text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> </div> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="box-standard" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass bg-chosen-bright columned"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> </div> <div class="col"> <button type="button" class="btn btn-glass btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-glass columned"> <i class="fa-solid fa-magnifying-glass"></i> </button> </div> </div> </div > </div > </div > ');
+        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="hstack gap-2 mt-2"> <div> <img src="#" class="ongaku-player-album-img enlarged" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ms-2 w-100"> <div> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor enlarged float-end ms-1"> <i class="fa-regular fa-star"></i> </button> <span class="ongaku-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br /> <span class="ongaku-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="hstack gap-1 mt-2"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> <div class="box-standard mt-2"> <div class="row"> <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="Enlarged_OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop enlarged text-unchosen columned"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> </div> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="slide-box" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-quote-right"></i> </h2> <h4 class="h4">No Lyrics</h4> <small class="card-text text-muted">This track has no lyrics... yet...</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> </div> <div class="col"> <button type="button" class="btn btn-glass btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-glass columned"> <i class="fa-solid fa-magnifying-glass"></i> </button> </div> </div> </div > </div > </div > ');
 
-        smPlayerElement.css("left", "0.4%");
+        smPlayerElement.css("left", "0.5%");
         smPlayerElement.css("width", "36%");
         lgPlayerElement.css("left", "37%");
         lgPlayerElement.css("width", "63%");
     }
 
     if (smPlayerElement != null && lgPlayerElement != null) {
-        if (isForStart) {
+        if (!isForStart) {
             let trackIsFavorite = $("#EnlargedOngakuPlayer_TrackFavorUnfavor_Btn").attr("data-id");
             let trackName = $(".ongaku-track-name-lbl").html();
             let artistsSpan = $(".ongaku-artist-name-lbl").html();
@@ -7410,7 +7923,8 @@ function mediaPlayerCorrector(currentWidth, isForStart = false) {
             let trackStatus = document.getElementById("OngakuPlayer_Audio").paused;
             trackImgUrl = trackImgUrl == "#" ? undefined : trackImgUrl;
 
-            uncallSmMediaPlayer();//enable media player sync after change;
+            if (currentWidth < 1024) uncallSmMediaPlayer();
+            else uncallLgMediaPlayer();
             $(".ongaku-player-box-enlarged").css("bottom", "-1200px");
             setTimeout(function () {
                 $(".ongaku-player-box").remove();
@@ -7440,18 +7954,31 @@ function mediaPlayerCorrector(currentWidth, isForStart = false) {
                     $(".ongaku-player-album-img").fadeOut(0);
                     $(".ongaku-player-album-img").attr("src", "#");
                 }
-
-                setTimeout(function () {
-                    callSmMediaPlayer(currentWidth);
-                }, 150);
+                callCurrentMediaPlayer(currentWidth);
+                if (currentWidth >= 1024) {
+                    playerPosition = 0;
+                    alertBottomValue = bottomNavbarH + 15;
+                }
+                else {
+                    playerPosition = smPlayerElement.innerHeight();
+                    alertBottomValue = playerPosition + bottomNavbarH + 15;
+                }
             }, 750);
         }
         else {
             $("body").append(smPlayerElement);
             $("body").append(lgPlayerElement);
             setTimeout(function () {
-                callSmMediaPlayer(currentWidth);
-            }, 150);
+                callCurrentMediaPlayer(currentWidth);
+            }, 350);
+            if (currentWidth >= 1024) {
+                playerPosition = 0;
+                alertBottomValue = bottomNavbarH + 15;
+            }
+            else {
+                playerPosition = smPlayerElement.innerHeight();
+                alertBottomValue = playerPosition + bottomNavbarH + 15;
+            }
         }
     } 
 }
@@ -7497,7 +8024,6 @@ function mediaPlayerButtonSwapper(mediaPlayerId, type = 0, disableStarButton = f
 
             if (buttonsArr.length > 0) {
                 for (let i = 0; i < buttonsArr.length; i++) {
-                    console.log(mediaPlayerId + "_Btn" + i + "Col_Box");
                     $("#" + mediaPlayerId + "_Btn" + i + "Col_Box").empty();
                     $("#" + mediaPlayerId + "_Btn" + i + "Col_Box").append(buttonsArr[i]);
                 }
@@ -7510,36 +8036,40 @@ $("body").on("dblclick", function () {
     mediaPlayerButtonSwapper("OngakuPlayer_Audio", 0, false, null, null, null);
 });
 
-function displayCorrector(currentWidth) {
+async function displayCorrector(currentWidth) {
     if (parseInt(currentWidth) < 1024) {
         $(".box-lg-part").css("left", "0");
         $(".box-lg-part").css("width", "100%");
         $(".box-lg-part-header").css("left", 0);
         $(".box-lg-part-header").css("width", "100%");
-        $(".box-lg-part-inner").css("left", "0.75%");
-        $(".box-lg-part-inner").css("width", "98.25%");
+        $(".box-lg-part-inner").css("left", "1%");
+        $(".box-lg-part-inner").css("width", "98%");
+        $(".box-lg-part-winded").css("left", 0);
+        $(".box-lg-part-winded").css("width", "100%");
+        $(".box-lg-part-winded-header").css("left", "1%");
+        $(".box-lg-part-winded-header").css("width", "98%");
 
-        $(".box-vertical-switcher").css("width", "98.25%");
-        $(".box-vertical-switcher").css("left", "0.75%");
+        $(".box-vertical-switcher").css("width", "98%");
+        $(".box-vertical-switcher").css("left", "1%");
 
         $(".box-sm-part").css("left", "-1200px");
         $(".box-sm-part").css("width", "100%");
-        $(".box-sm-part-inner").css("left", "0.75%");
-        $(".box-sm-part-inner").css("width", "98.25%");
+        $(".box-sm-part-inner").css("left", "1%");
+        $(".box-sm-part-inner").css("width", "98%");
 
-        $(".box-card-manager").css("left", "0.75%");
-        $(".box-card-manager").css("width", "98.25%");
+        $(".box-card-manager").css("left", "1%");
+        $(".box-card-manager").css("width", "98%");
 
-        $(".bottom-navbar").css("left", 0);
-        $(".bottom-navbar").css("width", "100%");
+        $(".bottom-navbar").css("left", "2%");
+        $(".bottom-navbar").css("width", "96%");
 
         $(".ongaku-alert").css("left", "1%");
-        $(".ongaku-alert").css("width", "98.5%");
+        $(".ongaku-alert").css("width", "98%");
 
-        $(".ongaku-player-box").css("left", "0.75%");
-        $(".ongaku-player-box").css("width", "98.25%");
-        $(".ongaku-player-box.enlarged").css("left", "0.75%");
-        $(".ongaku-player-box.enlarged").css("width", "98.25%");
+        $(".ongaku-player-box").css("left", "1%");
+        $(".ongaku-player-box").css("width", "98%");
+        $(".ongaku-player-box-enlarged").css("left", "1%");
+        $(".ongaku-player-box-enlarged").css("width", "98%");
     }
     else {
         $(".box-lg-part").css("left", "37%");
@@ -7548,28 +8078,32 @@ function displayCorrector(currentWidth) {
         $(".box-lg-part-header").css("width", "63%");
         $(".box-lg-part-inner").css("left", "37.5%");
         $(".box-lg-part-inner").css("width", "62%");
+        $(".box-lg-part-winded").css("left", "37%");
+        $(".box-lg-part-winded").css("width", "63%");
+        $(".box-lg-part-winded-header").css("left", "37.5%");
+        $(".box-lg-part-winded-header").css("width", "62%");
 
         $(".box-vertical-switcher").css("width", "62%");
         $(".box-vertical-switcher").css("left", "37.5%");
 
         $(".box-sm-part").css("left", 0);
         $(".box-sm-part").css("width", "37%");
-        $(".box-sm-part-inner").css("left", "0.4%");
+        $(".box-sm-part-inner").css("left", "0.5%");
         $(".box-sm-part-inner").css("width", "36%");
 
-        $(".box-card-manager").css("left", "0.4%");
+        $(".box-card-manager").css("left", "0.5%");
         $(".box-card-manager").css("width", "36%");
 
-        $(".bottom-navbar").css("width", "63%");
-        $(".bottom-navbar").css("left", "37%");
+        $(".bottom-navbar").css("width", "62%");
+        $(".bottom-navbar").css("left", "37.5%");
 
         $(".ongaku-alert").css("left", "37.5%");
         $(".ongaku-alert").css("width", "62%");
 
-        $(".ongaku-player-box").css("left", "0.4%");
+        $(".ongaku-player-box").css("left", "0.5%");
         $(".ongaku-player-box").css("width", "36%");
-        $(".ongaku-player-box.enlarged").css("left", "37%");
-        $(".ongaku-player-box.enlarged").css("width", "63%");
+        $(".ongaku-player-box-enlarged").css("left", "37%");
+        $(".ongaku-player-box-enlarged").css("width", "63%");
 
         $(".ongaku-alert").fadeIn(350);
         $(".bottom-navbar").fadeIn(350);
@@ -9312,6 +9846,26 @@ function navbarSwitcher(currentWidth, sideBarOn = false) {
         }
     }
 }
+
+$(document).on("mouseover mousedown", ".bottom-navbar", function () {
+    topScrollLogicCorrector(currentWindowSize);
+});
+$(document).on("mouseover mousedown", ".ongaku-player-box", function () {
+    topScrollLogicCorrector(currentWindowSize);
+});
+$(document).on("mousedown", ".box-lg-part", function () {
+    topScrollLogicCorrector(currentWindowSize);
+});
+$(".box-lg-part").on("scroll", function () {
+    //let scrollHeight = $(this)[0].scrollHeight;
+    let currentScrollTop = $(this).scrollTop();
+    //let visibleScrollHeight = $(this).innerHeight();
+    //let maxScrollHeight = scrollHeight - visibleScrollHeight;
+    if (currentScrollTop >= lastScrollTop) botScrollLogicCorrector(currentWindowSize);
+    else topScrollLogicCorrector(currentWindowSize);
+
+    lastScrollTop = currentScrollTop;
+});
 
 $(document).on("dblclick", ".div-vertical-swiper", function (event) {
     let trueId = getTrueId(event.target.id, false);

@@ -41,6 +41,9 @@ namespace OngakuProject.Models
         public List<Genre>? Genres { get; set; } = new List<Genre>();
         public List<MoodTag>? MoodTags { get; set; } = new List<MoodTag>();
         public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
+        public List<TrackReaction>? TrackReactions { get; set; } = new List<TrackReaction>();
+
+        public List<TrackComment>? TrackComments { get; set; } = new List<TrackComment>();
         public List<TrackArtist>? TrackArtists { get; set; }
         public List<TrackHistory>? TrackHistory { get; set; }
         public List<DailyStreamAggregation>? DailyStreamAggregations { get; set; }

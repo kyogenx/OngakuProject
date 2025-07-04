@@ -349,8 +349,8 @@ namespace OngakuProject.Repositories
             if (Id > 0)
             {
                 Track? TrackInfo = null;
-                if (UserId > 0) TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, TrackFileUrl = t.TrackFileUrl, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
-                else TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, TrackFileUrl = t.TrackFileUrl, IsFavorite = false }).FirstOrDefaultAsync();
+                if (UserId > 0) TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, LyricsId = t.LyricsId, TrackFileUrl = t.TrackFileUrl, IsFavorite = t.Favorite != null ? t.Favorite.Any(f => f.UserId == UserId && !f.IsDeleted) : false }).FirstOrDefaultAsync();
+                else TrackInfo = await _context.Tracks.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted).Select(t => new Track { Id = Id, LyricsId = t.LyricsId, TrackFileUrl = t.TrackFileUrl, IsFavorite = false }).FirstOrDefaultAsync();
                 
                 if (TrackInfo is not null) return TrackInfo;
             }

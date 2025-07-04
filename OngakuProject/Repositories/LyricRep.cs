@@ -15,6 +15,68 @@ namespace OngakuProject.Repositories
             _context = context;
         }
 
+        public async Task<int> AddrLyricsAsync(Lyrics_VM Model)
+        {
+            if (Model.TrackId > 0 && Model.UserId > 0)
+            {
+                bool CheckLyricsAvailability = await _context.Lyrics.AsNoTracking().AnyAsync(l => l.TrackId == Model.TrackId && !l.IsDeleted);
+                if (CheckLyricsAvailability) return 0;
+                else
+                {
+                    Lyrics lyricsSample = new Lyrics()
+                    {
+                        TrackId = Model.TrackId,
+                        Content = Model.Content,
+                        LanguageId = Model.LanguageId
+                    };
+                    await _context.AddAsync(lyricsSample);
+                    await _context.SaveChangesAsync();
+
+                    return lyricsSample.Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<int> EditLyricsAsync(Lyrics_VM Model)
+        {
+            if(Model.Id > 0 && Model.TrackId > 0 && Model.UserId > 0)
+            {
+                bool CheckTrackOwnership = await _context.Tracks.AsNoTracking().AnyAsync(t => t.Id == Model.TrackId && t.UserId == Model.UserId && t.LyricsId == Model.Id && !t.IsDeleted);
+                if(CheckTrackOwnership)
+                {
+                    int Result = await _context.Lyrics.AsNoTracking().Where(l => l.Id == Model.Id && !l.IsDeleted).ExecuteUpdateAsync(l => l.SetProperty(l => l.LanguageId, Model.LanguageId).SetProperty(l => l.Content, Model.Content));
+                    if (Result > 0) return Model.Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<int> DeleteLyricsAsync(int Id, int TrackId, int UserId)
+        {
+            if (Id > 0 && TrackId > 0 && UserId > 0)
+            {
+                bool CheckTrackOwnership = await _context.Tracks.AsNoTracking().AnyAsync(t => t.Id == TrackId && t.UserId == UserId && t.LyricsId == Id && !t.IsDeleted);
+                if (CheckTrackOwnership)
+                {
+                    int Result = await _context.Lyrics.AsNoTracking().Where(l => l.Id == Id && !l.IsDeleted).ExecuteUpdateAsync(l => l.SetProperty(l => l.IsDeleted, true));
+                    if (Result > 0) return Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<bool> CheckLyricsAvailabilityAsync(int Id, bool CheckViaTrackId)
+        {
+            if (Id > 0)
+            {
+                if(!CheckViaTrackId) return await _context.Lyrics.AsNoTracking().AnyAsync(l => l.Id == Id && !l.IsDeleted);
+                else return await _context.Lyrics.AsNoTracking().AnyAsync(l => l.TrackId == Id && !l.IsDeleted);
+            }
+            else return false;
+        }
+
+
         public async Task<string?> AddLyricSyncAsync(LyricSync_VM Model)
         {
             if (Model.TrackId > 0)

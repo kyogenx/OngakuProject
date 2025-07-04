@@ -15,6 +15,10 @@ namespace OngakuProject.Data
         public DbSet<Album> Albums { get; set; }
         public DbSet<Disc> Discs { get; set; }
         public DbSet<TrackHistory> TrackHistories { get; set; }
+        public DbSet<TrackComment> TrackComments { get; set; }
+        public DbSet<TrackCommentReaction> TrackCommentsReaction { get; set; }
+        public DbSet<TrackRecomment> TrackRecomments { get; set; }
+        public DbSet<TrackRecommentReaction> TrackRecommentReactions { get; set; }
         public DbSet<DailyStreamAggregation> DailyStreamAggregations { get; set; }
         public DbSet<Label> Labels { get; set; }
         public DbSet<Genre> Genres { get; set; }

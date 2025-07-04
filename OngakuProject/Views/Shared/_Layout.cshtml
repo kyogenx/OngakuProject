@@ -4,10 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - OngakuProject</title>
-    <script type="importmap"></script>
+    <script type="importmap" defer></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/OngakuProject.styles.css" asp-append-version="true" />
+
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"></noscript>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 </head>
 <body>
 @*     <div class="side-navbar shadow-sm">
@@ -22,30 +26,33 @@
         </div>
     </div> *@
 
-    <div class="bottom-navbar shadow-sm">
-        <div class="row">
-            <div class="col">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-house"></i> <br />Home</a>
+    <div class="bottom-navbar" id="MainBotton_Navbar">
+        <div class="bottom-navbar-row-box">
+            <div class="bottom-navbar-adjustable">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-house"></i> </a>
             </div>
-            <div class="col">
-                <button type="button" class="btn btn-bottom-navbar btn-create-container btn-sm w-100" id="Search_Container-BtnCreate"> <i class="fa-solid fa-magnifying-glass"></i> <br />Search</button>
+            <div class="bottom-navbar-adjustable">
+                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-comments"></i> </button>
             </div>
-            <div class="col">
-                <button type="button" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-comments"></i> <br />Chats</button>
-            </div>
-            <div class="col">
+            <div class="bottom-navbar-adjustable">
                 @if(User.Identity.IsAuthenticated) 
                 {
                     <form method="get" asp-controller="Playlists" asp-action="Get" id="GetPlaylists_Form">
                         <input type="hidden" name="Type" id="GetPlaylists_Type_Val" value="0" />
-                        <button type="submit" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+                        <button type="submit" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-bars-staggered"></i> </button>
                     </form>
                 }
                 else 
                 {
                     <button type="button" class="btn btn-bottom-navbar btn-show-tooltip btn-sm w-100 super-disabled" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip shadow-sm" data-bs-html="true" data-bs-title="<span class='fw-500'>Sign In</span> or <span class='fw-500'>Sign Up</span> to create, stream, and download tracks and playlists"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
                 }
-@*                 <a asp-controller="Profile" asp-action="P" class="btn btn-bottom-navbar btn-sm w-100"> <i class="fa-solid fa-circle-user"></i> <br />Account</a> *@
+            </div>
+            <div class="bottom-navbar-unadjustable">
+                <div class="form-control-search-container bar" id="SearchBar_Container">
+                    <span> <i class="fa-solid fa-magnifying-glass"></i> </span>
+                    <input type="text" class="form-control form-control-bar-search" placeholder="Search" id="Search_Keyword_Val" />
+                </div>
+@*                 <button type="button" class="btn btn-bottom-navbar btn-create-container btn-sm w-100" id="Search_Container-BtnCreate"> <i class="fa-solid fa-magnifying-glass"></i> </button> *@
             </div>
         </div>
     </div>
@@ -55,27 +62,39 @@
             @RenderBody()
         </main>
     </div>
-    <div class="ongaku-alert shadow-sm" id="Ongaku_Alert">
-        <div class="ongaku-alert-inner">
-            <div class="hstack gap-1">
-                <div class="ongaku-alert-icon-box">
-                    <span class="h5 ongaku-alert-icon" id="OngakuAlert_Icon_Lbl"> <i class="fa-solid fa-circle-info"></i> </span>
-                </div>
-                <div class="ms-2">
-                    <span class="card-text ongaku-alert-text" id="OngakuAlert_Text_Lbl">Alert Text.</span>
-                </div>
-                <div class="ms-auto">
-                    <button type="button" class="btn btn-ongaku-alert btn-sm" id="OngakuAlert_Btn">Close</button>
-                </div>
+
+    <div class="kawaii-alert shadow-sm" id="Kawaii_Alert">
+        <div class="hstack gap-1">
+            <div class="me-1">
+                <span class="kawaii-alert-icon" id="KawaiiAlertIcon_Span"> <i class="fa-solid fa-circle-info"></i> </span>
+            </div>
+            <div class="me-1 w-100" id="KawaiiAlert_Box">
+            </div>
+            <div class="ms-auto" id="KawaiiAlert_Buttons_Box">
+                <button type="button" class="btn btn-modal-close btn-kawaii-alert-close"> <i class="fa-solid fa-xmark"></i> </button>
+                <button type="button" class="btn btn-standard-rounded btn-kawaii-additional" id="KawaiiAlert_Additional_Btn" style="display: none;"></button>
             </div>
         </div>
-        <div class="ongaku-alert-timer"></div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://kit.fontawesome.com/e46748ce25.js" crossorigin="anonymous"></script>
+    <div class="ongaku-alert shadow-sm" id="Ongaku_Alert">
+        <div class="hstack gap-1">
+            <div class="ongaku-alert-icon-box">
+                <span class="h5 ongaku-alert-icon" id="OngakuAlert_Icon_Lbl"> <i class="fa-solid fa-circle-info"></i> </span>
+            </div>
+            <div class="ms-2">
+                <span class="card-text ongaku-alert-text" id="OngakuAlert_Text_Lbl">Alert Text.</span>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-ongaku-alert btn-sm" id="OngakuAlert_Btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js" async></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" async></script>
+    <script src="~/js/site.js" asp-append-version="true" async></script>
+@*     <script src="https://kit.fontawesome.com/e46748ce25.js" crossorigin="anonymous" async="async"></script> *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
