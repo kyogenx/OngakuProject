@@ -66,7 +66,7 @@ body {
 }
 
 .slide-box {
-    padding: 8px;
+    padding: 6px;
     min-height: 150px;
     border-radius: 10px;
     background-color: transparent;
@@ -83,6 +83,13 @@ body {
     border-radius: 15px;
     transform: translateY(45px);
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.slide-box-header {
+    padding: 8px;
+    margin: 0 6px 0 6px;
+    border-radius: 10px;
+    border: 1px solid #f0f0f0;
 }
 
 .box-hint-initial {
@@ -301,7 +308,7 @@ body {
     padding: 0;
     z-index: 9000;
     width: 63%;
-    max-height: 85%;
+    max-height: 90%;
     min-height: 300px;
     border-radius: 10px 10px 1px 1px;
     border-top: 1px solid #f0f0f0;
@@ -331,9 +338,11 @@ body {
 }
 
 .box-sm-part-inner {
+    padding-top: 6px;
     z-index: 9500;
     width: 37%;
     min-height: 250px;
+    max-height: 70%;
     left: 0;
     bottom: -1200px;
     filter: blur(2px) brightness(0.975);
@@ -341,12 +350,17 @@ body {
     background-color: rgba(253, 253, 253, 0.75);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    overflow: auto;
     border: 1px solid #f0f0f0;
     position: fixed;
     display: none;
+    scrollbar-width: none;
     pointer-events: auto;
     transform: translateY(15px) scale(0.975);
     transition: all ease 0.3s;
+}
+.box-sm-part-inner::-webkit-scrollbar {
+    display: none;
 }
 
 .box-sm-part-inner.active {
@@ -547,9 +561,9 @@ body {
 }
 
 .div-swiper-sm {
-    margin-top: 6px;
     height: 4px;
     width: 35%;
+    display: block;
 }
 
 .div-vertical-swiper {
@@ -774,6 +788,10 @@ body {
 .btn-standard-profile:active {
     opacity: 0.9;
 }
+.btn-standard.columned {
+    text-align: center;
+    width: 100%;
+}
 
 .btn-classic-styled {
     background-color: #2B2B2B;
@@ -944,20 +962,45 @@ body {
 }
 
 .ongaku-player-box-enlarged {
-    padding: 8px;
     z-index: 20000;
-    height: auto;
+    height: 80%;
+    padding: 6px;
     box-shadow: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    justify-content: space-between;
     border: 1px solid #f0f0f0 !important;
     background-color: transparent;
-    min-height: 35%;
-    max-height: 80%;
     bottom: -1200px;
     position: fixed;
-    display: none;
     left: 37%;
     width: 63%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+/*    mix-blend-mode: multiply;*/
     transition: all ease 0.35s;
+}
+/*.ongaku-player-box-enlarged::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(0,0,0,0.4);
+}
+.ongaku-player-box-enlarged::before {
+  content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image: url("/ProfileImages/12658-0de.jpg");
+    background-size: cover;
+    background-position: center;
+    filter: blur(12px) brightness(1.5);
+    transform: scale(2.5);
+}*/
+.ongaku-player-box-enlarged::-webkit-scrollbar {
+    display: none;
 }
 
 .ongaku-track-name-lbl.enlarged {
@@ -1042,32 +1085,50 @@ body {
     color: #2b2b2b;
     transition: all ease 0.3s;
 }
-
 .ongaku-player-additionals-box {
+    margin: 16px 0 10px 0;
+    height: auto;
+    min-height: 30%;
+    max-height: 45%;
+    flex-grow: 1;
     padding: 8px;
-    height: auto;
-    width: 100%;
-    border-radius: 10px 10px 0 0;
-    border: none;
-    border-bottom: 1px solid #f0f0f0;
-    max-height: 350px;
-    transition: all ease 0.3s;
-}
-.ongaku-player-additional-buttons-box {
-    padding: 6px;
-    border-radius: 99px;
-}
-.ongaku-player-upsliding-box {
-    opacity: 1;
-    padding: 6px;
-    width: 100%;
-    height: auto;
-    max-height: 50%;
+    overflow: auto;
     border-radius: 10px;
-    margin: 8px 0 0 0;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 -1px 2px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.05);
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all ease 0.3s;
+}
+.ongaku-player-additionals-box::-webkit-scrollbar {
+    display: none;
+}
+
+.ongaku-player-additional-buttons-box {
+    padding: 8px;
+    margin-top: auto;
+    border-radius: 99px;
+    transition: all ease 0.3s;
+    display: block;
+}
+
+.ongaku-player-upsliding-box {
+    opacity: 0;
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    margin: 8px 0 0 0;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 -1px 2px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: none;
+    transition: all ease 0.3s;
+}
+
+.re-scaled {
+    transform: scale(0.9);
+}
+.re-transformed {
+    opacity: 0;
+    transform: translateX(250px);
 }
 
 .ongaku-player-album-img-sm {
@@ -1281,6 +1342,10 @@ body {
 .btn-glass:active {
   background-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
+}
+
+.btn-glass.smaller {
+    padding: 8px 12px;
 }
 
 .btn-announcer {
@@ -1547,6 +1612,23 @@ body {
     border-radius: 10px;
     border: 1px solid #f0f0f0;
     transition: all ease 0.3s;
+}
+/** {
+    outline: 1px solid #0d6efd;*/ /* for debugging all elements */
+/*}*/
+.form-control-bar-standard {
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-color: transparent;
+    transition: all ease 0.3s;
+}
+.form-control-bar-standard:hover,
+.form-control-bar-standard:active {
+    border: 1px solid #f0f0f0;
+}
+.form-control-bar-standard:focus {
+    background-color: #f8f9fa;
 }
 
 .form-length-indicator-box {
@@ -2051,8 +2133,41 @@ body {
     background-color: #f8f9fa;
 }
 
+.box-comment {
+    margin: 8px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all ease 0.3s;
+}
+.box-comment:hover,
+.box-comment:active {
+    background-color: #f8f9fa;
+    border: 1px solid #f0f0f0;
+}
+.box-comment-header {
+    padding: 0 3px 0 3px;
+    border-radius: 10px;
+}
+.box-comment-body {
+    margin-top: 6px;
+    padding: 0 6px 6px 42px;
+    border-radius: 10px;
+}
+.box-comment-footer {
+    padding: 6px;
+    margin-top: 6px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #f0f0f0;
+}
+
 .rounded-af {
     border-radius: 99px !important;
+}
+
+.padding-standard {
+    padding: 6px !important;
 }
 
 .box-forced-bottom {
@@ -2692,12 +2807,14 @@ body {
     }
 
     .ongaku-player-additionals-box {
-        border-radius: 0;
-        border-top: 1px solid #f0f0f0;
-        border-bottom: 1px solid #f0f0f0;
+        height: auto;
+        min-height: 15%;
+        max-height: 20%;
+        margin-top: 30px;
     }
     .ongaku-player-additional-buttons-box {
         padding: 0;
+        margin-top: auto;
     }
 }
 
@@ -2772,12 +2889,14 @@ body {
     }
 
     .ongaku-player-additionals-box {
-        border-radius: 0;
-        border-top: 1px solid #f0f0f0;
-        border-bottom: 1px solid #f0f0f0;
+        height: auto;
+        min-height: 17.5%;
+        max-height: 22.5%;
+        margin-top: 30px;
     }
     .ongaku-player-additional-buttons-box {
         padding: 0;
+        margin-top: auto;
     }
 
     .ongaku-player-album-img-enlarged {

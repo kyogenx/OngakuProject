@@ -20,6 +20,7 @@ namespace OngakuProject.Models
         public bool Mode { get; set; } //0 - minor; 1 - major
         public int Key { get; set; } //Stats for recommendations
         public byte Status { get; set; }
+        public bool AreCommsOpen { get; set; } = true;
         public DateTime? AddedAt { get; set; }
         public DateTime? ReleasedAt { get; set; }
         public DateTime? LastUpdatedAt { get; set; }

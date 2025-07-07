@@ -5,9 +5,10 @@ namespace OngakuProject.Models
 {
     public class TrackRecomment : Base
     {
-        [MaxLength(1500)]
+        [MaxLength(750)]
         public string? Text { get; set; }
         public DateTime SentAt { get; set; }
+        public DateTime? EditedAt { get; set; }
         [ForeignKey("User")]
         public int UserId { get; set; }
         [ForeignKey("TrackComment")]

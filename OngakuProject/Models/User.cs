@@ -17,6 +17,7 @@ namespace OngakuProject.Models
         [MaxLength(350)]
         public string? RealName { get; set; }
         [MaxLength(230)]
+        public bool IsOfficial { get; set; }
         public string? Webpage { get; set; }
         public int MonthlyListeners { get; set; }
         public DateTime? LastSeenAt { get; set; }

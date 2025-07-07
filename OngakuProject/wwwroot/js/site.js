@@ -29,7 +29,7 @@ let lastScrollTop = 0;
 let lastResizeWidth = 0;
 let lastResizeHeight = 0;
 
-//GetFavorite
+//GetFavorite GetTrackComments
 //localItemFilter(); SearchForGenres_Form Update Favorites btn-show-field-box EditTrackLyrics
 //imagePreviewer() type='file' UpdateTrackCredits_Form Playlists .div-swiper
 //SearchForUsers_Form btn-show-the-clock form-control-search ReleaseASingle_Form LoadTheTrack_Form GetPlaylists
@@ -39,8 +39,8 @@ let lastResizeHeight = 0;
 window.onload = function () {
     displayCorrector(currentWindowSize);
     currentWindowSize = window.innerWidth;
-    bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + 5;
-
+    bottomNavbarH = $("#MainBottom_Navbar").innerHeight() + 5;
+    //Botton
     mediaPlayerCorrector(currentWindowSize, true);
     setTimeout(function () {
         callAContainer(false, "Primary_Container");
@@ -926,7 +926,6 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
                 $("#AddOrRemoveTheAsFavorite_Form").attr("action", "/Playlists/AddToFavorites");
             }
 
-            console.log(response);
             console.log(response.result.lyricsId);
             if (response.result.lyricsId == null) {
                 $("#GetTrackLyrics_Id_Val").val(0);
@@ -937,6 +936,9 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
                 buttonUndisabler(false, "GetTrackLyrics_SbmtBtn", null);
             }
             $(".btn-track-favor-unfavor").attr("data-id", response.result.id);
+            $("#GetTrackComments_Id_Val").val(response.result.id);
+            $("#GetTrackComments_SbmtBtn").removeClass("super-disabled");
+            //GetTrackComments_Form
             $("#OngakuPlayer_Type_Val").val(response.type);
             $("#StreamTheTrack_Form").submit();
 
@@ -947,6 +949,8 @@ $("#LoadTheTrack_Form").on("submit", function (event) {
         }
         else {
             $("#GetTrackCredits_Id_Val").val(0);
+            $("#GetTrackComments_Id_Val").val(0);
+            $("#GetTrackComments_SbmtBtn").addClass("super-disabled");
             $(".btn-track-favor-unfavor").removeAttr("data-id");
             $(".btn-track-favor-unfavor-lg").removeAttr("data-id");
             buttonDisabler(true, "btn-track-favor-unfavor", null);
@@ -3231,6 +3235,254 @@ $(document).on("submit", "#FindPlaylists_Form", function (event) {
     });
 });
 
+$(document).on("submit", "#GetTrackComments_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    //LoadTheTrack btn-get-more
+    $.get(url, data, function (response) {
+        if (response.success) {
+            createSmContainer("Comments", "Comments & Replies", '<div class="slide-box re-scaled mt-2 p-0" id="Replies_Box" style="display: none;"> <div class="slide-box-header hstack gap-2"> <button type="button" class="btn btn-standard btn-change-boxes" data-close="Replies_Box" data-open="Comments_Box"> <i class="fa-solid fa-angle-left"></i> Back</button> <div class="ms-1"> <span class="h5">Replies ∙ <span class="card-text" id="CommentRepliesQty_Span">0</span></span> </div> </div> <div class="box-standard" id="RepliesBody_Box"> <div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-comment-dots"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">No replies for this comment has been sent yet</small> </div> </div> </div> <div class="slide-box mt-2 p-0" id="Comments_Box"> <div class="slide-box-header"> <span class="h5">Comments ∙ <span id="CommentsQty_Span">0</span></span> <br /> <small class="card-text text-muted" id="CommentParent_Span">per <span class="fw-500" id="CommsParentTrackName_Span"></span></small><small class="card-text fw-normal" id="CommsRepliesStatus_Span">with replies</small></div> <div class="box-standard" id="CommentsBody_Box"> <div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-message"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">Be the first to comment</small> </div> </div> </div>', null, null, false);
+            $("#CommentsBody_Box").empty();
+
+            if (response.result != undefined && response.result.length > 0) {
+                $.each(response.result, function (index) {
+                    createCommentBox("CommentsBody_Box", response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.userName, response.result[index].text, response.result[index].sentAt, response.result[index].editedAt != null ? true : false, true);
+                });
+                $("#CommentsQty_Span").html(response.result.length);
+            }
+            else {
+                $("#CommentsQty_Span").html("0");
+                $("#CommentsBody_Box").html('<div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-message"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">Be the first to comment</small> </div>');
+            }
+            $("#CommsParentTrackName_Span").text("1 track");
+            $("#CommsRepliesStatus_Span").text(", with replies");
+
+            swapToTextBoxNavbar();
+            bottomNavbarTextFormCustomization("/Comment/Send", "SendComment_Form", "SendComment_Text_Val", "Text", "SendComment_SbmtBtn", ["TrackId"], [0], ["SendComment_TrackId_Val"], ["form-control", "form-control-bar-standard", "form-control-bottom-navbar", "form-control-guard"], ["data-min-length", "maxlength", "data-on-fulfill"], [1, 1500, "SendComment_SbmtBtn"], "Comment content...", ' <i class="fa-solid fa-arrow-up"></i> ', ["btn", "btn-standard-rounded", "btn-bottom-navbar-form-control"]);
+            displayCorrector(currentWindowSize);
+            setTimeout(function () {
+                $("#SendComment_TrackId_Val").val(response.id);
+                callASmContainer(false, "Comments_Container", false);
+            }, 150);
+        }
+        else {
+            callAlert('<i class="fa-regular fa-message"></i>', null, null, "Comments are currently unavailable. Please try again later", 4, "Close", -1, null);
+        }
+    });
+});
+
+$(document).on("submit", "#SendComment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    const baseHtml = $("#SendComment_SbmtBtn").html();
+    buttonDisabler(false, "SendComment_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let currentCommentsQty = parseInt($("#CommentsQty_Span").text());
+            if (currentCommentsQty != undefined && currentCommentsQty <= 0) $("#CommentsBody_Box").empty();       
+
+            let currentUserImgSrc = $("#CurrentUserProfile_Img").attr("src");
+            createCommentBox("CommentsBody_Box", response.id, response.currentUserId, currentUserImgSrc == undefined ? null : currentUserImgSrc, response.result.userId, "You", response.result.text, new Date(response.result.sentAt), response.result.editedAt == null ? false : true, true);
+            $("#CommentsQty_Span").text(++currentCommentsQty);
+            buttonDisabler(false, "SendComment_SbmtBtn", ' <i class="fa-regular fa-circle-check"></i> ');
+        }
+        else {
+            buttonDisabler(false, "SendComment_SbmtBtn", ' <i class="fa-regular fa-circle-xmark"></i> ');
+            callAlert('<i class="fa-regular fa-message"></i>', null, null, "An error occured. Please try to sent your comment later", 3.75, "Close", -1, null);
+        }
+
+        $("#SendComment_Text_Val").val(null);
+        setTimeout(function () {
+            buttonUndisabler(false, "SendComment_SbmtBtn", baseHtml);
+        }, 2000);
+    });
+});
+
+function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc, userId, username, text, sentAt_Date = new Date(), isEdited = false, canBeReplied = true) {
+    if (applyTo_BoxId != null || applyTo_BoxId != undefined) {
+        sentAt_Date = new Date(sentAt_Date);
+        let elementBox = elementDesigner("div", "box-comment", null);
+        let elementHeaderBox = elementDesigner("div", "box-comment-header hstack gap-2", null);
+        let senderAvatarBox = null;
+        let senderUserInfoBox = elementDesigner("div", "box-standard", null);
+        let senderUsernameLbl = elementDesigner("span", "h6", username);
+        let dropdownBox = elementDesigner("div", "dropdown ms-auto", null);
+        let dropdownBtn = $(' <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let dropdownUl = elementDesigner("ul", "dropdown-menu dropdown-menu-sm-end shadow-sm", null);
+        let dropdownLi1 = $("<li></li>");
+        let dropdownLi2 = $("<li></li>");
+        let dropdownLi3 = $("<li></li>");
+        let dropdownLi4 = $("<li></li>");
+        let dropdownLi5 = null;
+        let dropdownLi6 = null;
+        let dropdownBtn1 = null;
+        let dropdownBtn2 = null;
+        let dropdownBtn3 = null;
+        let dropdownBtn4 = null;
+        let dropdownDivider1 = $('<hr class="dropdown-divider" />');
+        let elementBodyBox = elementDesigner("div", "box-comment-body", null);
+        let elementTextSpan = elementDesigner("small", "card-text white-space-on", text);
+        let elementFooterBox = elementDesigner("div", "box-comment-footer hstack gap-2", null);
+        let elementReplyBtn = $('<button type="button" class="btn btn-standard-bolded btn-reply-to-comment btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>');
+        let elementFooterAdditionalInfoBox = elementDesigner("div", "ms-auto", null);
+        let sentAtDateSpan = elementDesigner("small", "card-text text-muted me-1", dateAndTimeFormation(4, sentAt_Date)[0]);
+        let isEditedSpan = elementDesigner("small", "badge-sm", ' <i class="fa-solid fa-pencil"></i> Edited');
+
+        isEditedSpan.fadeOut(0);
+        if (avatarImgSrc != null) {
+            senderAvatarBox = $("<img src='#' class='profile-avatar-img-sm me-1' alt='This image cannot be displayed' />");
+            senderAvatarBox.attr("src", "/ProfileImages/" + avatarImgSrc);
+        }
+        else senderAvatarBox = elementDesigner("div", "profile-avatar-sm me-1", username[0]);
+
+        dropdownBtn2 = $('<button type="button" class="dropdown-item btn-reply-to-comment"> <i class="fa-solid fa-reply"></i> Reply</button>');
+        dropdownBtn3 = $('<button type="button" class="dropdown-item"> <i class="fa-regular fa-circle-user"></i> Go to ' + username + '`s Page</button>');
+        dropdownBtn4 = $('<button type="button" class="dropdown-item"> <i class="fa-regular fa-flag"></i> Report</button>');
+        if (currentUserId == userId) {
+            dropdownLi5 = $("<li></li>");
+            dropdownLi6 = $("<li></li>");
+            dropdownBtn1 = $('<button type="button" class="dropdown-item"> <i class="fa-solid fa-pencil"></i> Edit</button>');
+            dropdownBtn6 = $('<button type="button" class="dropdown-item text-danger"> <i class="fa-regular fa-trash-can"></i> Delete</button>');
+
+            dropdownLi1.append(dropdownBtn1);
+            dropdownLi5.append(dropdownDivider1);
+            dropdownLi6.append(dropdownBtn6);
+        }
+        dropdownLi2.append(dropdownBtn2);
+        dropdownLi3.append(dropdownBtn3);
+        dropdownLi4.append(dropdownBtn4);
+
+        if (dropdownLi1 != null) dropdownUl.append(dropdownLi1);
+        dropdownUl.append(dropdownLi2);
+        dropdownUl.append(dropdownLi3);
+        dropdownUl.append(dropdownLi4);
+        if (dropdownLi5 != null) dropdownUl.append(dropdownLi5);
+        if (dropdownLi6 != null) dropdownUl.append(dropdownLi6);
+        dropdownBox.append(dropdownBtn);
+        dropdownBox.append(dropdownUl);
+
+        senderUserInfoBox.append(senderUsernameLbl);
+        elementHeaderBox.append(senderAvatarBox);
+        elementHeaderBox.append(senderUserInfoBox);
+        elementHeaderBox.append(dropdownBox);
+        elementBodyBox.append(elementTextSpan);
+
+        elementFooterAdditionalInfoBox.append(sentAtDateSpan);
+        elementFooterAdditionalInfoBox.append(isEditedSpan);
+        elementFooterBox.append(elementReplyBtn);
+        elementFooterBox.append(elementFooterAdditionalInfoBox);
+
+        elementBox.append(elementHeaderBox);
+        elementBox.append(elementBodyBox);
+        elementBox.append(elementFooterBox);
+
+        elementReplyBtn.attr("id", index + "-ReplyToComment_Btn");
+        dropdownBtn2.attr("id", index + "-ReplyToComment_Dropdown_Btn");
+
+        isEditedSpan.attr("id", index + "-IsCommentEdited_Span");
+        elementBox.attr("id", index + "-Comment_Box");
+
+        $("#" + applyTo_BoxId).append(elementBox);
+
+        return true;
+    }
+    else return false;
+}
+
+$(document).on("mousedown", ".btn-reply-to-comment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+
+    }
+});
+
+$(document).on("mousedown", ".btn-swap-to-standard-navbar", function () {
+    swapToRegularNavbar();
+});
+$(document).on("mousedown", ".btn-swap-to-textbox-navbar", function () {
+    swapToTextBoxNavbar();
+});
+
+function bottomNavbarTextFormCustomization(formActionUrl, formId, formInputId = null, formInputName = null, formSubmitButtonId = null, formNewInputNames = [], formNewInputValues = [], formNewIds = [], formInputClasses = [], formInputAttributes = [], formInputAttributeValues = [], formInputPlaceholderText = null, formSubmitButtonHtml = null, formSubmitButtonClasses = []) {
+    if ((formId != null || formId != undefined) && (formActionUrl != null || formActionUrl != undefined)) {
+        let newInput = null;
+        let newButton = null;
+
+        $(".bottom-navbar-text-form").attr("id", formId);
+        $(".bottom-navbar-text-form").attr("action", formActionUrl);
+        if (formInputId != null) {
+            newInput = $("<input type='text' class='form-control form-control-bar-standard form-control-bottom-navbar' />");
+            if (formInputAttributes.length > 0 && formInputAttributeValues.length > 0) {
+                for (let i = 0; i < formInputAttributes.length; i++) {
+                    newInput.attr(formInputAttributes[i], formInputAttributeValues[i]);
+                }
+            }
+            newInput.attr("id", formInputId);
+        }
+
+        if (formInputClasses.length > 0 && newInput != null) {
+            for (let i = 0; i < formInputClasses.length; i++) {
+                newInput.addClass(formInputClasses[i]);
+            }
+        }
+
+        if (formInputPlaceholderText != null || formInputPlaceholderText != undefined) newInput.attr("placeholder", formInputPlaceholderText);
+        else newInput.attr("placeholder", "Comment text...");
+
+        if (formSubmitButtonClasses.length > 0) {
+            newButton = elementDesigner("button", "btn btn-standard-rounded btn-bottom-navbar-form-control", ' <i class="fa-solid fa-arrow-up"></i> ');
+            $(".btn-bottom-navbar-form-control").remove();
+            $("#MainBottom_TextBoxButton_Box").append(newButton);
+            for (let i = 0; i < formSubmitButtonClasses.length; i++) {
+                newButton.addClass(formSubmitButtonClasses[i]);
+            }
+        }
+
+        if (formNewInputNames.length > 0 && formNewIds.length > 0 && formNewInputValues.length > 0) {
+            $("#MainBottom_AdditionalInputs_Box").empty();
+            for (let i = 0; i < formNewInputNames.length; i++) {
+                let newAdditionalInput = $("<input type='hidden' />");
+                newAdditionalInput.attr("name", formNewInputNames[i]);
+                if (formNewIds[i] != null || formNewIds[i] != undefined) newAdditionalInput.attr("id", formNewIds[i]);
+                if (formNewInputValues[i] != null || formNewInputValues[i] != undefined) newAdditionalInput.attr("value", formNewInputValues[i]);
+                $("#MainBottom_AdditionalInputs_Box").append(newAdditionalInput);
+            }
+        }
+
+        if (newInput != null && (formInputName != null || formInputName != undefined)) {
+            newInput.attr("name", formInputName);
+            $("#MainBottom_TextBoxInput_Box").empty();
+            $("#MainBottom_TextBoxInput_Box").append(newInput);
+        }
+
+        if (formSubmitButtonId != null || formSubmitButtonId != undefined) $(".btn-bottom-navbar-form-control").attr("id", formSubmitButtonId);
+
+        if (formSubmitButtonHtml != null || formSubmitButtonHtml != undefined) $(".btn-bottom-navbar-form-control").html(formSubmitButtonHtml);
+        else $(".btn-bottom-navbar-form-control").html(' <i class="fa-solid fa-arrow-up"></i> ');
+    } 
+} 
+
+function swapToTextBoxNavbar() {
+    $("#MainBottomNavbar_MainPage_Box").addClass("re-transformed");
+    $("#MainBottomNavbar_MainPage_Box").fadeOut(300);
+    setTimeout(function () {
+        $("#MainBottom_TextBoxPage_Box").fadeIn(0);
+        $("#MainBottom_TextBoxPage_Box").removeClass("re-transformed");
+    }, 300);
+}
+
+function swapToRegularNavbar() {
+    $("#MainBottom_TextBoxPage_Box").addClass("re-transformed");
+    $("#MainBottom_TextBoxPage_Box").fadeOut(300);
+    setTimeout(function () {
+        $("#MainBottomNavbar_MainPage_Box").fadeIn(0);
+        $("#MainBottomNavbar_MainPage_Box").removeClass("re-transformed");
+    }, 300);
+}
+
 $(document).on("mousedown", ".btn-submit-the-search", function () {
     let trueId = getTrueId($(this).attr("id"), false);
     if (trueId != undefined) {
@@ -3590,6 +3842,14 @@ function boxSlider(byClassname = false, boxElementId = null, triggerButtonId = n
         }
     }
 }
+
+$(document).on("mousedown", ".btn-change-boxes", function () {
+    let closingBox = $(this).attr("data-close");
+    let openingBox = $(this).attr("data-open");
+    if (closingBox != undefined && openingBox != undefined) {
+        slideBoxes(false, closingBox, openingBox);
+    }
+});
 
 $(document).on("mousedown", ".btn-slide-boxes", function () {
     let targetBox = $(this).attr("data-box");
@@ -5226,7 +5486,7 @@ $(document).on("touchmove", ".pagination-child-box", function (event) {
 
 
 $(document).on("keydown", function (event) {
-    event.preventDefault();
+    //event.preventDefault();
     const keyCode = event.keyCode;
     const metaKey = event.metaKey;
     const altKey = event.altKey;
@@ -5409,16 +5669,25 @@ function juxtaposedCharsRestrictions(elementTrueId, restrictionButtonId, maxChar
 function slideBoxes(byClassname, closingBox, openingBox) {
     if (byClassname) {
         let divExists = document.getElementById(openingBox);
+        $("." + closingBox).addClass("re-scaled");
         $("." + closingBox).fadeOut(300);
         setTimeout(function () {
-            if (divExists == null) $("." + openingBox).fadeIn(300);
-            else $("#" + openingBox).fadeIn(300);
+            if (divExists == null) {
+                $("." + openingBox).fadeIn(0);
+                $("." + openingBox).removeClass("re-scaled");
+            }
+            else {
+                $("#" + openingBox).fadeIn(0);
+                $("#" + openingBox).removeClass("re-scaled");
+            }
         }, 300);
     }
     else {
+        $("#" + closingBox).addClass("re-scaled");
         $("#" + closingBox).fadeOut(300);
         setTimeout(function () {
-            $("#" + openingBox).fadeIn(300);
+            $("#" + openingBox).fadeIn(0);
+            $("#" + openingBox).removeClass("re-scaled");
         }, 300);
     }
 }
@@ -6388,7 +6657,7 @@ function callASmContainer(callByClassname, id, doNotTrack = false) {
 
     if (isPlayerActive != undefined) isPlayerActive = parseInt(parseInt($(".ongaku-player-box").css("bottom")) + parseInt($(".ongaku-player-box").innerHeight()));
     if (parseInt(currentWindowSize) < 1024) alertBottom += bottomNavbarH;
-    alertBottom += isPlayerActive;
+    alertBottom = isPlayerActive > 0 ? alertBottom + isPlayerActive : 0;
 
     if (callByClassname) {
         $(".box-sm-part-inner").addClass("passive");
@@ -7806,55 +8075,45 @@ $(document).on("mousedown", ".btn-toggleable", function () {
 });
 
 $(document).on("mousedown", ".btn-open-audio-player-additionals", function () {
-    let controlsBox = $(".ongaku-control-buttons-box").clone();
-
-    $(".ongaku-duration-info-box").slideUp(300);
-    $(".btn-play-pause-track").removeClass("enlarged");
-    $(".btn-ongaku-player-forward").removeClass("enlarged");
-    $(".btn-ongaku-player-backward").removeClass("enlarged");
-    $(".btn-track-favor-unfavor").removeClass("enlarged");
-
-    $(".ongaku-enlarged-track-name-lbl").removeClass("enlarged");
-    $(".ongaku-enlarged-artist-name-lbl").removeClass("enlarged");
-    $(".ongaku-enlarged-track-name-lbl").addClass("larger");
-    $(".ongaku-enlarged-artist-name-lbl").addClass("larger");
-
-    $(".ongaku-player-album-box-enlarged").removeClass("enlarged");
-    $(".ongaku-player-album-box-enlarged").addClass("dwindled");
-    $(".ongaku-player-album-img-enlarged").removeClass("enlarged");
-    $(".ongaku-player-album-img-enlarged").addClass("dwindled");
-
-    $(".ongaku-player-upsliding-box").css("opacity", 1);
-    snapp(true, "ongaku-player-additionals-box", 0.5);
-    snapp(true, "ongaku-player-additional-buttons-box", 0.5);
+    $(".ongaku-player-additional-buttons-box").css("opacity", 0);
+    $(".ongaku-player-additional-buttons-box").addClass("re-scaled");
     setTimeout(function () {
-        unsnapp(true, "ongaku-player-upsliding-box", 0.5);
-    }, 500);
+        $(".ongaku-player-upsliding-box").fadeIn(0);
+        $(".ongaku-player-upsliding-box").removeClass("re-scaled");
+        $(".ongaku-player-additional-buttons-box").fadeOut(0);
+        $(".ongaku-player-upsliding-box").css("opacity", 1);
+
+        $(".btn-ongaku-player-enlarged").removeClass("enlarged");
+        $(".ongaku-enlarged-track-name-lbl").removeClass("enlarged");
+        $(".ongaku-enlarged-artist-name-lbl").removeClass("enlarged");
+        $(".ongaku-player-album-box-enlarged").removeClass("enlarged");
+        $(".ongaku-player-album-img-enlarged").removeClass("enlarged");
+        $(".ongaku-enlarged-track-name-lbl").addClass("dwindled");
+        $(".ongaku-enlarged-artist-name-lbl").addClass("dwindled");
+        $(".ongaku-player-album-box-enlarged").addClass("dwindled");
+        $(".ongaku-player-album-img-enlarged").addClass("dwindled");
+    }, 300);
 });
 
 $(document).on("mousedown", ".btn-close-audio-player-additionals", function () {
-    let controlsBox = $(".ongaku-control-buttons-box").clone();
-
-    $(".ongaku-control-buttons-box").remove();
     $(".ongaku-player-upsliding-box").css("opacity", 0);
-/*    setTimeout(function () {*/
-        $(".ongaku-player-upsliding-box").css("margin-bottom", "-1200px");
-        $(".ongaku-player-album-img-enlarged").removeClass("dwindled");
+    $(".ongaku-player-upsliding-box").addClass("re-scaled");
+    setTimeout(function () {
+        $(".ongaku-player-additional-buttons-box").fadeIn(0);
+        $(".ongaku-player-additional-buttons-box").removeClass("re-scaled");
+        $(".ongaku-player-upsliding-box").fadeOut(0);
+        $(".ongaku-player-additional-buttons-box").css("opacity", 1);
+
+        $(".ongaku-enlarged-track-name-lbl").removeClass("dwindled");
+        $(".ongaku-enlarged-artist-name-lbl").removeClass("dwindled");
         $(".ongaku-player-album-box-enlarged").removeClass("dwindled");
+        $(".ongaku-player-album-img-enlarged").removeClass("dwindled");
+        $(".btn-ongaku-player-enlarged").addClass("enlarged");
+        $(".ongaku-enlarged-track-name-lbl").addClass("enlarged");
+        $(".ongaku-enlarged-artist-name-lbl").addClass("enlarged");
         $(".ongaku-player-album-box-enlarged").addClass("enlarged");
         $(".ongaku-player-album-img-enlarged").addClass("enlarged");
-        
-        $(".ongaku-duration-info-box").fadeIn(0);
-        $(".ongaku-control-buttons-box").fadeIn(0);
-        $(".ongaku-player-additionals-box").fadeIn(0);
-        $(".ongaku-track-not-enough-credits-box").fadeIn(0);
-        $(".ongaku-player-additional-buttons-box").fadeIn(0);
-        $(".ongaku-player-upsliding-box").fadeOut(0);
-        $("#OngakuPlayer_Controls_Box").append(controlsBox);
-        $(".btn-play-pause-track").addClass("enlarged");
-        $(".btn-ongaku-player-forward").addClass("enlarged");
-        $(".btn-ongaku-player-backward").addClass("enlarged");
-/*    }, 50);*/
+    }, 300);
 });
 
 function botScrollLogicCorrector(currentWidth) {
@@ -7864,13 +8123,13 @@ function botScrollLogicCorrector(currentWidth) {
         $(".ongaku-player-box").addClass("facefocused");
         $(".ongaku-player-box").css("bottom", "1.75%");
 
-        scale = $("#MainBotton_Navbar")[0].getBoundingClientRect().height;
+        scale = $("#MainBottom_Navbar")[0].getBoundingClientRect().height;
         bottomNavbarH = scale - 25;
         lgPartContainerCorrector(playerPosition);
     }
     else {     
         $(".bottom-navbar").addClass("dwindled");
-        scale = $("#MainBotton_Navbar")[0].getBoundingClientRect().height;
+        scale = $("#MainBottom_Navbar")[0].getBoundingClientRect().height;
         bottomNavbarH = scale + 5;
         lgPartContainerCorrector(playerPosition);
     }
@@ -7880,13 +8139,13 @@ function topScrollLogicCorrector(currentWidth) {
         if (parseInt(currentWidth) < 1024) {
             $(".bottom-navbar").removeClass("backgrounded");
             $(".ongaku-player-box").removeClass("facefocused");
-            bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + 5;
+            bottomNavbarH = $("#MainBottom_Navbar").innerHeight() + 5;
             $(".ongaku-player-box").css("bottom", bottomNavbarH + 10 + "px");
             lgPartContainerCorrector(playerPosition);
         }
         else {
             $(".bottom-navbar").removeClass("dwindled");
-            bottomNavbarH = $("#MainBotton_Navbar").innerHeight() + 5;
+            bottomNavbarH = $("#MainBottom_Navbar").innerHeight() + 5;
             lgPartContainerCorrector(playerPosition);
         }
     }
@@ -7895,18 +8154,18 @@ function topScrollLogicCorrector(currentWidth) {
 async function mediaPlayerCorrector(currentWidth, isForStart = false) {
     let smPlayerElement = null;
     let lgPlayerElement = null;
-
+    
     if (parseInt(currentWidth) < 1024) {       
         smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl">Track Title</span> <br /> <small class="ongaku-artist-name-lbl">Artist Names</small> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward me-1"> <i class="fa-solid fa-backward"></i> </button> <button type="button" class="btn btn-ongaku-player btn-play-pause-track me-1" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i></button> </div> </div> </div>');
-        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="mt-2"> <img src="#" class="ongaku-player-album-img enlarged mx-auto" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged mx-auto" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-2"> <div> <span class="ongaku-track-name-lbl enlarged">Track Title</span> <br /> <span class="ongaku-artist-name-lbl enlarged">Artist Names</span> </div> <button type="button" class="btn btn-ongaku-player enlarged btn-track-favor-unfavor ms-auto"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="box-standard mt-3"> <div class="hstack gap-1"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> </div> <div class="box-standard mt-2"> <div class="hstack gap-1"> <div class="row w-100"> <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="Enlarged_OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box" style="display: none;"> </div> </div> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen enlarged"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="slide-box" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-quote-right"></i> </h2> <h4 class="h4">No Lyrics</h4> <small class="card-text text-muted">This track has no lyrics... yet...</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> <div class="col"> <button type="button" class="btn btn-glass columned btn-audio-shuffle"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div > </div > </div > ');
+        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="mt-2"> <img src="#" class="ongaku-player-album-img ongaku-player-album-img-enlarged enlarged mx-auto" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box ongaku-player-album-box-enlarged enlarged mx-auto" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-track-not-enough-credits-box mt-3"> <div class="hstack gap-2"> <div> <span class="ongaku-track-name-lbl enlarged">Track Title</span><br /> <span class="ongaku-artist-name-lbl enlarged">Artist Names</span> </div> <div class="dropdown ms-auto"> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor me-1"> <i class="fa-regular fa-star"></i> </button> <button type="button" class="btn btn-ongaku-player" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits </button> </form> </li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist </button> </li> <li><hr class="dropdown-divider" /></li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album </button> </li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page </button> </li> <li><hr class="dropdown-divider" /></li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share </button> </li> </ul> </div> </div> </div> <div class="ongaku-duration-info-box hstack gap-1 mt-3"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> <div class="box-standard mt-3" id="OngakuPlayer_Controls_Box"> <div class="hstack gap-1"> <div class="row w-100"> <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="EnlargedOngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box" style="display: none;"></div> </div> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen enlarged"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> <div class="ongaku-player-additionals-box"> <div class="slide-box" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"><i class="fa-solid fa-list-ol"></i></h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted"> No tracks in queue. Add them manually or start a playlist to show the queue </small> </div> </div> <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;"> <div class="text-center"> <h2 class="h2"><i class="fa-solid fa-quote-right"></i></h2> <h4 class="h4">No Lyrics</h4> <small class="card-text text-muted"> This track has no lyrics... yet... </small> </div> </div> </div> <div class="ongaku-player-upsliding-box re-scaled"> <div class="hstack gap-2"> <button type="button" class="btn btn-standard btn-close-audio-player-additionals"> <i class="fa-solid fa-xmark"></i> </button> <div class="w-100 ms-2"> <div class="row"> <div class="col"> <button type="button" class="btn btn-standard btn-audio-infinity text-unchosen columned" data-status="0"> <i class="fa-solid fa-infinity"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-standard btn-audio-shuffle text-unchosen columned"> <i class="fa-solid fa-shuffle"></i> </button> </div> <div class="col"> <form method="get" asp-controller="User" asp-action="GetHistoryOfListenings" id="GetHistoryOfListenings_Form"> <button type="submit" class="btn btn-standard super-disabled columned" id="GHL_SbmtBtn"> <i class="fa-solid fa-clock-rotate-left"></i> </button> </form> </div> </div> </div> </div> <div class="box-standard mt-2" id="OngakuPlayer_AdditionalSettings_Box"> <div class="box-standard hstack gap-2"> <div> <button type="button" class="btn btn-ongaku-player btn-volume-mute me-2"> <i class="fa-solid fa-volume-off"></i> </button> </div> <div class="volume-level-box enlarged ms-2 me-2"> <div class="volume-level-bar enlarged"></div> </div> <div> <button type="button" class="btn btn-ongaku-player btn-volume-max"> <i class="fa-solid fa-volume-high"></i> </button> </div> </div> </div> <div class="box-standard mt-2"> <div class="hstack gap-2"> <div class="row w-100"> <div class="col"> <button type="button" class="btn btn-standard btn-volume-down columned"> <i class="fa-solid fa-minus"></i> Volume Down</button> </div> <div class="col"> <button type="button" class="btn btn-standard btn-volume-up columned"> <i class="fa-solid fa-plus"></i> Volume Up</button> </div> </div> <button type="button" class="btn btn-standard btn-open-audio-settings ms-auto"> <i class="fa-solid fa-sliders"></i> </button> </div> </div> </div> <div class="ongaku-player-additional-buttons-box visible"> <div class="row w-100"> <div class="col"> <button type="button" class="btn btn-standard btn-toggleable btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-standard columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> <div class="col"> <form method="get" action="/Comment/TrackComments" id="GetTrackComments_Form"> <input type="hidden" name="Id" id="GetTrackComments_Id_Val" value="0" /> <button type="submit" class="btn btn-standard super-disabled columned" id="GetTrackComments_SbmtBtn"> <i class="fa-regular fa-message"></i> </button> </form> </div> <div class="col"> <button type="button" class="btn btn-standard btn-toggleable btn-open-audio-player-additionals columned"> <i class="fa-solid fa-bars"></i> </button> </div> </div> </div> </div>');
         smPlayerElement.css("left", "1%");
         smPlayerElement.css("width", "98%");
         lgPlayerElement.css("left", "1%");
         lgPlayerElement.css("width", "98%");
     }
     else {
-        smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br/> <span class="ongaku-artist-name-lbl" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor btn-ongaku-player-track-favor-unfavor rounded"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="ongaku-track-duration-line" data-audio-player="OngakuPlayer_Audio" id="OngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <div class="ongaku-player-main-info-box"> <div class="row"> <div class="col" id="OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward columned" id="OngakuPlayer_Backward_Btn"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track columned" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward columned" id="OngakuPlayer_Forward_Btn"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn4Col_Box" style="display: none;"> <button type="button" class="btn btn-ongaku-player columned passive"> <i class="fa-solid fa-sliders"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn5Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn6Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div> </div>');
-        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="hstack gap-2 mt-2"> <div> <img src="#" class="ongaku-player-album-img enlarged" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box enlarged" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ms-2 w-100"> <div> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor enlarged float-end ms-1"> <i class="fa-regular fa-star"></i> </button> <span class="ongaku-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br /> <span class="ongaku-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="hstack gap-1 mt-2"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> <div class="box-standard mt-2"> <div class="row"> <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="Enlarged_OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop enlarged text-unchosen columned"> <i class="fa-solid fa-repeat"></i> </button> </div> </div> </div> </div> </div> <div class="ongaku-player-additionals-box mt-3"> <div class="slide-box" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small> </div> </div> <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;"> <div class="text-center"> <h2 class="h2"> <i class="fa-solid fa-quote-right"></i> </h2> <h4 class="h4">No Lyrics</h4> <small class="card-text text-muted">This track has no lyrics... yet...</small> </div> </div> </div> <div class="ongaku-player-additional-buttons-box mt-2"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button> </form> </li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li> <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page</button ></li > <li><hr class="dropdown-divider" /></li> <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li> </ul > </div > </div > <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-glass btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> </div> <div class="col"> <button type="button" class="btn btn-glass btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-glass columned"> <i class="fa-solid fa-magnifying-glass"></i> </button> </div> </div> </div > </div > </div > ');
+        smPlayerElement = $('<div class="ongaku-player-box liquid-glass"> <div class="ongaku-player-main-info-box hstack gap-1"> <div> <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" /> <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ongaku-player-info-box"> <span class="ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br/> <span class="ongaku-artist-name-lbl" id="OngakuPlayer_Artists_Span">Future</span> </div> <div class="ms-auto"> <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor btn-ongaku-player-track-favor-unfavor rounded"> <i class="fa-regular fa-star"></i> </button> </div> </div> <div class="ongaku-track-duration-line" data-audio-player="OngakuPlayer_Audio" id="OngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <div class="ongaku-player-main-info-box"> <div class="row"> <div class="col" id="OngakuPlayer_Audio_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward columned" id="OngakuPlayer_Backward_Btn"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-play-pause-track columned" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward columned" id="OngakuPlayer_Forward_Btn"> <i class="fa-solid fa-forward"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn4Col_Box" style="display: none;"> <button type="button" class="btn btn-ongaku-player columned passive"> <i class="fa-solid fa-sliders"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn5Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> <div class="col" id="OngakuPlayer_Audio_Btn6Col_Box"> <button type="button" class="btn btn-ongaku-player btn-audio-shuffle text-unchosen columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div> </div>');
+        lgPlayerElement = $('<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container"> <div class="ongaku-div-swiper mx-auto"></div> <div class="hstack gap-2 mt-2"> <div> <img src="#" class="ongaku-player-album-img ongaku-player-album-img-enlarged enlarged" id="EnlargedOngakuPlayer_Img" /> <div class="ongaku-player-album-box ongaku-player-album-box-enlarged enlarged" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div> </div> <div class="ms-2 w-100"> <div> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-track-favor-unfavor enlarged float-end ms-1"> <i class="fa-regular fa-star"></i> </button> <div class="ongaku-track-not-enough-credits-box"> <span class="ongaku-track-name-lbl ongaku-enlarged-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span> <br /> <span class="ongaku-artist-name-lbl ongaku-enlarged-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span> </div> </div> <div class="ongaku-duration-info-box hstack gap-1 mt-2"> <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span> <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box"> <div class="ongaku-track-current-duration-line"></div> </div> <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span> </div> <div class="box-standard mt-2" id="OngakuPlayer_Controls_Box"> <div class="ongaku-control-buttons-box"> <div class="row"> <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-play-pause-track enlarged columned" id="Enlarged_OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button> </div> <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box"> <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button> </div> </div> </div> </div> </div> </div> <div class="ongaku-player-additionals-box"> <div class="slide-box" id="TrackQueue_Box"> <div class="text-center"> <h2 class="h2"><i class="fa-solid fa-list-ol"></i></h2> <h4 class="h4">Queue is Empty</h4> <small class="card-text text-muted"> No tracks in queue. Add them manually or start a playlist to show the queue </small> </div> </div> <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;"> <div class="text-center"> <h2 class="h2"><i class="fa-solid fa-quote-right"></i></h2> <h4 class="h4">No Lyrics</h4> <small class="card-text text-muted"> This track has no lyrics... yet... </small> </div> </div> </div> <div class="ongaku-player-upsliding-box re-scaled"> <div class="hstack gap-1"> <button type="button" class="btn btn-standard btn-close-audio-player-additionals me-2"> <i class="fa-solid fa-xmark"></i> </button> <div class="row w-100"> <div class="col"> <button type="button" class="btn btn-standard btn-audio-infinity text-unchosen columned" data-status="0"> <i class="fa-solid fa-infinity"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-standard btn-audio-loop text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button> </div> <div class="col"> <button type="button" class="btn btn-standard btn-audio-shuffle text-unchosen columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button> </div> </div> </div> <div class="box-standard mt-2" id="OngakuPlayer_AdditionalSettings_Box"> <div class="box-standard hstack gap-2"> <div> <button type="button" class="btn btn-ongaku-player btn-volume-mute me-2"> <i class="fa-solid fa-volume-off"></i> </button> </div> <div class="volume-level-box enlarged ms-2 me-2"> <div class="volume-level-bar enlarged"></div> </div> <div> <button type="button" class="btn btn-ongaku-player btn-volume-max"> <i class="fa-solid fa-volume-high"></i> </button> </div> </div> </div> <div class="box-standard mt-2" id="OngakuPlayer_AdditionalSettingButtons_Box"> <div class="row"> <div class="col"> <button type="button" class="btn btn-standard btn-volume-down columned"> <i class="fa-solid fa-minus"></i> Volume Down</button> </div> <div class="col"> <form method="get" asp-controller="User" asp-action="GetHistoryOfListenings" id="GetHistoryOfListenings_Form"> <button type="submit" class="btn btn-standard super-disabled columned" id="GHL_SbmtBtn"> <i class="fa-solid fa-clock-rotate-left"></i> History</button> </form> </div> <div class="col"> <button type="button" class="btn btn-standard btn-volume-up columned"> <i class="fa-solid fa-plus"></i> Volume Up</button> </div> </div> </div> </div> <div class="ongaku-player-additional-buttons-box visible"> <div class="hstack gap-1"> <div> <div class="dropdown"> <button type="button" class="btn btn-standard" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button> <ul class="dropdown-menu shadow-sm"> <li> <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form"> <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits </button> </form> </li> <li> <form method="get" action="/Track/GetTrackAdditions" id="GetTrackAdditions_Form"> <input type="hidden" name="Id" id="GetTrackAdditions_Id_Val" value="0" /> <button type="submit" class="dropdown-item super-disabled" id="GetTrackAdditions_SbmtBtn"> <i class="fa-solid fa-align-left"></i> Get Description </button> </form> </li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist </button> </li> <li><hr class="dropdown-divider" /></li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album </button> </li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist Page </button> </li> <li><hr class="dropdown-divider" /></li> <li> <button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share </button> </li> </ul> </div> </div> <div class="row w-100 ms-1"> <div class="col"> <button type="button" class="btn btn-standard btn-toggleable btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button> </div> <div class="col"> <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form"> <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" /> <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" /> <button type="submit" class="btn btn-standard columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button> </form> </div> <div class="col"> <form method="get" action="/Comment/TrackComments" id="GetTrackComments_Form"> <input type="hidden" name="Id" id="GetTrackComments_Id_Val" value="0" /> <button type="submit" class="btn btn-standard super-disabled columned" id="GetTrackComments_SbmtBtn"> <i class="fa-regular fa-message"></i> </button> </form> </div> <div class="col"> <button type="button" class="btn btn-standard btn-toggleable btn-open-audio-player-additionals columned"> <i class="fa-solid fa-bars"></i> </button> </div> </div> </div> </div> </div>');
 
         smPlayerElement.css("left", "0.5%");
         smPlayerElement.css("width", "36%");
@@ -8031,10 +8290,6 @@ function mediaPlayerButtonSwapper(mediaPlayerId, type = 0, disableStarButton = f
         }
     }
 }
-
-$("body").on("dblclick", function () {
-    mediaPlayerButtonSwapper("OngakuPlayer_Audio", 0, false, null, null, null);
-});
 
 async function displayCorrector(currentWidth) {
     if (parseInt(currentWidth) < 1024) {
@@ -8222,10 +8477,10 @@ function dateAndTimeFormation(formatType, dateAndTime) {
                 newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, false, false);
                 break;
             case 2:
-                newDayValue = dateAndTimeCompiller(rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, true, true);
+                newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, true, true);
                 break;
             case 4:
-                newDayValue = dateAndTimeCompiller(rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, true, false);
+                newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, true, false);
                 break;
             default:
                 newDayValue = dateAndTimeCompiller(userLocale, rDayValue, newDayValue.getDay(), rMonthValue, rYearValue, rHourValue, rMinValue, false, true);
@@ -8258,7 +8513,7 @@ function dateAndTimeCompiller(countryISO2, day, weekday, month, year, hour, min,
         if (longFormatted) result = dayOfWeekShortArr[weekday] + ", " + dateResult.getDate() + " " + monthsShortArr[month] + " " + yearAddition;
         else result = dateResult.toLocaleDateString(countryISO2);
 
-        if (showTime) result += ", at " + dateResult.toLocaleTimeString(countryISO2);
+        if (showTime) result += ", at " + dateResult.toLocaleTimeString(countryISO2, { hour: "2-digit", minute: "2-digit" });
         else result = dayOfWeekShortArr[weekday] + ", " + dateResult.getDate() + " " + monthsShortArr[month] + yearAddition;
         return result;
     }

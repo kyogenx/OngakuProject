@@ -41,6 +41,7 @@ builder.Services.AddTransient<ISearch, SearchRep>();
 builder.Services.AddScoped<IMiscellaneous, MiscellaneousRep>();
 builder.Services.AddTransient<IMail, MailRep>();
 builder.Services.AddTransient<IBackgroundWorker, BackgroundWorker>();
+builder.Services.AddTransient<ITrackComment, TrackCommentRep>();
 builder.Services.AddScoped<ITrackAnalytic, TrackAnalyticRep>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetValue<string>("Redis:ConnectionString", "localhost:6379,allowAdmin=true")));
 builder.Services.AddMemoryCache();

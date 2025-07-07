@@ -493,7 +493,73 @@
         </div>
     </div> *@
 
-<div class="box-sm-part shadow-sm">
+
+@* <div class="box-comment" id="CommentBox-1">
+    <div class="box-comment-header hstack gap-2">
+        <div class="profile-avatar-sm me-1">?</div>
+        <div class="box-standard">
+            <span class="h6">Username</span>
+        </div>
+        <div class="dropdown ms-auto">
+            <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+            <ul class="dropdown-menu dropdown-menu-sm-end shadow-sm">
+                <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-pencil"></i> Edit</button></li>
+                <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-reply"></i> Reply</button></li>
+                <li><button type="button" class="dropdown-item"> <i class="fa-regular fa-circle-user"></i> Go to sender's Page</button></li>
+                <li><button type="button" class="dropdown-item"> <i class="fa-regular fa-flag"></i> Report</button></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><button type="button" class="dropdown-item text-danger"> <i class="fa-regular fa-trash-can"></i> Delete</button></li>
+            </ul>
+        </div>
+    </div>
+    <div class="box-comment-body">
+        <small class="card-text white-space-on">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</small>
+    </div>
+    <div class="box-comment-footer hstack gap-2">
+        <button type="button" class="btn btn-standard-bolded btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>
+        <div class="ms-auto">
+            <small class="card-text text-muted me-1">today, at 16:48</small>
+            <small class="badge-sm"> <i class="fa-solid fa-pencil"></i> Edited</small>
+        </div>
+    </div>
+</div> *@
+
+<div class="box-sm-part">
+    @* <div class="box-sm-part-inner shadow-sm active" id="Comments_Container">
+        <div class="div-swiper div-swiper-sm mx-auto"></div>
+        <div class="slide-box re-scaled mt-2 p-0" id="Replies_Box" style="display: none;">
+            <div class="slide-box-header hstack gap-2">
+                <button type="button" class="btn btn-standard btn-change-boxes" data-close="Replies_Box" data-open="Comments_Box"> <i class="fa-solid fa-angle-left"></i> Back</button>
+                <div class="ms-1">
+                    <span class="h5">Replies ∙ <span class="card-text" id="CommentRepliesQty_Span">0</span></span>
+                </div>
+            </div>
+            <div class="box-standard" id="RepliesBody_Box">
+                <div class="box-standard text-center p-2">
+                    <h2 class="h2"> <i class="fa-regular fa-comment-dots"></i> </h2>
+                    <h4 class="h4">No Replies</h4>
+                    <small class="card-text text-muted">No replies for this comment has been sent yet</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-box mt-2 p-0" id="Comments_Box">
+            <div class="slide-box-header">
+                <span class="h5">Comments ∙ <span id="CommentsQty_Span">2</span></span>
+                <br />
+                <small class="card-text text-muted" id="CommentParent_Span">for <span class="fw-500">Like That</span> track</small>
+            </div>
+
+            <div class="box-standard" id="CommentsBody_Box">
+                <div class="box-standard text-center p-2">
+                    <h2 class="h2"> <i class="fa-regular fa-message"></i> </h2>
+                    <h4 class="h4">No Comments</h4>
+                    <small class="card-text text-muted">Be the first to comment</small>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
     <div class="d-none" id="OngakuPlayer_Guts_Box">
         <form method="get" action="/Track/Load" id="LoadTheTrack_Form">
             <input type="hidden" name="Id" id="OngakuPlayer_TrackId_Val" value="0" />
@@ -1224,39 +1290,7 @@
         </div>
     </div>
     <div class="box-lg-part-body mt-5" id="Primary_Box">
-        <div class="mt-2">
-            @* <div class="pagination-parent-box mx-auto" id="PaginationSample_Box">
-                <div class="pagination-child-box faded" id="0-PaginationSample_Box" data-max-pages="3">
-                    The standard Lorem Ipsum passage, used since the 1500s
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-                </div>
-                <div class="pagination-child-box" id="1-PaginationSample_Box" data-max-pages="3">
-                    Section 1.10.32 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
-                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
-                </div>
-                <div class="pagination-child-box" id="2-PaginationSample_Box" data-max-pages="3">
-                    1914 translation by H. Rackham
-                    "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"
-                </div>
-                <div class="pagination-child-box" id="3-PaginationSample_Box" data-max-pages="3">
-                    Section 1.10.33 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
-                    "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
-                </div>
-                <div class="pagination-info-box hstack gap-1 mt-2">
-                    <div class="pagination-buttons-box">
-                        <button type="button" class="btn btn-pagination btn-prev-page" data-current-page="0" data-max-pages="3" id="PaginationSample_Box-ToPrev_Btn"> <i class="fa-solid fa-angle-left"></i> </button>
-                    </div>
-                    <div class="pagination-index-box mx-auto">
-                        <div class="pagination-index-dot active" id="0-PaginationSample_Box_PaginationDot"></div>
-                        <div class="pagination-index-dot" id="1-PaginationSample_Box_PaginationDot"></div>
-                        <div class="pagination-index-dot" id="2-PaginationSample_Box_PaginationDot"></div>
-                        <div class="pagination-index-dot" id="3-PaginationSample_Box_PaginationDot"></div>
-                    </div>
-                    <div class="pagination-buttons-box ms-auto">
-                        <button type="button" class="btn btn-pagination btn-next-page" data-current-page="0" data-max-pages="3" id="PaginationSample_Box-ToNext_Btn"> <i class="fa-solid fa-angle-right"></i> </button>
-                    </div>
-                </div>
-            </div> *@
+        <div class="mt-2">           
             <p class="card-text">
                 The standard Lorem Ipsum passage, used since the 1500s
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -1274,84 +1308,6 @@
                 "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."
             </p>
         </div>
-@*         <div class="box-standard mt-3">
-            <div class="box-standard text-center">
-                <div>
-                    <img src="#" class="release-img-lg mx-auto" alt="This image cannot be displayed" style="display: none;" />
-                    <div class="release-img-box-lg mx-auto"> <i class="fa-solid fa-star text-primary"></i> </div>
-                </div>
-                <div class="box-standard mt-2">
-                    <span class="h2" id="PlaylistInfo_Name_Lbl">Favorites</span>
-                    <br/>
-                    <span class="h6 release-artist-name" id="PlaylistInfo_MainArtist_Span">Creator Name</span>
-                    <div>
-                        <small class="card-text text-muted" id="PlaylistInfo_Type_Span"> <i class="fa-solid fa-star text-primary"></i> Favorite Songs</small>
-                        <small class="card-text text-muted" id="PlaylistInfo_ReleaseDate_Span"> ∙ 2025</small>
-                    </div>
-                </div>
-                <div class="box-standard mt-2">
-                    <button type="button" class="btn btn-release-info btn-save-the-playlist btn-lg super-disabled me-1" id="SaveThePlaylistIncluded_Btn"> <i class="fa-solid fa-play"></i> Play</button>
-                    <button type="button" class="btn btn-release-info btn-lg"> <i class="fa-solid fa-shuffle"></i> Shuffle</button>
-                    <div class="d-inline-block">
-                        <button type="button" class="btn btn-standard-bolded btn-save-the-playlist btn-lg me-1 super-disabled" id="SaveThePlaylistIncluded_Btn"> <i class="fa-solid fa-plus"></i> </button>
-                        <button type="button" class="btn btn-standard-bolded btn-remove-the-playlist btn-lg me-1 super-disabled" id="UnsaveThePlaylistIncluded_Btn" style="display: none;"> <i class="fa-solid fa-check-double"></i> </button>
-                    </div>
-                </div>
-                <div class="box-standard mt-2" id="PlaylistInfo_TrackBoxes_Box">
-                </div>
-            </div>
-            <div class="border-top p-2 pt-1 mt-2" id="PlaylistInfo_AdditionalInfo_Box">
-                <small class="card-text"> <i class="fa-solid fa-hashtag"></i> <span class="card-text text-muted" id="PlaylistInfo_SongsQty_Span">No Songs</span></small>
-                <br />
-                <small class="card-text"> <i class="fa-solid fa-file-signature"></i> <span class="card-text text-muted" id="PlaylistInfo_FullReleaseDate_Span">Released 13 July 2025</span></small>
-                <br />
-                <small class="card-text"> <i class="fa-solid fa-calendar-day"></i> <span class="card-text text-muted" id="PlaylistInfo_LabelInfo_Span">Label Information</span></small>
-            </div> *@
-
-            @* <div class="hstack gap-1">
-                <div class="d-none">
-                    <form method="get" action="/Playlists/GetTracks" id="GetPlaylistTracks_Form">
-                        <input type="hidden" name="Id" id="GPT_Id_Val" value="0" />
-                        <input type="hidden" name="UserId" id="GPT_UserId_Val" value="0" />
-                        <input type="hidden" name="Skip" id="GPT_Skip_Val" value="0" />
-                    </form>
-                    <form method="post" action="/Playlists/RemoveFrom" id="RemoveFromPlaylist_Form">
-                        <input type="hidden" name="Id" id="RFP_Id_Val" value="0" />
-                        <input type="hidden" name="PlaylistId" id="RFP_PlaylistId_Val" value="0" />
-                    </form>
-                </div>
-                <div>
-                    <input type="hidden" id="PlaylistSongsQty_Val" value="0" />
-                    <img src="#" class="release-img-lg" alt="This image cannot be displayed" id="Playlist_Img" style="display: none;" />
-                    <div class="release-img-box-lg" id="Playlist_Img_Box"> <i class="fa-solid fa-star text-primary"></i> </div>
-                </div>
-                <div class="bottom-element ms-2">
-                    <small class="card-text" id="PlaylistInfo_Type_Span"> <i class="fa-solid fa-star text-primary"></i> Favorite Songs</small>
-                    <small class="card-text" id="PlaylistInfo_ReleaseDate_Span"> ∙ 2025</small>
-                    <h1 class="h1" id="PlaylistInfo_Name_Lbl">Favorites</h1>
-                    <div class="box-standard mt-1">
-                        <button type="button" class="btn btn-release-info btn-play-pause-track btn-play-pause-track-lg btn-lg me-1" id="PlaylistInfo_PlayPauseMain_Btn"> <i class="fa-solid fa-play"></i> Play</button>
-                        <button type="button" class="btn btn-release-info btn-lg"> <i class="fa-solid fa-shuffle"></i> Shuffle</button>
-                        <div class="d-inline-block">
-                            <button type="button" class="btn btn-standard-bolded btn-save-the-playlist btn-lg me-1 super-disabled" id="SaveThePlaylistIncluded_Btn"> <i class="fa-solid fa-plus"></i> </button> 
-                            <button type="button" class="btn btn-standard-bolded btn-remove-the-playlist btn-lg me-1 super-disabled" id="UnsaveThePlaylistIncluded_Btn" style="display: none;"> <i class="fa-solid fa-check-double"></i> </button> 
-                        </div>
-                    </div>
-                    <div class="box-standard mt-1">
-                        <small class="card-text" id="PlaylistInfo_SongsQty_Span">No Songs</small>
-                    </div>
-                </div>
-            </div>
-            <div class="box-standard" id="PlaylistInfo_TrackBoxes_Box"> 
-
-            </div>
-            <div class="border-top p-2 pt-1 mt-2" id="PlaylistInfo_AdditionalInfo_Box">
-                <small class="card-text"> <i class="fa-solid fa-file-signature"></i> <span class="card-text text-muted" id="PlaylistInfo_FullReleaseDate_Span">Released 13 July 2025</span></small>
-                <br/>
-                <small class="card-text"> <i class="fa-solid fa-calendar-day"></i> <span class="card-text text-muted" id="PlaylistInfo_LabelInfo_Span">Label Information</span></small>
-            </div> *@
-@*         </div> *@
-
         @* <div class="artist-page-avatar-box" id="ArtistAvatar_Box">
             <div class="artist-page-avatar-content">
                 <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1>
@@ -1681,200 +1637,4 @@
     </div>
 </div> *@
 
-<div class="ongaku-player-box-enlarged liquid-glass" id="EnlargedOngakuPlayer_Container" style="display: block; bottom: 150px;">
-    <div class="ongaku-div-swiper mx-auto"></div>
 
-    <div class="hstack gap-2 mt-2">
-        <div>
-            <img src="#" class="ongaku-player-album-img enlarged ongaku-player-album-img-enlarged" id="EnlargedOngakuPlayer_Img" />
-            <div class="ongaku-player-album-box enlarged ongaku-player-album-box-enlarged" id="EnlargedOngakuPlayer_No_Img">
-                <i class="fa-solid fa-music"></i>
-            </div>
-        </div>
-
-        <div class="ms-2 w-100">
-            <div>
-                <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor enlarged float-end ms-1">
-                    <i class="fa-regular fa-star"></i>
-                </button>
-                <div class="ongaku-track-not-enough-credits-box">
-                    <span class="ongaku-track-name-lbl ongaku-enlarged-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span>
-                    <br />
-                    <span class="ongaku-artist-name-lbl ongaku-enlarged-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span>
-                </div>
-            </div>
-
-            <div class="ongaku-duration-info-box hstack gap-1 mt-2">
-                <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span>
-                <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box">
-                    <div class="ongaku-track-current-duration-line"></div>
-                </div>
-                <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span>
-            </div>
-
-            <div class="box-standard mt-2" id="OngakuPlayer_Controls_Box">
-                <div class="ongaku-control-buttons-box">
-                    <div class="row">
-                        <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box">
-                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned">
-                                <i class="fa-solid fa-backward"></i>
-                            </button>
-                        </div>
-                        <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box">
-                            <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned" id="Enlarged_OngakuPlayer_PlayPause_Btn">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                        </div>
-                        <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box">
-                            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned">
-                                <i class="fa-solid fa-forward"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="ongaku-player-upsliding-box">
-        <div class="hstack gap-1">
-            <button type="button" class="btn btn-ongaku-player btn-close-audio-player-additionals me-2"> <i class="fa-solid fa-xmark"></i> </button>
-            <div class="row w-100">
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-audio-infinity text-unchosen columned" data-status="0">
-                        <i class="fa-solid fa-infinity"></i>
-                    </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-audio-loop text-unchosen columned" data-status="0">
-                        <i class="fa-solid fa-repeat"></i>
-                    </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-audio-shuffle columned" data-status="0">
-                        <i class="fa-solid fa-shuffle"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="box-standard" id="OngakuPlayer_AdditionalSettings_Box">
-            <div class="box-standard hstack gap-2">
-                <div>
-                    <button type="button" class="btn btn-ongaku-player btn-volume-mute me-2"> <i class="fa-solid fa-volume-off"></i> </button>
-                </div>
-                <div class="volume-level-box enlarged ms-2 me-2">
-                    <div class="volume-level-bar enlarged"></div>
-                </div>
-                <div class="">
-                    <button type="button" class="btn btn-ongaku-player btn-volume-max"> <i class="fa-solid fa-volume-high"></i> </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="ongaku-player-additionals-box mt-3">
-        <div class="slide-box" id="TrackQueue_Box">
-            <div class="text-center">
-                <h2 class="h2"><i class="fa-solid fa-list-ol"></i></h2>
-                <h4 class="h4">Queue is Empty</h4>
-                <small class="card-text text-muted">
-                    No tracks in queue. Add them manually or start a playlist to show the queue
-                </small>
-            </div>
-        </div>
-
-        <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;">
-            <div class="text-center">
-                <h2 class="h2"><i class="fa-solid fa-quote-right"></i></h2>
-                <h4 class="h4">No Lyrics</h4>
-                <small class="card-text text-muted">
-                    This track has no lyrics... yet...
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <div class="ongaku-player-additional-buttons-box mt-2">
-        <div class="hstack gap-1">
-            <div>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                    <ul class="dropdown-menu shadow-sm">
-                        <li>
-                            <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form">
-                                <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" />
-                                <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" />
-                                <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn">
-                                    <i class="fa-solid fa-circle-info"></i> View Credits
-                                </button>
-                            </form>
-                        </li>
-                        <li>
-                            <form method="get" action="/Track/GetTrackAdditions" id="GetTrackAdditions_Form">
-                                <input type="hidden" name="Id" id="GetTrackAdditions_Id_Val" value="0" />
-                                <button type="submit" class="dropdown-item super-disabled" id="GetTrackAdditions_SbmtBtn">
-                                    <i class="fa-regular fa-message"></i> Get Description
-                                </button>
-                            </form>
-                        </li>
-                        <li>
-                            <button type="button" class="dropdown-item">
-                                <i class="fa-solid fa-plus"></i> Add to Playlist
-                            </button>
-                        </li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li>
-                            <button type="button" class="dropdown-item">
-                                <i class="fa-solid fa-compact-disc"></i> Go to Album
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" class="dropdown-item">
-                                <i class="fa-solid fa-circle-user"></i> Go to Artist Page
-                            </button>
-                        </li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li>
-                            <button type="button" class="dropdown-item">
-                                <i class="fa-solid fa-arrow-up-from-bracket"></i> Share
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="row w-100 ms-1">
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-toggleable btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn">
-                        <i class="fa-solid fa-list-ol"></i>
-                    </button>
-                </div>
-                <div class="col">
-                    <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form">
-                        <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" />
-                        <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" />
-                        <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn">
-                            <i class="fa-solid fa-quote-right"></i>
-                        </button>
-                    </form>
-                </div>
-                <div class="col">
-                    <form method="get" action="/Comment/TrackComments" id="GetTrackComments_Form">
-                        <input type="hidden" name="Id" id="GetTrackComments_Id_Val" value="0" />
-                        <button type="submit" class="btn btn-glass super-disabled columned" data-status="0" id="GetTrackComments_SbmtBtn">
-                            <i class="fa-regular fa-message"></i>
-                        </button>
-                    </form>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-toggleable btn-open-audio-player-additionals columned">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
