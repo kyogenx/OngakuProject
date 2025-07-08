@@ -19,6 +19,12 @@ namespace OngakuProject.Repositories
             _webHostEnvironment = webHostEnvironment;
         }
 
+        public async Task<bool> CheckTrackOwnership(int Id, int UserId)
+        {
+            if (Id > 0 && UserId > 0) return await _context.Tracks.AsNoTracking().AnyAsync(t => t.Id == Id && t.UserId == UserId && !t.IsDeleted);
+            else return false;
+        }
+
         public Task<int> DeleteTrackAsync(int Id, int UserId)
         {
             throw new NotImplementedException();

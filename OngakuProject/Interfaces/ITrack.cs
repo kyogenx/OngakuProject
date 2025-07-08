@@ -6,6 +6,8 @@ namespace OngakuProject.Interfaces
 {
     public interface ITrack
     {
+        public Task<bool> CheckTrackOwnership(int Id, int UserId);
+
         public Task<int> AddToFavoritesAsync(Favorites_VM Model);
         public Task<int> RemoveFromFavoritesAsync(int Id, int UserId);
 

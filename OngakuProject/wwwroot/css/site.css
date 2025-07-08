@@ -495,6 +495,7 @@ body {
     width: 0px;
     background: transparent;
 }
+
 .tutorial-icon {
     padding: 6px;
     width: 100%;
@@ -585,12 +586,32 @@ body {
     background-color: #e0e0e0;
 }
 
+.top-status-navbar {
+    left: 0;
+    top: -1200px;
+    border: none;
+    padding: 8px 12px 8px 12px;
+    z-index: 20000;
+    min-height: 5%;
+    max-height: 9.5%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 0 0 10px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: rgba(248,249,250, 0.5);
+    backdrop-filter: blur(6px);
+    width: 100%;
+    position: fixed;
+    display: none;
+    transition: all ease 0.3s;
+}
+
 .bottom-navbar {
     cursor: pointer;
     z-index: 100000;
     padding: 6px;
     height: auto;
-    max-height: 10%;
+    max-height: 15%;
     border-radius: 10px;
     background-color: transparent;
     backdrop-filter: blur(6px);

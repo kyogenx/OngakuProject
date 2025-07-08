@@ -33,7 +33,7 @@
                     }
                     else
                     {
-                        <button type="button" class="btn btn-bottom-navbar btn-show-tooltip btn-sm w-100 super-disabled" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip shadow-sm" data-bs-html="true" data-bs-title="<span class='fw-500'>Sign In</span> or <span class='fw-500'>Sign Up</span> to create, stream, and download tracks and playlists"> <i class="fa-solid fa-bars-staggered"></i> <br />Library</button>
+                        <button type="button" class="btn btn-bottom-navbar btn-show-tooltip btn-sm w-100 super-disabled" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip shadow-sm" data-bs-html="true" data-bs-title="<span class='fw-500'>Sign In</span> or <span class='fw-500'>Sign Up</span> to create, stream, and download tracks and playlists"> <i class="fa-solid fa-bars-staggered"></i> </button>
                     }
                 </div>
                 <div class="bottom-navbar-unadjustable">
@@ -45,14 +45,21 @@
             </div>
         </div>
         <div class="box-standard re-transformed" id="MainBottom_TextBoxPage_Box" style="display: none;">
+            <div class="border-bottom mb-1 p-1" id="MainBottom_TextBoxPageAdditional_Box" style="display: none;">
+                <div class="hstack gap-2 text-truncate">
+                    <span class="h6" id="TextBox_Icon_Span"></span>
+                    <span class="h6" id="TextBox_ActionDescription_Span"></span>
+                    <button type="button" class="btn btn-standard btn-cancel-text-box-modes btn-sm ms-auto"> <i class="fa-solid fa-xmark"></i> Cancel</button>
+                </div>
+                <small class="card-text" id="TextBox_Reason_Span"></small>
+            </div>
             <form class="bottom-navbar-text-form" method="post" id="SendComment_Form">
                 <div class="hstack gap-2">
-                    <button type="button" class="btn btn-standard btn-swap-to-standard-navbar me-1"> <i class="fa-solid fa-xmark"></i> </button>
+                    <button type="button" class="btn btn-standard btn-swap-to-standard-navbar me-1"> <i class="fa-solid fa-chevron-left"></i> </button>
                     <div class="w-100" id="MainBottom_TextBoxInput_Box">
                         <input type="text" class="form-control form-control-bar-standard form-control-bottom-navbar form-control-guard" data-min-length="1" data-on-fulfill="SendComment_SbmtBtn" placeholder="Comment text..." maxlength="1500" name="Text" id="SendComment_Text_Val" />
                     </div>
                     <div class="d-none" id="MainBottom_AdditionalInputs_Box">
-                        <input type="hidden" name="TrackId" id="SendComment_TrackId_Val" value="0" />
                     </div>
                     <div class="ms-auto" id="MainBottom_TextBoxButton_Box">
                         <button type="submit" class="btn btn-standard-rounded btn-bottom-navbar-form-control super-disabled" id="SendComment_SbmtBtn"> <i class="fa-solid fa-arrow-up"></i> </button>

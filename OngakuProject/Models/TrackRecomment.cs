@@ -16,5 +16,7 @@ namespace OngakuProject.Models
         public User? User { get; set; }
         public TrackComment? TrackComment { get; set; }
         public List<TrackRecommentReaction>? TrackRecommentReactions { get; set; } = new List<TrackRecommentReaction>();
+        [NotMapped]
+        public bool IsEdited { get; set; }
     }
 }

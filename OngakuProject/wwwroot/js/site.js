@@ -69,6 +69,17 @@ window.onresize = function () {
     }, 300);
 }
 
+window.onoffline = function () {
+    callEmergencyAlert("#DC3545", "#fdfdfd", ' <i class="fa-solid fa-link-slash"></i> ', "You're Offline", " It looks like you’re offline. Please check your internet connection", -1);
+}
+
+window.ononline = function () {
+    callEmergencyAlert("#f0f0f0", "#2b2b2b", ' <i class="fa-solid fa-wifi"></i> ', "Connection Restored", "Looks like your internet access has been restored. All features are now available", 5);
+}
+
+//window.onvolumechange
+//window.onwaiting
+
 $("#CheckAccountByEmail_Form").on("submit", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
@@ -3242,12 +3253,12 @@ $(document).on("submit", "#GetTrackComments_Form", function (event) {
     //LoadTheTrack btn-get-more
     $.get(url, data, function (response) {
         if (response.success) {
-            createSmContainer("Comments", "Comments & Replies", '<div class="slide-box re-scaled mt-2 p-0" id="Replies_Box" style="display: none;"> <div class="slide-box-header hstack gap-2"> <button type="button" class="btn btn-standard btn-change-boxes" data-close="Replies_Box" data-open="Comments_Box"> <i class="fa-solid fa-angle-left"></i> Back</button> <div class="ms-1"> <span class="h5">Replies ∙ <span class="card-text" id="CommentRepliesQty_Span">0</span></span> </div> </div> <div class="box-standard" id="RepliesBody_Box"> <div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-comment-dots"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">No replies for this comment has been sent yet</small> </div> </div> </div> <div class="slide-box mt-2 p-0" id="Comments_Box"> <div class="slide-box-header"> <span class="h5">Comments ∙ <span id="CommentsQty_Span">0</span></span> <br /> <small class="card-text text-muted" id="CommentParent_Span">per <span class="fw-500" id="CommsParentTrackName_Span"></span></small><small class="card-text fw-normal" id="CommsRepliesStatus_Span">with replies</small></div> <div class="box-standard" id="CommentsBody_Box"> <div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-message"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">Be the first to comment</small> </div> </div> </div>', null, null, false);
+            createSmContainer("CommentsAndReplies", "Comments & Replies", '<div class="d-none"><form method="post" action="/Comment/Pin" id="PinComment_Form"> <input type="hidden" name="Id" id="PinComment_Id_Val" value="0" /> <input type="hidden" name="TrackId" id="PinComment_TrackId_Val" value="0" /> </form> <form method="post" action="/Comment/Unpin" id="UnpinComment_Form"> <input type="hidden" name="Id" id="UnpinComment_Id_Val" value="0" /> <input type="hidden" name="TrackId" id="UnpinComment_TrackId_Val" value="0" /> </form> <form method="post" action="/Comment/Delete" id="DeleteTrackComment_Form"> <input type="hidden" name="Id" id="DeleteTrackComment_Id_Val" value="0" /> </form> <form method="post" action="/Comment/DeleteReply" id="DeleteTrackRecomment_Form"> <input type="hidden" name="Id" id="DeleteTrackRecomment_Id_Val" value="0" /> </form><form method="get" action="/Comment/TrackRecomments" id="GetTrackRecomments_Form"><input type="hidden" name="Id" id="GetTrackRecomments_Id_Val" value="0" /></form></div><div class="slide-box re-scaled mt-2 p-0" id="Replies_Box" style="display: none;"> <div class="slide-box-header hstack gap-2"> <button type="button" class="btn btn-standard btn-change-boxes" data-close="Replies_Box" data-open="Comments_Box"> <i class="fa-solid fa-angle-left"></i> Back</button> <div class="ms-1"> <span class="h5">Replies ∙ <span class="card-text" id="CommentRepliesQty_Span">0</span></span> </div> </div> <div class="box-standard" id="RepliesBody_Box"> <div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-comment-dots"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">No replies for this comment has been sent yet</small> </div> </div> </div> <div class="slide-box mt-2 p-0" id="Comments_Box"> <div class="slide-box-header"> <span class="h5">Comments ∙ <span id="CommentsQty_Span">0</span></span> <br /> <small class="card-text text-muted" id="CommentParent_Span">per <span class="fw-500" id="CommsParentTrackName_Span"></span></small><small class="card-text fw-normal" id="CommsRepliesStatus_Span">with replies</small></div> <div class="box-standard" id="CommentsBody_Box"> <div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-message"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">Be the first to comment</small> </div> </div> </div>', null, null, false);
             $("#CommentsBody_Box").empty();
 
             if (response.result != undefined && response.result.length > 0) {
                 $.each(response.result, function (index) {
-                    createCommentBox("CommentsBody_Box", response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.userName, response.result[index].text, response.result[index].sentAt, response.result[index].editedAt != null ? true : false, true);
+                    createCommentBox("CommentsBody_Box", response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, response.result[index].isEdited, response.result[index].isPinned, response.isOwner, true);
                 });
                 $("#CommentsQty_Span").html(response.result.length);
             }
@@ -3262,13 +3273,52 @@ $(document).on("submit", "#GetTrackComments_Form", function (event) {
             bottomNavbarTextFormCustomization("/Comment/Send", "SendComment_Form", "SendComment_Text_Val", "Text", "SendComment_SbmtBtn", ["TrackId"], [0], ["SendComment_TrackId_Val"], ["form-control", "form-control-bar-standard", "form-control-bottom-navbar", "form-control-guard"], ["data-min-length", "maxlength", "data-on-fulfill"], [1, 1500, "SendComment_SbmtBtn"], "Comment content...", ' <i class="fa-solid fa-arrow-up"></i> ', ["btn", "btn-standard-rounded", "btn-bottom-navbar-form-control"]);
             displayCorrector(currentWindowSize);
             setTimeout(function () {
+                $("#PinComment_TrackId_Val").val(response.id);
                 $("#SendComment_TrackId_Val").val(response.id);
-                callASmContainer(false, "Comments_Container", false);
+                $("#UnpinComment_TrackId_Val").val(response.id);
+                callASmContainer(false, "CommentsAndReplies_Container", false);
             }, 150);
         }
         else {
             callAlert('<i class="fa-regular fa-message"></i>', null, null, "Comments are currently unavailable. Please try again later", 4, "Close", -1, null);
         }
+    });
+});
+
+$(document).on("submit", "#GetTrackRecomments_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $(".btn-reply-to-comment").html();
+    buttonDisabler(true, "btn-reply-to-comment", "Loading...");
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            $("#RepliesBody_Box").empty();
+            if (response.result != undefined && response.result.length > 0) {
+                buttonDisabler(true, "btn-reply-to-comment", 'Loaded');
+                $("#CommentRepliesQty_Span").text(response.result.length.toLocaleString());
+                $.each(response.result, function (index) {
+                    createCommentBox("RepliesBody_Box", response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, response.result[index].isEdited, false, false, false);
+                });
+            }
+            else {
+                $("#CommentRepliesQty_Span").text("0");
+                buttonDisabler(true, "btn-reply-to-comment", 'Empty');
+                $("#RepliesBody_Box").html('<div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-comment-dots"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">No replies for this comment has been sent yet</small> </div>');
+            }
+            const replyParentContent = $("#" + response.id + "-CommentContent_Span").html();
+            setTimeout(function () {
+                slideBoxes(false, "Comments_Box", "Replies_Box");
+                if (replyParentContent != undefined) swapToReplyMode(replyParentContent, false);
+                $("#RTC_TrackCommentId_Val").val(response.id);
+            }, 300);
+        }
+        else callAlert('<i class="fa-solid fa-reply"></i>', null, null, "Replies are temporarily unavailable", 3.5, "Close", -1, null);
+
+        setTimeout(function () {
+            buttonUndisabler(true, "btn-reply-to-comment", baseHtml);
+        }, 2000);
     });
 });
 
@@ -3285,7 +3335,7 @@ $(document).on("submit", "#SendComment_Form", function (event) {
             if (currentCommentsQty != undefined && currentCommentsQty <= 0) $("#CommentsBody_Box").empty();       
 
             let currentUserImgSrc = $("#CurrentUserProfile_Img").attr("src");
-            createCommentBox("CommentsBody_Box", response.id, response.currentUserId, currentUserImgSrc == undefined ? null : currentUserImgSrc, response.result.userId, "You", response.result.text, new Date(response.result.sentAt), response.result.editedAt == null ? false : true, true);
+            createCommentBox("CommentsBody_Box", response.id, response.currentUserId, currentUserImgSrc == undefined ? null : currentUserImgSrc, response.result.userId, "You", response.result.text, new Date(), response.result.editedAt == null ? false : true, false, response.isOwner, true);
             $("#CommentsQty_Span").text(++currentCommentsQty);
             buttonDisabler(false, "SendComment_SbmtBtn", ' <i class="fa-regular fa-circle-check"></i> ');
         }
@@ -3301,7 +3351,196 @@ $(document).on("submit", "#SendComment_Form", function (event) {
     });
 });
 
-function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc, userId, username, text, sentAt_Date = new Date(), isEdited = false, canBeReplied = true) {
+$(document).on("submit", "#EditTrackComment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#EditTrackComment_SbmtBtn").html();
+    buttonDisabler(false, "EditTrackComment_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        $("#EditTrackComment_Text_Val").val(null);
+        if (response.success) {
+            swapToDefaultMode();
+            $("#" + response.id + "-IsCommentEdited_Span").fadeIn(300);
+            $("#" + response.id + "-CommentContent_Span").html(response.result);
+            $("#EditTrackComment_SbmtBtn").html(' <i class="fa-solid fa-check"></i> ');
+            setTimeout(function () {
+                buttonUndisabler(false, "EditTrackComment_SbmtBtn", ' <i class="fa-solid fa-arrow-up"></i> ');
+            }, 1500);
+        }
+        else {
+            $("#EditTrackComment_SbmtBtn").html(' <i class="fa-solid fa-xmark"></i> ');
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s; --fa-animation-delay: 0.35s;"></i>', null, null, "An error occured. Please try to reply later", 3.75, "Close", -1, null);
+            setTimeout(function () {
+                buttonUndisabler(false, "EditTrackComment_SbmtBtn", baseHtml);
+            }, 1500);
+        }
+    });
+});
+
+$(document).on("submit", "#EditTrackRecomment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#EditTrackRecomment_SbmtBtn").html();
+    buttonDisabler(false, "EditTrackRecomment_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        $("#EditTrackRecomment_Text_Val").val(null);
+        if (response.success) {
+            swapToDefaultMode();
+            $("#" + response.id + "-IsRecommentEdited_Span").fadeIn(300);
+            $("#" + response.id + "-RecommentContent_Span").html(response.result);
+            $("#EditTrackRecomment_SbmtBtn").html(' <i class="fa-solid fa-check"></i> ');
+        }
+        else {
+            $("#EditTrackRecomment_SbmtBtn").html(' <i class="fa-solid fa-xmark"></i> ');
+        }
+
+        setTimeout(function () {
+            buttonUndisabler(false, "EditTrackRecomment_SbmtBtn", baseHtml);
+        }, 1500);
+    });
+});
+
+$(document).on("submit", "#ReplyToTrackComment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#RTC_SbmtBtn").html();
+    buttonDisabler(false, "RTC_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let repliesQty = parseInt($("#CommentRepliesQty_Span").text());
+            if (repliesQty <= 0) $("#RepliesBody_Box").empty();
+            let currentUserImgSrc = $("#CurrentUserProfile_Img").attr("src");
+            $("#RTC_SbmtBtn").html(' <i class="fa-regular fa-circle-check"></i> ');
+
+            createCommentBox("RepliesBody_Box", response.id, response.currentUserId, currentUserImgSrc, response.currentUserId, "You", response.result.text, new Date(), false, false, false, false);
+            $("#CommentRepliesQty_Span").text(++repliesQty);
+        }
+        else {
+            $("#RTC_SbmtBtn").html(' <i class="fa-regular fa-circle-xmark"></i> ');
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s; --fa-animation-delay: 0.35s;"></i>', null, null, "An error occured. Please try to reply later", 3.75, "Close", -1, null);
+        }
+        setTimeout(function () {
+            buttonUndisabler(false, "RTC_SbmtBtn", baseHtml);
+        }, 2000);
+    });
+});
+
+$(document).on("submit", "#PinComment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $(".btn-pin-comment").html();
+    buttonDisabler(true, "btn-pin-comment", "Pinning...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#" + response.result + "-IsCommentPinned_Span").fadeIn(300);
+            $("#" + response.result + "-CommentDropdown_Box").removeClass("ms-auto");
+
+            $("#" + response.result + "-PinComment_Btn").html(' <i class="fa-solid fa-thumbtack-slash"></i> Unpin');
+            $("#" + response.result + "-PinComment_Btn").removeClass("super-disabled");
+            $("#" + response.result + "-PinComment_Btn").addClass("btn-unpin-comment");
+            $("#" + response.result + "-PinComment_Btn").removeClass("btn-pin-comment");
+            $("#" + response.result + "-PinComment_Btn").attr("id", response.result + "-UnpinComment_Btn");
+
+            callKawaiiAlert(0, "Comment pinned", '<i class="fa-solid fa-thumbtack fa-bounce" style="--fa-animation-delay: 0.3s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, 2, false);
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, "An error occured. Please try to pin this comment later", 3.5, "Close", -1, null);
+
+        setTimeout(function () {
+            buttonUndisabler(true, "btn-pin-comment", baseHtml);
+        }, 1500);
+    });
+});
+
+$(document).on("submit", "#UnpinComment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $(".btn-unpin-comment").html();
+    buttonDisabler(false, "btn-unpin-comment", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#" + response.result + "-IsCommentPinned_Span").fadeOut(300);
+            setTimeout(function () {
+                $("#" + response.result + "-CommentDropdown_Box").addClass("ms-auto");
+            }, 350);
+
+            $("#" + response.result + "-UnpinComment_Btn").html(' <i class="fa-solid fa-thumbtack"></i> Pin');
+            $("#" + response.result + "-UnpinComment_Btn").addClass("btn-pin-comment");
+            $("#" + response.result + "-UnpinComment_Btn").removeClass("super-disabled");
+            $("#" + response.result + "-UnpinComment_Btn").removeClass("btn-unpin-comment");
+            $("#" + response.result + "-UnpinComment_Btn").attr("id", response.result + "-PinComment_Btn");
+
+            callKawaiiAlert(0, "Comment unpinned", '<i class="fa-solid fa-thumbtack-slash fa-bounce" style="--fa-animation-delay: 0.25s; --fa-animation-iteration-count: 1; --fa-animation-duration: 0.5s;"></i>', null, null, 2, false);
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-delay: 0.35s; --fa-animation-iteration-count: 2; --fa-animation-duration: 0.5s;"></i>', null, null, "An error occured. Please try to unpin this comment later", 3.5, "Close", -1, null);
+
+        setTimeout(function () {
+            buttonUndisabler(true, "btn-unpin-comment", baseHtml);
+        }, 1500);
+    });
+});
+
+$(document).on("submit", "#DeleteTrackComment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $(".btn-delete-track-comment").html();
+    uncallAProposal();
+    buttonDisabler(true, "btn-delete-track-comment", "Deleting...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let commentsQty = parseInt($("#CommentsQty_Span").html()) - 1;
+            hideBySlidingToLeft(false, null, response.result + "-Comment_Box");
+            setTimeout(function () {
+                $("#CommentsQty_Span").html(commentsQty);
+                $("#" + response.result + "-Comment_Box").remove();
+            }, 750);
+
+            if (commentsQty <= 0) $("#CommentsBody_Box").html('<div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-message"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">Be the first to comment</small> </div>');
+            callKawaiiAlert(0, "Comment deleted", '<i class="fa-regular fa-trash-can text-danger"></i>', null, null, 2, false);
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Couldn’t delete the comment. Please try again later", 3.75, "Close", -1, null);
+        buttonUndisabler(true, "btn-delete-track-comment", baseHtml);
+    });
+});
+
+$(document).on("submit", "#DeleteTrackRecomment_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $(".btn-delete-track-recomment").html();
+    uncallAProposal();
+    buttonDisabler(true, "btn-delete-track-recomment", "Deleting...");
+      
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let repliesQty = parseInt($("#CommentRepliesQty_Span").text()) - 1;
+            $("#CommentRepliesQty_Span").html(repliesQty);
+            setTimeout(function () {
+                hideBySlidingToLeft(false, null, response.result + "-Recomment_Box");
+            }, 350);
+            setTimeout(function () {
+                $("#" + response.result + '-Recomment_Box').remove();
+                if (repliesQty <= 0) $("#RepliesBody_Box").html('<div class="box-standard text-center p-2"> <h2 class="h2"> <i class="fa-regular fa-comment-dots"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">No replies for this comment has been sent yet</small> </div>');
+            }, 1100);
+            callKawaiiAlert(0, "Reply deleted", '<i class="fa-regular fa-trash-can text-danger"></i>', null, null, 2, false);
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Couldn’t delete your reply. Please try again later", 3.75, "Close", -1, null);
+        buttonUndisabler(true, "btn-delete-track-recomment", baseHtml);
+    });
+});
+
+function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc, userId, username, text, sentAt_Date = new Date(), isEdited = false, isPinned = false, isForParentOwner = false, canBeReplied = true) {
     if (applyTo_BoxId != null || applyTo_BoxId != undefined) {
         sentAt_Date = new Date(sentAt_Date);
         let elementBox = elementDesigner("div", "box-comment", null);
@@ -3309,7 +3548,7 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         let senderAvatarBox = null;
         let senderUserInfoBox = elementDesigner("div", "box-standard", null);
         let senderUsernameLbl = elementDesigner("span", "h6", username);
-        let dropdownBox = elementDesigner("div", "dropdown ms-auto", null);
+        let dropdownBox = elementDesigner("div", "dropdown", null);
         let dropdownBtn = $(' <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
         let dropdownUl = elementDesigner("ul", "dropdown-menu dropdown-menu-sm-end shadow-sm", null);
         let dropdownLi1 = $("<li></li>");
@@ -3318,27 +3557,40 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         let dropdownLi4 = $("<li></li>");
         let dropdownLi5 = null;
         let dropdownLi6 = null;
+        let dropdownLi7 = null;
         let dropdownBtn1 = null;
         let dropdownBtn2 = null;
         let dropdownBtn3 = null;
         let dropdownBtn4 = null;
+        let dropdownBtn5 = null;
         let dropdownDivider1 = $('<hr class="dropdown-divider" />');
         let elementBodyBox = elementDesigner("div", "box-comment-body", null);
         let elementTextSpan = elementDesigner("small", "card-text white-space-on", text);
         let elementFooterBox = elementDesigner("div", "box-comment-footer hstack gap-2", null);
-        let elementReplyBtn = $('<button type="button" class="btn btn-standard-bolded btn-reply-to-comment btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>');
+        let elementReplyBtn = $('<button type="button" class="btn btn-standard-bolded btn-reply-to-track-comment btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>');
         let elementFooterAdditionalInfoBox = elementDesigner("div", "ms-auto", null);
         let sentAtDateSpan = elementDesigner("small", "card-text text-muted me-1", dateAndTimeFormation(4, sentAt_Date)[0]);
         let isEditedSpan = elementDesigner("small", "badge-sm", ' <i class="fa-solid fa-pencil"></i> Edited');
+        let isPinnedSpan = elementDesigner("small", "badge-sm ms-auto", ' <i class="fa-solid fa-thumbtack"></i> Pinned');
 
-        isEditedSpan.fadeOut(0);
+        if (!isEdited) isEditedSpan.fadeOut(0);
+        else isEditedSpan.fadeIn(0);
+        if (isPinned) {
+            isPinnedSpan.fadeIn(0);
+            dropdownBox.removeClass("ms-auto");
+        }
+        else {
+            isPinnedSpan.fadeOut(0);
+            dropdownBox.addClass("ms-auto");
+        }
+
         if (avatarImgSrc != null) {
             senderAvatarBox = $("<img src='#' class='profile-avatar-img-sm me-1' alt='This image cannot be displayed' />");
             senderAvatarBox.attr("src", "/ProfileImages/" + avatarImgSrc);
         }
         else senderAvatarBox = elementDesigner("div", "profile-avatar-sm me-1", username[0]);
 
-        dropdownBtn2 = $('<button type="button" class="dropdown-item btn-reply-to-comment"> <i class="fa-solid fa-reply"></i> Reply</button>');
+        dropdownBtn2 = $('<button type="button" class="dropdown-item btn-reply-to-track-comment"> <i class="fa-solid fa-reply"></i> Reply</button>');
         dropdownBtn3 = $('<button type="button" class="dropdown-item"> <i class="fa-regular fa-circle-user"></i> Go to ' + username + '`s Page</button>');
         dropdownBtn4 = $('<button type="button" class="dropdown-item"> <i class="fa-regular fa-flag"></i> Report</button>');
         if (currentUserId == userId) {
@@ -3350,7 +3602,20 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
             dropdownLi1.append(dropdownBtn1);
             dropdownLi5.append(dropdownDivider1);
             dropdownLi6.append(dropdownBtn6);
+            if (canBeReplied) {
+                dropdownBtn1.addClass("btn-edit-track-comment");
+                dropdownBtn6.addClass("btn-pre-delete-track-comment");
+                dropdownBtn1.attr("id", index + "-EditTrackComment_Btn");
+                dropdownBtn6.attr("id", index + "-PreDeleteTrackComment_Btn");
+            }
+            else {
+                dropdownBtn1.addClass("btn-edit-track-recomment");
+                dropdownBtn6.addClass("btn-pre-delete-track-recomment");
+                dropdownBtn1.attr("id", index + "-EditTrackReComment_Btn");
+                dropdownBtn6.attr("id", index + "-PreDeleteTrackReComment_Btn");
+            }
         }
+
         dropdownLi2.append(dropdownBtn2);
         dropdownLi3.append(dropdownBtn3);
         dropdownLi4.append(dropdownBtn4);
@@ -3367,6 +3632,7 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         senderUserInfoBox.append(senderUsernameLbl);
         elementHeaderBox.append(senderAvatarBox);
         elementHeaderBox.append(senderUserInfoBox);
+        elementHeaderBox.append(isPinnedSpan);
         elementHeaderBox.append(dropdownBox);
         elementBodyBox.append(elementTextSpan);
 
@@ -3379,12 +3645,40 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         elementBox.append(elementBodyBox);
         elementBox.append(elementFooterBox);
 
-        elementReplyBtn.attr("id", index + "-ReplyToComment_Btn");
-        dropdownBtn2.attr("id", index + "-ReplyToComment_Dropdown_Btn");
+        if (!canBeReplied) {
+            dropdownBtn2.remove();
+            elementReplyBtn.remove();
+            elementBox.attr("id", index + "-Recomment_Box");
+            isEditedSpan.attr("id", index + "-IsRecommentEdited_Span");
+            elementTextSpan.attr("id", index + "-RecommentContent_Span");
+            dropdownBox.attr("id", index + "-RecommentDropdown_Box");
+        }
+        else {
+            elementBox.attr("id", index + "-Comment_Box");
+            isEditedSpan.attr("id", index + "-IsCommentEdited_Span");
+            isPinnedSpan.attr("id", index + "-IsCommentPinned_Span");
+            elementTextSpan.attr("id", index + "-CommentContent_Span");
+            elementReplyBtn.attr("id", index + "-ReplyToTrackComment_Btn");
+            dropdownBtn2.attr("id", index + "-ReplyToTrackComment_Dropdown_Btn");
+            dropdownBox.attr("id", index + "-CommentDropdown_Box");
 
-        isEditedSpan.attr("id", index + "-IsCommentEdited_Span");
-        elementBox.attr("id", index + "-Comment_Box");
-
+            if (isForParentOwner) {
+                dropdownLi7 = $("<li></li>");
+                dropdownBtn5 = $("<button type='button' class='dropdown-item'></button>");
+                if (isPinned) {
+                    dropdownBtn5.addClass("btn-unpin-comment");
+                    dropdownBtn5.attr("id", index + "-UnpinComment_Btn");
+                    dropdownBtn5.html(' <i class="fa-solid fa-thumbtack-slash"></i> Unpin');
+                }
+                else {
+                    dropdownBtn5.addClass("btn-pin-comment");
+                    dropdownBtn5.attr("id", index + "-PinComment_Btn");
+                    dropdownBtn5.html(' <i class="fa-solid fa-thumbtack"></i> Pin');
+                }
+                dropdownLi7.append(dropdownBtn5);
+                dropdownUl.prepend(dropdownLi7);
+            }
+        }
         $("#" + applyTo_BoxId).append(elementBox);
 
         return true;
@@ -3392,13 +3686,263 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
     else return false;
 }
 
-$(document).on("mousedown", ".btn-reply-to-comment", function () {
+function numberToHexPart(colorNumber) {
+    if (parseInt(colorNumber) >= 0 && colorNumber <= 255) {
+        const hex = colorNumber.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+    else return null;
+}
+
+function rgbToHex(r, g, b) {
+    let rPart = numberToHexPart(r);
+    let gPart = numberToHexPart(g);
+    let bPart = numberToHexPart(b);
+
+    if (rPart != null || gPart != null || bPart != null) return "#" + rPart + gPart + bPart;
+}
+
+function hexToRgba(hex, opacity = 1) {
+    let color;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        color = hex.substring(1).split("");
+        opacity = parseInt(opacity) <= 1 ? opacity : 1;
+        if (color.length == 3) {
+            color = [color[0], color[0], color[1], color[1], color[2], color[2]];
+        }
+        color = "0x" + color.join("");
+        return "rgba(" + [(color >> 16) & 255, (color >> 8) & 255, color & 255].join(",") + "," + opacity + ")";
+    }
+    else return null;
+}
+
+function uncallEmergencyAlert() {
+    $("#TopStatusNavbar_Box").css("top", "-1200px");
+    setTimeout(function () {
+        $("#TopStatusNavbar_Box").remove();
+    }, 350);
+}
+
+function callEmergencyAlert(backgroundColor_Hex, foregroundColor_Hex, icon, header, description, duration_InSec = 0) {
+    if ((header != null || header != undefined) && (description != undefined || description != null)) {
+        let foregroundColor = "#2b2b2b";
+        let rgbaBgColor = "rgba(248, 249, 250, 0.35)";
+        let checkAlertAvailability = document.getElementById("TopStatusNavbar_Box");
+
+        if (checkAlertAvailability == null) {
+            $("body").append('<div class="top-status-navbar shadow-sm" id="TopStatusNavbar_Box"> <div class="hstack gap-2"> <h2 class="h2" id="TSN_Icon_Lbl"></h2> <div class="ms-2"> <span class="h6" id="TSN_Header_Lbl"></span> <br/> <small class="card-text" id="TSN_Description_Span"></small> </div> </div> </div>');
+            $("#TopStatusNavbar_Box").fadeIn(0);
+        }
+        else $("#TopStatusNavbar_Box").css("top", "-1200px");
+
+        if (icon != null || icon != undefined) $("#TSN_Icon_Lbl").html(icon);
+        else $("#TSN_Icon_Lbl").html(' <i class="fa-regular fa-lightbulb"></i> ');
+        $("#TSN_Header_Lbl").html(header);
+        $("#TSN_Description_Span").html(description);
+
+        if ((backgroundColor_Hex != null || backgroundColor_Hex != undefined) && backgroundColor_Hex[0] == "#") {
+            rgbaBgColor = hexToRgba(backgroundColor_Hex, 0.8);
+        }
+        if ((foregroundColor_Hex != null || foregroundColor_Hex != undefined) && foregroundColor_Hex[0] == "#") foregroundColor = foregroundColor_Hex;
+        $(".top-status-navbar").css("color", foregroundColor);
+        $(".top-status-navbar").css("background-color", rgbaBgColor);
+
+        setTimeout(function () {
+            $("#TopStatusNavbar_Box").css("top", 0);
+        }, 350);
+
+        if (parseInt(duration_InSec) > 0) {
+            timeoutValue = setTimeout(function () {
+                uncallEmergencyAlert();
+                clearTimeout(timeoutValue);
+            }, duration_InSec * 1000);
+        }
+    }
+}
+
+function swapToDefaultMode() {
+    if (defaultFormAction != null && defaultFormId != null) {
+        $("#MainBottom_TextBoxPageAdditional_Box").slideUp(250);
+        setTimeout(function () {
+            $("#TextBox_Icon_Span").html(null);
+            $("#TextBox_Reason_Span").html(null);
+            $("#TextBox_ActionDescription_Span").html(null);
+        }, 300);
+
+        $(".bottom-navbar-text-form").attr("id", defaultFormId);
+        $(".bottom-navbar-text-form").attr("action", defaultFormAction);
+        if (defaultAdditionalInputs != null) {
+            $("#MainBottom_AdditionalInputs_Box").empty();
+            $("#MainBottom_AdditionalInputs_Box").html(defaultAdditionalInputs);
+        }
+
+        if (defaultInputPlaceholder != null) $(".form-control-bar-standard").attr("placeholder", defaultInputPlaceholder);
+        if (defaultSubmitBtnClasses.length > 0) $(".btn-bottom-navbar-form-control").addClass(defaultSubmitBtnClasses);
+        if (defaultSubmitBtnHtml != null) $(".btn-bottom-navbar-form-control").html(defaultSubmitBtnHtml);
+        else $(".btn-bottom-navbar-form-control").html(' <i class="fa-solid fa-arrow-up"></i> ');
+    }
+}
+
+let defaultInput = null;
+let defaultFormId = null;
+let defaultFormAction = null;
+let defaultAdditionalInputs = null;
+let defaultSubmitBtnHtml = null;
+let defaultSubmitBtnClasses = null;
+let defaultInputPlaceholder = null;
+
+function swapToEditMode(type = 0, editing_Message_Text) {
+    if (editing_Message_Text != null || editing_Message_Text != undefined) {
+        //types: 0 - Legacy Chat Message; 1 - Track Comment; 2 - Track Recomment;
+        defaultFormId = $(".bottom-navbar-text-form").attr("id");
+        defaultFormAction = $(".bottom-navbar-text-form").attr("action");
+        defaultAdditionalInputs = $("#MainBottom_AdditionalInputs_Box").html();
+        defaultSubmitBtnHtml = $(".btn-bottom-navbar-form-control").html();
+        defaultInputPlaceholder = $(".form-control-bar-standard").attr("placeholder");
+        defaultSubmitBtnClasses = document.getElementsByClassName("btn-bottom-navbar-form-control")[0].className;
+
+        $("#TextBox_Icon_Span").html(' <i class="fa-solid fa-pencil"></i> ');
+        switch (parseInt(type)) {
+            case 0:
+                $("#TextBox_ActionDescription_Span").html('Edit Message');
+                break;
+            case 1:
+                bottomNavbarTextFormCustomization("/Comment/Edit", "EditTrackComment_Form", "EditTrackComment_Text_Val", "Text", "EditTrackComment_SbmtBtn", ["Id"], [0], ["EditTrackComment_Id_Val"], ["form-control", "form-control-bar-standard", "form-control-bottom-navbar", "form-control-guard"], ["data-min-length", "maxlength", "data-on-fulfill"], [1, 1500, "EditTrackComment_SbmtBtn"], "Edit your comment...", ' <i class="fa-solid fa-check-double"></i> ', ["btn-standard"]);
+                $(".form-control-bar-standard").val(editing_Message_Text);
+                $("#TextBox_ActionDescription_Span").html('Edit Comment');
+                break;
+            case 2:
+                bottomNavbarTextFormCustomization("/Comment/EditReply", "EditTrackRecomment_Form", "EditTrackRecomment_Text_Val", "Text", "EditTrackRecomment_SbmtBtn", ["Id"], [0], ["EditTrackRecomment_Id_Val"], ["form-control", "form-control-bar-standard", "form-control-bottom-navbar", "form-control-guard"], ["data-min-length", "maxlength", "data-on-fulfill"], [1, 750, "EditTrackRecomment_SbmtBtn"], "Edit your reply...", ' <i class="fa-solid fa-check-double"></i> ', ["btn-standard"]);
+                $(".form-control-bar-standard").val(editing_Message_Text);
+                $("#TextBox_ActionDescription_Span").html('Edit Comment');
+            default:
+                $(".form-control-bar-standard").val(editing_Message_Text);
+                $("#TextBox_ActionDescription_Span").html('Edit Comment Reply');
+                break;
+        }
+        $("#TextBox_Reason_Span").html(editing_Message_Text);
+
+        swapToTextBoxNavbar();
+        setTimeout(function () {
+            $("#MainBottom_TextBoxPageAdditional_Box").slideDown(250);
+        }, 150);
+    }
+}
+
+function swapToReplyMode(replyTo_Message_Text, replyingToMessage = true) {
+    if (replyTo_Message_Text != null || replyTo_Message_Text != undefined) {
+        defaultFormId = $(".bottom-navbar-text-form").attr("id");
+        defaultFormAction = $(".bottom-navbar-text-form").attr("action");
+        defaultAdditionalInputs = $("#MainBottom_AdditionalInputs_Box").html();
+        defaultSubmitBtnHtml = $(".btn-bottom-navbar-form-control").html();
+        defaultInputPlaceholder = $(".form-control-bar-standard").attr("placeholder");
+        defaultSubmitBtnClasses = document.getElementsByClassName("btn-bottom-navbar-form-control")[0].className;
+
+        $("#TextBox_Icon_Span").html(' <i class="fa-solid fa-reply"></i> ');
+        if (replyingToMessage) {
+            $("#TextBox_ActionDescription_Span").html('Reply to Message');
+        }
+        else {
+            bottomNavbarTextFormCustomization("/Comment/Reply", "ReplyToTrackComment_Form", "RTC_Text_Val", "Text", "RTC_SbmtBtn", ["TrackCommentId"], [0], ["RTC_TrackCommentId_Val"], ["form-control", "form-control-bar-standard", "form-control-bottom-navbar", "form-control-guard"], ["data-min-length", "maxlength", "data-on-fulfill"], [1, 750, "RTC_SbmtBtn"], "Enter your reply...", null, ["btn-standard"]);
+            $("#TextBox_ActionDescription_Span").html('Reply to Comment');
+        }
+        $("#TextBox_Reason_Span").html(replyTo_Message_Text);
+
+        swapToTextBoxNavbar();
+        setTimeout(function () {
+            $("#MainBottom_TextBoxPageAdditional_Box").slideDown(250);
+        }, 150);
+    }
+}
+
+$(document).on("mousedown", ".btn-edit-track-comment", function () {
     let trueId = getTrueId($(this).attr("id"), false);
     if (trueId != undefined) {
-
+        let thisMessageText = $("#" + trueId + "-CommentContent_Span").html();
+        if (thisMessageText != undefined) {
+            swapToEditMode(thisMessageText, false);
+            $("#EditTrackComment_Id_Val").val(trueId);
+            slideBoxes(false, "Replies_Box", "Comments_Box");
+        }
     }
 });
 
+$(document).on("mousedown", ".btn-edit-track-recomment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        let thisReplyText = $("#" + trueId + "-RecommentContent_Span").html();
+        if (thisReplyText != undefined) {
+            swapToEditMode(2, thisReplyText);
+            $("#EditTrackRecomment_Id_Val").val(trueId);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-reply-to-track-comment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        let currentId = $("#GetTrackRecomments_Id_Val").val();
+        if (currentId != trueId) {
+            $("#GetTrackRecomments_Id_Val").val(trueId);
+            $("#GetTrackRecomments_Form").submit();
+        }
+        else {
+            let thisCommentContent = $("#" + trueId + "-CommentContent_Span").html();
+            if (thisCommentContent != undefined) {
+                swapToReplyMode(thisCommentContent, false);
+                slideBoxes(false, "Comments_Box", "Replies_Box");
+            }
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-pin-comment", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        $("#PinComment_Id_Val").val(trueId);
+        $("#PinComment_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-unpin-comment", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        $("#UnpinComment_Id_Val").val(trueId);
+        $("#UnpinComment_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-pre-delete-track-comment", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        callAProposal('<i class="fa-regular fa-trash-can text-danger"></i>', "Delete Comment", "Are you sure you want to delete this comment?", "Yes, Certainly", ["btn-delete-track-comment"], ["id"], [trueId + "-DeleteTrackComment"], false, null, 15);
+    }
+});
+$(document).on("mousedown", ".btn-pre-delete-track-recomment", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        callAProposal('<i class="fa-regular fa-trash-can text-danger"></i>', "Delete Reply", "Are you sure you want to delete this comment reply?", "Yes, Certainly", ["btn-delete-track-recomment"], ["id"], [trueId + "-DeleteTrackRecomment"], false, null, 15);
+    }
+});
+
+$(document).on("mousedown", ".btn-delete-track-comment", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        $("#DeleteTrackComment_Id_Val").val(trueId);
+        $("#DeleteTrackComment_Form").submit();
+    }
+});
+$(document).on("mousedown", ".btn-delete-track-recomment", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        $("#DeleteTrackRecomment_Id_Val").val(trueId);
+        $("#DeleteTrackRecomment_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-cancel-text-box-modes", function () {
+    swapToDefaultMode();
+});
 $(document).on("mousedown", ".btn-swap-to-standard-navbar", function () {
     swapToRegularNavbar();
 });
@@ -3847,6 +4391,7 @@ $(document).on("mousedown", ".btn-change-boxes", function () {
     let closingBox = $(this).attr("data-close");
     let openingBox = $(this).attr("data-open");
     if (closingBox != undefined && openingBox != undefined) {
+        swapToDefaultMode();
         slideBoxes(false, closingBox, openingBox);
     }
 });
