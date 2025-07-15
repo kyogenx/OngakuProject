@@ -17,7 +17,7 @@ namespace OngakuProject.Repositories
 
         public async Task<User?> GetArtistPageInfoAsync(int Id)
         {
-            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id && u.IsVisible).Select(u => new User { Id = Id, Nickname = u.Nickname, Searchname = u.Searchname, MonthlyListeners = u.UserListeners != null ? u.UserListeners.Count(u => u.IsActive) : 0, ImgUrl = u.UserImages != null ? u.UserImages.Select(u=>u.ImgUrl).FirstOrDefault() : null, LastSeenAt = u.LastSeenAt, WhoCanChat = u.WhoCanChat, WhoCanDownload = u.WhoCanDownload, WhoCanSeeLastSeenInfo = u.WhoCanSeeLastSeenInfo }).FirstOrDefaultAsync();
+            if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id && u.IsVisible).Select(u => new User { Id = Id, Nickname = u.Nickname, IsOfficial = u.IsOfficial, PageDesignPattern = u.PageDesignPattern, ImgUrl = u.UserImages != null ? u.UserImages.Select(u => u.ImgUrl).FirstOrDefault() : null, WhoCanChat = u.WhoCanChat, WhoCanDownload = u.WhoCanDownload, WhoCanSeeLastSeenInfo = u.WhoCanSeeLastSeenInfo }).FirstOrDefaultAsync();
             else return null;
         }
 

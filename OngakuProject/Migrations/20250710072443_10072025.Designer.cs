@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250710072443_10072025")]
+    partial class _10072025
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1002,13 +1005,8 @@ namespace OngakuProject.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("FormedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("GenreId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsOfficial")
+                        .HasMaxLength(230)
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsVisible")
@@ -1071,16 +1069,12 @@ namespace OngakuProject.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<byte>("Type")
-                        .HasColumnType("tinyint");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Webpage")
-                        .HasMaxLength(230)
-                        .HasColumnType("nvarchar(230)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte>("WhoCanChat")
                         .HasColumnType("tinyint");
@@ -1094,8 +1088,6 @@ namespace OngakuProject.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CountryId");
-
-                    b.HasIndex("GenreId");
 
                     b.HasIndex("LabelId");
 
@@ -1626,17 +1618,11 @@ namespace OngakuProject.Migrations
                         .WithMany("Users")
                         .HasForeignKey("CountryId");
 
-                    b.HasOne("OngakuProject.Models.Genre", "Genre")
-                        .WithMany("Users")
-                        .HasForeignKey("GenreId");
-
                     b.HasOne("OngakuProject.Models.Label", null)
                         .WithMany("Users")
                         .HasForeignKey("LabelId");
 
                     b.Navigation("Country");
-
-                    b.Navigation("Genre");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.UserImage", b =>
@@ -1716,8 +1702,6 @@ namespace OngakuProject.Migrations
             modelBuilder.Entity("OngakuProject.Models.Genre", b =>
                 {
                     b.Navigation("Albums");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Label", b =>

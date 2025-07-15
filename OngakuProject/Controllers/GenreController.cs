@@ -26,7 +26,7 @@ namespace OngakuProject.Controllers
             if(GenresPreview != null)
             {
                 List<Genre>? Genres = await GenresPreview.ToListAsync();
-                return Json(new { success = true, type = Type, result = Genres, count = Genres.Count, keyword = Keyword });
+                return Json(new { success = true, type = Type, result = Genres, keyword = Keyword });
             }
             return Json(new { success = false });
         }

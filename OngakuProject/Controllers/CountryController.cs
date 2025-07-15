@@ -17,7 +17,7 @@ namespace OngakuProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCountries(string? Keyword)
+        public async Task<IActionResult> Get(string? Keyword)
         {
             List<Country>? Countries = await _country.GetCountriesAsync(Keyword);
             if (Countries is not null) return Json(new { success = true, result = Countries });

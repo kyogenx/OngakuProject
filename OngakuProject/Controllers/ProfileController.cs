@@ -12,12 +12,14 @@ namespace OngakuProject.Controllers
         private readonly Context _context;
         private readonly IProfile _profile;
         private readonly IAccount _account;
+        private readonly IProfileEdit _profileEdit;
 
-        public ProfileController(Context context, IProfile profile, IAccount account)
+        public ProfileController(Context context, IProfile profile, IAccount account, IProfileEdit profileEdit)
         {
             _context = context;
             _profile = profile;
             _account = account;
+            _profileEdit = profileEdit;
         }
 
         public async Task<IActionResult> P()
@@ -43,23 +45,9 @@ namespace OngakuProject.Controllers
             string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int Id = _profile.ParseCurrentUserId(CurrentUserId);
 
-            string? Result = await _profile.UpdateSearchnameAsync(Id, Searchname);
+            string? Result = await _profileEdit.UpdateSearchnameAsync(Id, Searchname);
             if (Result is not null) return Json(new { success = true, result = Result });
             else return Json(new { success = false });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdateMainInfo(ProfileInfo_VM Model)
-        {
-            if(ModelState.IsValid)
-            {
-                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
-
-                bool Result = await _profile.UpdateMainInfoAsync(Model);
-                if (Result) return Json(new { success = true, result = Model });
-            }
-            return Json(new { success = false });
         }
 
         [HttpPost]
@@ -69,21 +57,92 @@ namespace OngakuProject.Controllers
             Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
             if (ModelState.IsValid)
             {
-                bool Result = await _profile.UpdatePrivacySettingsAsync(Model);
+                bool Result = await _profileEdit.UpdatePrivacySettingsAsync(Model);
                 if (Result) return Json(new { success = true, result = Model });
             }
             return Json(new { success = false });
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditPersonalInfo(PersonalInfo_VM Model)
+        public async Task<IActionResult> EditType(byte Type)
         {
-            string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Model.Id = _profile.ParseCurrentUserId(CurrentUserId);
-            if(ModelState.IsValid)
+            if(User.Identity.IsAuthenticated)
             {
-                bool Result = await _profile.UpdatePersonalInfoAsync(Model);
-                if (Result) return Json(new { success = true, result = Model });
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                int Result = await _profileEdit.EditArtistTypeAsync(UserId, Type);
+                if (Result >= 0) return Json(new { success = true, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditMainGenre(int Id)
+        {
+            if(User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                string? Result = await _profileEdit.EditMainGenreAsync(Id, UserId);
+                if (Result is not null) return Json(new { success = true, id = Id, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditLocation(int Id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                string? Result = await _profileEdit.EditLocationInfoAsync(Id, UserId);
+                if (Result is not null) return Json(new { success = true, id = Id, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditYearsOfActivity(DateTime FormedAt)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                DateTime? Result = await _profileEdit.EditStartDateTimeAsync(UserId, FormedAt);
+                if (Result is not null) return Json(new { success = true, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditWebsite(int Id, ProfileInfo_VM Model)
+        {
+            if(User.Identity.IsAuthenticated && ModelState.IsValid)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                string? Result = await _profileEdit.EditWebsiteLinkAsync(UserId, Model);
+                if (Result is not null) return Json(new { success = true, result = Result });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditBio(ProfileInfo_VM Model)
+        {
+            if(User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                string? Result = await _profileEdit.EditBioAsync(UserId, Model);
+                if (Result is not null) return Json(new { success = true, result = Result });
             }
             return Json(new { success = false });
         }
@@ -108,7 +167,7 @@ namespace OngakuProject.Controllers
             int UserId = _profile.ParseCurrentUserId(Id);
             if(Files.Count > 0 && UserId > 0)
             {
-                string? Result = await _profile.UpdateImagesAsync(UserId, Files);
+                string? Result = await _profileEdit.UpdateImagesAsync(UserId, Files);
                 if (Result is not null) return Json(new { success = true, result = Result });
             }
             return Json(new { success = false });
@@ -119,7 +178,7 @@ namespace OngakuProject.Controllers
         {
             string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int UserId = _profile.ParseCurrentUserId(Id);
-            string? Result = await _profile.UpdateMainImageAsync(UserId, ImageUrl);
+            string? Result = await _profileEdit.UpdateMainImageAsync(UserId, ImageUrl);
 
             if (Result is not null) return Json(new { success = true, result = Result });
             else return Json(new { success = false });
@@ -131,7 +190,7 @@ namespace OngakuProject.Controllers
             string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int UserId = _profile.ParseCurrentUserId(Id);
 
-            string? Result = await _profile.DeleteImageAsync(UserId, ImageUrl);
+            string? Result = await _profileEdit.DeleteImageAsync(UserId, ImageUrl);
             if(Result is not null) return Json(new { success = true, deleted = ImageUrl, result = Result });
             else return Json(new { success = false });
         }
@@ -142,7 +201,7 @@ namespace OngakuProject.Controllers
             string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int UserId = _profile.ParseCurrentUserId(Id);
 
-            bool Result = await _profile.DeleteAllImagesAsync(UserId);
+            bool Result = await _profileEdit.DeleteAllImagesAsync(UserId);
             return Json(new { success = Result });
         }
 

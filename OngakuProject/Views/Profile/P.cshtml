@@ -93,18 +93,17 @@
         </div>
     </div>
     <div class="box-btn-group mt-2">
-        <button type="button" class="btn box-btn-group-member box-btn-group-top-member hstack gap-1">
-            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fill-drip"></i> </div>
-            <span class="card-text ms-1">Appearance</span>
-            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
-        </button>
-@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="ProfileSecurity_Container-Open">
-            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fingerprint"></i> </div>
-            <span class="card-text ms-1">Security Settings</span>
-            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
-        </button> *@
         <div>
-            <form method="get" asp-controller="Profile" asp-action="GetAccountGuts" id="GetAccountGuts_Form">
+            <form method="get" action="/Profile/GetAccountInfo" id="GetAccountInfo_Form">
+                <button type="submit" class="btn box-btn-group-member box-btn-group-top-member hstack gap-1" id="GetProfileInfo_SbmtBtn">
+                    <div class="box-btn-group-member-icon"> <i class="fa-regular fa-address-card"></i> </div>
+                    <span class="card-text ms-1">Personal Info</span>
+                    <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+                </button>
+            </form>
+        </div>
+        <div>
+            <form method="get" action="/Profile/GetAccountGuts" id="GetAccountGuts_Form">
                 <button type="submit" class="btn box-btn-group-member box-btn-group-mid-member hstack gap-1" id="GetAccountGuts_SbmtBtn">
                     <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fingerprint"></i> </div>
                     <span class="card-text ms-1">Security Settings</span>
@@ -112,31 +111,6 @@
                 </button>
             </form>
         </div>
-@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="ProfileSecurity_Container-OpenBtn">
-            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-fingerprint"></i> </div>
-            <span class="card-text ms-1">Security Settings</span>
-            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
-        </button> *@
-        <div>
-            <form method="get" asp-controller="Profile" asp-action="GetAccountPersonalInformation" id="GetAccountPersonalInformation_Form">
-                <input type="hidden" name="Id" value="@UserInfo.Id" />
-                <button type="submit" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="GetAccountPersonalInformation_SbmtBtn">
-                    <div class="box-btn-group-member-icon"> <i class="fa-solid fa-user-pen"></i> </div>
-                    <span class="card-text ms-1">Personal Information</span>
-                    <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
-                </button>
-            </form>
-        </div>
-@*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container hstack gap-1" id="PersonalInfo_Container-Open">
-            <div class="box-btn-group-member-icon"> <i class="fa-solid fa-user-pen"></i> </div>
-            <span class="card-text ms-1">Personal Information</span>
-            <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
-        </button>
-        <div class="d-none">
-            <form method="get" asp-controller="Profile" asp-action="GetAccountPersonalInformation" id="GetAccountPersonalInformation_Form">
-                <input type="hidden" name="Id" value="@UserInfo.Id" />
-            </form>
-        </div> *@
         <div>
             <form method="get" asp-controller="Profile" asp-action="GetPrivacySettings" id="GetPrivacySettings_Form">
                 <input type="hidden" name="Id" value="@UserInfo.Id" />
@@ -162,6 +136,417 @@
         </button>
     </div>
 </div>
+
+<div class="box-lg-part shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header p-2">
+        <div class="hstack gap-1">
+            <div class="dropdown">
+                <button class="btn btn-standard me-1" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                <ul class="dropdown-menu shadow-sm p-1">
+                    <li><button type="button" class="dropdown-item btn-sm">New post <span class="card-text float-end"> <i class="fa-solid fa-feather"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item btn-sm">New poll <span class="card-text float-end"> <i class="fa-solid fa-square-poll-vertical"></i> </span></button></li>
+                    <li><button type="button" class="dropdown-item btn-open-container btn-sm" id="AddMusic_Container-Open">Add Music <span class="card-text float-end"> <i class="fa-solid fa-microphone-lines"></i> </span></button></li>
+                    <li>
+                        <div>
+                            <form method="get" asp-controller="Track" asp-action="GetStudioItems" id="GetStudioItems_Form">
+                                <button type="submit" class="dropdown-item btn-sm">Studio <span class="card-text float-end"> <i class="fa-solid fa-music"></i> </span></button>
+                            </form>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><button type="button" class="dropdown-item btn-sm" id="ShowBasicShortcutsInfo_Btn">Shortcuts <span class="card-text float-end"> <i class="fa-regular fa-lightbulb"></i> </span></button></li>
+                </ul>
+            </div>
+            <div class="d-inline-block">
+                <form method="get" asp-controller="Playlists" asp-action="GetFavorites" id="GetFavorites_Form">
+                    <button type="submit" class="btn btn-standard" id="GetFavorites_SbmtBtn"> <i class="fa-solid fa-star"></i>  Favorites</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="box-lg-part-body mt-5" id="Primary_Box">
+        <div class="mt-2">
+            <div class="box-bordered p-2 pt-1">
+                <button type="button" class="btn btn-standard btn-link btn-sm super-disabled float-end ms-1" id="EditResults_WebsiteLink_Btn"> <i class="fa-solid fa-link"></i> <span id="EditResults_WebsiteLink_Span">Link</span></button>
+                <span class="h1" id="EditResults_Nickname_Lbl">K. Flay</span>
+                <br/>
+                <small class="card-text text-muted" id="EditResults_Misch_Span"><span class="separator-dot" id="EditResults_Location_Span">from United States of America</span> <span id="EditResults_Location_Span-Separator" style="display: none;">∙</span> <span class="separator-dot" id="EditResults_FormedAt_Span" style="display: none;">30 June 1985</span> <span id="EditResults_FormedAt_Span-Separator" style="display: none;">∙</span> <span class="separator-dot" id="EditResults_MainGenre_Span" style="display: none;">Alternative</span></small>
+                <div class="box-border-top mt-2 pt-1" id="EditResults_Description_Box">
+                    <small class="card-text white-space-on" id="EditResults_Description_Span">Description of Artist Profile</small>
+                </div>
+            </div>
+            <div class="box-standard mt-3" id="DescriptionEdit_Box">
+                <div class="hstack gap-2">
+                    <h6 class="h6 ms-1">Bio</h6>
+                    <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserBio_Form" id="EditUser_Bio_Val-DistantSbmt_Btn"><i class="fa-regular fa-circle-check"></i> Saved</button>
+                </div>
+                <button type="button" class="btn btn-select-primary-skin btn-solo-input slide-element active" id="EditUserDescription_Call_Btn" data-input="BioEdit_Box">Artist Bio ∙ <span class="text-muted" id="EditUserWebsite_Webpage_Val-Indicator_Span">0/1500</span> <span class="float-end text-muted ms-1"> <i class="fa-regular fa-keyboard"></i> </span></button>
+                <div class="slide-element" id="BioEdit_Box" style="display: none;">
+                    <div class="hstack gap-2">
+                        <div class="w-100">
+                            <form method="post" action="/Profile/EditBio" id="EditUserBio_Form">
+                                <textarea class="form-textarea form-control-select-like form-control-guard form-control-distance" id="EditUser_Bio_Val" name="Description" placeholder="Your bio (max 1500 chars)" maxlength="1500"></textarea>
+                            </form>
+                            <input type="hidden" id="EditUser_Bio_Val-Base_Val" />
+                        </div>
+                        <button type="button" class="btn btn-standard-rounded btn-change-elements ms-auto" id="UserWebsiteLink_Uncall_Btn" data-close="BioEdit_Box" data-open="EditUserDescription_Call_Btn"> <i class="fa-solid fa-xmark"></i> </button>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Introduce yourself with a short bio — share your story, influences, achievements, and what defines your music</small>
+                </div>
+            </div>
+            <div class="box-standard mt-3" id="ArtistType_Box">
+                <div class="hstack gap-2">
+                    <h6 class="h6 ms-1">Artist Type</h6>
+                    <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserType_Form" id="EditUserType_Type_Val-DistantSbmt_Btn"> <i class="fa-regular fa-circle-check"></i> Saved</button>
+                </div>
+                <button type="button" class="btn btn-select-primary-skin btn-select-primary" id="ArtistType-Select_Btn" data-val="0"><span id="ArtistType_Result_Span">Solo Artist</span> <span class="float-end text-muted ms-1"> <i class="fa-solid fa-angle-down"></i> </span></button>
+                <div class="d-none">
+                    <form method="post" action="/Profile/EditType" id="EditUserType_Form">
+                        <input type="hidden" class="form-control-distance" name="Type" id="EditUserType_Type_Val" value="0" />
+                    </form>
+                    <input type="hidden" id="EditUserType_Type_Val-Base_Val" value="0" />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted ">Specify the type of artist you are. This determines how your profile is displayed and which features are available to you</small>
+                </div>
+            </div>
+
+            <div class="box-standard mt-3" id="ArtistMainGenre_Box">
+                <div class="hstack gap-2">
+                    <h6 class="h6 ms-1">Main Genre</h6>
+                    <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserMainGenre_Form" id="EditUserMainGenre_Id_Val-DistantSbmt_Btn"> <i class="fa-regular fa-circle-check"></i> Saved</button>
+                </div>
+                <div>
+                    <form method="get" action="/Genre/Search" id="SearchForGenres_Form">
+                        <input type="hidden" name="Type" id="SearchForGenres_Type_Val" value="1" />
+                        <input type="hidden" name="Keyword" id="SearchForGenres_Keyword_Val" />
+                        <button type="submit" class="btn btn-select-primary-skin btn-select-primary" id="SearchForGenre_SbmtBtn"><span id="UserMainGenre_Span">Unknown</span> <span class="float-end text-muted ms-1"> <i class="fa-solid fa-angle-down"></i> </span></button>
+                    </form>
+                </div>
+                <div class="d-none">
+                    <form method="post" action="/Profile/EditMainGenre" id="EditUserMainGenre_Form">
+                        <input type="hidden" class="form-control-distance" name="Id" id="EditUserMainGenre_Id_Val" value="0" />
+                        <input type="hidden" name="Type" value="1" />
+                    </form>
+                    <input type="hidden" id="EditUserMainGenre_Id_Val-Base_Val" value="0" />
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted ">These tags describe your musical style and help fans discover your work</small>
+                </div>
+            </div>
+
+            <div class="box-standard mt-3" id="YearsOfActivity_Box">
+                <div class="hstack gap-2">
+                    <h6 class="h6 ms-1" id="YearsOfActivity_Header_Lbl">Born/Formed</h6>
+                    <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserYearsOfActivity_Form" id="EditYearsOfActivity_DateTime_Val-DistantSbmt_Btn"> <i class="fa-regular fa-circle-check"></i> Saved</button>
+                </div>
+                <button type="button" class="btn btn-select-primary-skin btn-select-date" id="YearsOfActivity_Call_Btn" data-display="YearsOfActivity_Result_Span" data-result="EditYearsOfActivity_DateTime_Val"><span id="YearsOfActivity_Result_Span">Unknown</span> <span class="float-end text-muted ms-1"> <i class="fa-regular fa-clock"></i> </span></button>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Let listeners know when you started releasing music</small>
+                </div>
+                <div class="d-none">
+                    <form method="post" action="/Profile/EditYearsOfActivity" id="EditUserYearsOfActivity_Form">
+                        <input type="hidden" class="form-control-distance" name="FormedAt" id="EditYearsOfActivity_DateTime_Val" />
+                    </form>
+                    <input type="hidden" id="EditYearsOfActivity_DateTime_Val-Base_Val" />
+                </div>
+            </div>
+
+            <div class="box-standard mt-3" id="ArtistLocation_Box">
+                <div class="hstack gap-2">
+                    <h6 class="h6 ms-1" id="ArtistLocation_Header_Lbl">Location</h6>
+                    <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserLocaion_Form" id="EditUserLocaion_Id_Val-DistantSbmt_Btn"> <i class="fa-regular fa-circle-check"></i> Saved</button>
+                </div>
+                <div>
+                    <form method="get" action="/Country/Get" id="GetCountries_Form">
+                        <input type="hidden" name="Type" value="1" />
+                        <input type="hidden" name="Id" id="GetCountries_Id_Val" value="0" />
+                        <button type="submit" class="btn btn btn-select-primary-skin" id="GetCountries_SbmtBtn"><span id="UserCountryInfo_Btn_Span">Unknown</span> <span class="float-end text-muted ms-1"> <i class="fa-solid fa-angle-down"></i> </span></button>
+                    </form>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Choose the country you’re based in or where your project was formed</small>
+                </div>
+                <div class="d-none">
+                    <form method="post" action="/Profile/EditLocation" id="EditUserLocaion_Form">
+                        <input type="hidden" class="form-control-distance" name="Id" id="EditUserLocaion_Id_Val" value="0" />
+                    </form>
+                    <input type="hidden" id="EditUserLocaion_Id_Val-Base_Val" value="0" />
+                </div>
+            </div>
+
+            <div class="box-standard mt-3" id="UserWebsiteLink_Box">
+                <div class="hstack gap-2">
+                    <h6 class="h6 ms-1" id="UserWebsiteLink_Header_Lbl">Official Website</h6>
+                    <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserWebsite_Form" id="EditUserWebsite_Webpage_Val-DistantSbmt_Btn"> <i class="fa-regular fa-circle-check"></i> Saved</button>
+                </div>
+                <button type="button" class="btn btn-select-primary-skin btn-solo-input slide-element active" id="UserWebsiteLink_Call_Btn" data-input="WebsiteEdit_Box"><span id="UserWebsiteLink_Info_Span">No Website Link</span> <span class="float-end text-muted ms-1"> <i class="fa-solid fa-link"></i> </span></button>
+                <div class="slide-element" id="WebsiteEdit_Box" style="display: none;">
+                    <div class="hstack gap-2">
+                        <div class="w-100">
+                            <form method="post" action="/Profile/EditWebsite" id="EditUserWebsite_Form">
+                                <input type="text" class="form-control-select-like form-control-guard form-control-distance" id="EditUserWebsite_Webpage_Val" name="Webpage" placeholder="Website link..." data-update="UserWebsiteLink_Info_Span" data-base-value="No Website Link" />
+                            </form>
+                            <input type="hidden" id="EditUserWebsite_Webpage_Val-Base_Val" />
+                        </div>
+                        <button type="button" class="btn btn-standard-rounded btn-change-elements ms-auto" id="UserWebsiteLink_Uncall_Btn" data-close="WebsiteEdit_Box" data-open="UserWebsiteLink_Call_Btn"> <i class="fa-solid fa-xmark"></i> </button>
+                    </div>
+                </div>
+                <div class="mt-1 ms-1">
+                    <small class="card-text text-muted">Share your official website (if any) to give fans more ways to connect with you</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <div class="box-date-time-picker shadow-sm" id="DateTimePicker_Box">
+    <div class="d-none">
+        <input type="number" class="d-none" min="1" max="31" step="1" value="12" id="DTP_Day_Val" />
+        <input type="number" class="d-none" min="0" max="11" step="1" value="7" id="DTP_Month_Val" />
+        <input type="number" class="d-none" min="1750" max="2050" value="2025" step="1" id="DTP_Year_Val" />
+    </div>
+    <div class="box-date-time-picker-bones slide-box" id="DateTimePicker_Main_Box">
+        <div class="box-standard hstack gap-2">
+            <button type="button" class="btn btn-standard-rounded btn-load-prev-month me-1" id="ToPreviousMonth_Btn" data-display="month-span"> <i class="fa-solid fa-chevron-left"></i>  </button>
+            <button type="button" class="btn btn-standard-rounded btn-load-next-month me-1" id="ToNextMonth_Btn" data-display="month-span"> <i class="fa-solid fa-chevron-right"></i>  </button>
+            <div class="text-center mx-auto me-auto">
+                <span class="h6" id="DTP_Result_Lbl"><span class="month-span">July</span> <span class="day-span">12</span><span class="year-span" style="display: none;"> 2025</span></span>, <span class="text-muted time-span fw-normal"><span class="hour-span">20</span>:<span class="min-span">00</span></span>
+            </div>
+            <div>
+                <button type="button" class="btn btn-standard-rounded btn-apply-date-time me-1"> <i class="fa-solid fa-check"></i> </button>
+                <button type="button" class="btn btn-standard-rounded btn-close-date-time ms-auto"> <i class="fa-solid fa-xmark"></i> </button>
+            </div>
+        </div>
+
+        <div class="box-standard mx-auto text-center">
+            <div class="row" id="WeekDays_Row_Box">
+                <div class="col">
+                    <small class="date-time-picker-header">Mon</small>
+                </div>
+                <div class="col">
+                    <small class="date-time-picker-header">Tue</small>
+                </div>
+                <div class="col">
+                    <small class="date-time-picker-header">Wed</small>
+                </div>
+                <div class="col">
+                    <small class="date-time-picker-header">Thu</small>
+                </div>
+                <div class="col">
+                    <small class="date-time-picker-header">Fri</small>
+                </div>
+                <div class="col">
+                    <small class="date-time-picker-header">Sat</small>
+                </div>
+                <div class="col">
+                    <small class="date-time-picker-header">Sun</small>
+                </div>
+            </div>
+        </div>
+        <div class="box-standard mx-auto mt-1" id="MonthDays_Row_Box">           
+        </div>
+
+        <div class="box-standard hstack gap-2 bottom-0 mt-3">
+            <button type="button" class="btn btn-standard-bolded btn-to-year-month-edit btn-change-boxes text-start" data-close="DateTimePicker_Main_Box" data-open="DateTimePicker_Aux_Box" id="YearMonthInstantEdit_Btn"><span class="h6 month-span" id="YearMonth_Result_Lbl">July</span> <small class="card-text text-muted"><i class="fa-solid fa-angle-right"></i></small><br /><small class="card-text text-muted year-span d-block" id="YearResult_Span">2025</small></button>
+            <div class="box-standard text-center ms-auto" id="TimeMin_Select_Box">
+                <div class="row">
+                    <div class="col">
+                        <span class="date-time-picker-header">Hour</span>
+                    </div>
+                    <div class="col">
+                        <span class="date-time-picker-header">Min</span>
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <div class="col">
+                        <input type="number" class="form-control time-form-control d-inline me-1" min="0" max="24" value="20" step="1" placeholder="Hour" id="DTP_Hour_Val" data-target="DTP_Hour_Val" data-display="hour-span" />
+                    </div>
+                    <div class="col">
+                        <input type="number" class="form-control time-form-control" min="0" max="59" value="00" step="1" placeholder="Min" id="DTP_Min_Val" data-target="DTP_Min_Val" data-display="min-span" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="box-date-time-picker-skin slide-box re-scaled" id="DateTimePicker_Aux_Box" style="display: none;">
+        <div class="box-standard hstack gap-2">
+            <button type="button" class="btn btn-standard-rounded btn-to-date-time-picker btn-change-boxes" data-close="DateTimePicker_Aux_Box" data-open="DateTimePicker_Main_Box"> <i class="fa-solid fa-angle-left"></i> Back</button>
+            <span class="h6 mx-auto me-auto"><span class="month-span">July</span>, <span class="year-span d-inline">2025</span></span>
+            <button type="button" class="btn btn-standard-rounded btn-set-today">Today</button>
+        </div>
+        <div class="box-standard text-center mt-3">
+            <div class="row">
+                <div class="col">
+                    <button type="button" class="btn btn-standard-rounded btn-load-prev-month text-center w-100 mb-2" data-display="month-span"> <i class="fa-solid fa-angle-up"></i> </button>
+                    <span class="date-time-picker-header month-span text-dark">July</span>
+                    <button type="button" class="btn btn-standard-rounded btn-load-next-month text-center w-100 mt-2" data-display="month-span"> <i class="fa-solid fa-angle-down"></i> </button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-standard-rounded btn-load-prev-year text-center w-100 mb-2" data-display="year-span"> <i class="fa-solid fa-angle-up"></i> </button>
+                    <span class="date-time-picker-header year-span text-dark d-block">2025</span>
+                    <button type="button" class="btn btn-standard-rounded btn-load-next-year text-center w-100 mt-2" data-display="year-span"> <i class="fa-solid fa-angle-down"></i> </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+@* <div class="box-select shadow-sm" style="display: block; bottom: 200px; width: 55%;">
+    <div class="box-select-header">
+        <button type="button" class="btn btn-standard-rounded btn-close-select float-end ms-1"> <i class="fa-solid fa-xmark"></i> </button>
+    </div>
+    <div class="box-select-body mt-2">
+    </div>
+</div> *@
+
+
+    @*                 <div class="box-backgrounded" id="ArtistType_Box">
+                    <div class="box-btn-group">
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-top-member text-start" id="0-ArtistType_Btn" data-select="EditUserType_Id_Val"> <i class="fa-solid fa-check icon-checked"></i> Solo Artist</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-top-member text-start" id="1-ArtistType_Btn" data-select="EditUserType_Id_Val">DJ/Producer</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-mid-member text-start" id="2-ArtistType_Btn" data-select="EditUserType_Id_Val">Group/Band</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-mid-member text-start" id="3-ArtistType_Btn" data-select="EditUserType_Id_Val">Duo</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-mid-member text-start" id="4-ArtistType_Btn" data-select="EditUserType_Id_Val">Orchestra</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-mid-member text-start" id="5-ArtistType_Btn" data-select="EditUserType_Id_Val">Ensembles</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-mid-member text-start" id="6-ArtistType_Btn" data-select="EditUserType_Id_Val">Choir</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-mid-member text-start" id="7-ArtistType_Btn" data-select="EditUserType_Id_Val">Collective</button>
+                        <button type="button" class="btn btn-select-element box-btn-group-member box-btn-group-bot-member text-start" id="8-ArtistType_Btn" data-select="EditUserType_Id_Val">Theatre Artists</button>
+                    </div>
+                    <form method="post" action="/User/EditType" id="EditUserType_Form">
+                        <input type="hidden" name="Id" id="EditUserType_Id_Val" value="0" />
+                    </form>
+                </div> *@
+@* <div class="box-vertical-switcher shadow-sm" id="PersonalInfo_VS_Box">
+                <div class="box-vertical-switcher-header hstack gap-1">
+                    <button type="button" class="btn btn-standard-bolded btn-close-vertical-switcher btn-sm ms-auto">Done</button>
+                </div>
+
+                <div class="mt-2" id="PersonalInfo_VS_Box-Items_Box">
+                    <span class="h5" id="PersonalInfo_VM_Box-MembersQty_Lbl"></span>
+                    <div></div>
+                    <small class="card-text text-muted">Tap on each member to remove them</small>
+                    <div class="mt-2" id="PersonalInfo_VM_Box-MembersListed_Box"></div>
+                </div>
+            </div>
+
+            <div class="box-bordered p-2">
+                <span class="h4" id="PersonaInfo_RealName_Lbl">Donald J. Trump</span>
+                <div class="hstack gap-1">
+                    <small class="card-text me-1" id="PersonaInfo_CountryInfo_Lbl">
+                        <img src="https://flagcdn.com/16x12/jp.png"
+                             srcset="https://flagcdn.com/32x24/jp.png 2x, https://flagcdn.com/48x36/jp.png 3x"
+                             width="20" height="15" alt="Japan">
+                        Japan
+                    </small>
+                    <button type="button" class="btn btn-link btn-sm" id="PersonalInfo_WebpageLink_Btn">
+                        <span class="card-text text-muted">
+                            <i class="fa-solid fa-link"></i>
+                        </span>
+                        <span id="WebpageLink_Span">DonaldJTrump.com</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <form method="post" action="/Profile/EditPersonalInfo" id="ProfileEditPersonal_Info">
+                    <div>
+                        <span class="form-label fw-500 ms-1">Full Name</span>
+                        <div class="mt-1" id="EPI_Fullnames_Box">
+                            <button type="button"
+                                    class="btn btn-standard-bordered btn-add-element btn-sm"
+                                    id="AddRealNameMember_Btn"
+                                    data-prototype="EPI_RealName-0"
+                                    data-remove-btn="PersonalInfo_VS_Box-OpenBtn">
+                                <i class="fa-solid fa-user-plus"></i> Add Member
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-standard-bordered btn-elements-listed btn-open-vertical-switcher btn-sm"
+                                    id="PersonalInfo_VS_Box-OpenBtn"
+                                    data-prototype="EPI_RealName-0"
+                                    style="display: none;">
+                                <i class="fa-solid fa-user-minus"></i> Remove Member
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-standard-bordered btn-sm ms-1"
+                                    id="EPI_RealnamesCounter_Span">
+                                0/350
+                            </button>
+
+                            <input type="text"
+                                   class="form-control form-control-juxtaposed mt-1"
+                                   name="RealName"
+                                   id="EPI_RealName-0"
+                                   placeholder="Provide your full name"
+                                   data-update="PersonaInfo_RealName_Lbl"
+                                   data-base-value="Unknown"
+                                   data-target="EditPersonalInfo_SbmtBtn"
+                                   data-counter-display="EPI_RealnamesCounter_Span"
+                                   data-counter-maxlength="350"
+                                   data-index="0" />
+
+                            <input type="text" class="d-none" name="CountryId" id="EPI_CountryId_Val" value="0" />
+                        </div>
+                    </div>
+
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted" id="EPI_RealName-Warn" data-list="false">
+                            If you are a band, add extra rows to list all band your names
+                        </small>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-500 ms-1">Webpage Link</label>
+                        <input type="text"
+                               class="form-control form-control-guard"
+                               name="WebpageLink"
+                               id="EPI_WebPage_Val"
+                               data-update="WebpageLink_Span"
+                               data-base-value="Not provided"
+                               placeholder="https://webpagelink.com/" />
+                    </div>
+
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted">
+                            Enter the link to your official webpage (if available). This field is optional
+                        </small>
+                    </div>
+
+                    <div class="mt-3">
+                        <span class="form-label fw-500 ms-1">Country</span>
+                        <div class="mt-1" id="CountryBtn_Box">
+                            <button type="button"
+                                    class="btn btn-standard-bordered btn-load-countries btn-sm"
+                                    id="LoadCountries_Btn"
+                                    data-is-loaded="false">
+                                <img src="https://flagcdn.com/20x15/de.png"
+                                     srcset="https://flagcdn.com/40x30/jp.png 2x, https://flagcdn.com/60x45/jp.png 3x"
+                                     width="20" height="15" alt="Japan" />
+                                Japan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-1 ms-1">
+                        <small class="card-text text-muted">
+                            Tap the button to choose your country
+                        </small>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit"
+                                class="btn btn-standard-bolded btn-classic-styled w-100"
+                                id="EditPersonalInfo_SbmtBtn">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div> *@
 
 @* <div class="box-lg-part shadow-sm" id="PrivacySettings_Container">
     <div class="box-lg-part-header p-2">
@@ -559,7 +944,7 @@
                                 <label class="form-label fw-500">Passcode</label>
                                 <input type="text" name="CurrentPasscode" id="DPL_Passcode_Val" class="form-control form-control-guard form-textarea" data-min-length="1" data-target="DisablePasscodeLock_SbmtBtn" maxlength="12" placeholder="Current passcode" />
                             </div>
-                            <div class="mt-3">
+                            <div class="mt-3">Description
                                 <button type="submit" class="btn btn-standard-bolded btn-classic-styled super-disabled w-100" id="DisablePasscodeLock_SbmtBtn">Turn Off</button>
                             </div>
                         </form>

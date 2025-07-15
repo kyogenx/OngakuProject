@@ -27,22 +27,28 @@ builder.Services.AddHangfire(Opt => Opt.UseSqlServerStorage(builder.Configuratio
 builder.Services.AddHangfireServer();
 
 builder.Services.AddTransient(typeof(IBase<>), typeof(BaseRep<>));
-builder.Services.AddTransient<IAccount, AccountRep>();
+
 builder.Services.AddTransient<IUser, UserRep>();
 builder.Services.AddTransient<IProfile, ProfileRep>();
-builder.Services.AddTransient<IArtistInfo, ArtistInfoRep>();
-builder.Services.AddTransient<ITrack, TrackRep>();
+builder.Services.AddTransient<IAccount, AccountRep>();
+builder.Services.AddTransient<IProfileEdit, ProfileEdit>();
+
+builder.Services.AddTransient<IGenre, GenreRep>();
 builder.Services.AddTransient<ILyric, LyricRep>();
+builder.Services.AddTransient<ITrack, TrackRep>();
 builder.Services.AddTransient<IPlaylist, PlaylistRep>();
 builder.Services.AddTransient<ISubscribtion, SubscribtionRep>();
-builder.Services.AddTransient<ICountry, CountryRep>();
-builder.Services.AddTransient<IGenre, GenreRep>();
-builder.Services.AddTransient<ISearch, SearchRep>();
-builder.Services.AddScoped<IMiscellaneous, MiscellaneousRep>();
-builder.Services.AddTransient<IMail, MailRep>();
-builder.Services.AddTransient<IBackgroundWorker, BackgroundWorker>();
-builder.Services.AddTransient<ITrackComment, TrackCommentRep>();
 builder.Services.AddScoped<ITrackAnalytic, TrackAnalyticRep>();
+builder.Services.AddTransient<ITrackComment, TrackCommentRep>();
+
+builder.Services.AddTransient<ISearch, SearchRep>();
+builder.Services.AddTransient<ICountry, CountryRep>();
+builder.Services.AddTransient<IArtistInfo, ArtistInfoRep>();
+
+builder.Services.AddTransient<IMail, MailRep>();
+builder.Services.AddScoped<IMiscellaneous, MiscellaneousRep>();
+builder.Services.AddTransient<IBackgroundWorker, BackgroundWorker>();
+
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetValue<string>("Redis:ConnectionString", "localhost:6379,allowAdmin=true")));
 builder.Services.AddMemoryCache();
 

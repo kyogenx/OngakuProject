@@ -19,5 +19,9 @@ namespace OngakuProject.Models
         public List<TrackCommentReaction>? TrackCommentReactions { get; set; } = new List<TrackCommentReaction>();
         [NotMapped]
         public bool IsEdited { get; set; }
+        [NotMapped]
+        public int LikesQty { get; set; }
+        [NotMapped]
+        public bool IsLiked { get; set; }
     }
 }

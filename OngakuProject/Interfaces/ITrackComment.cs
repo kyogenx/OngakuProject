@@ -13,6 +13,9 @@ namespace OngakuProject.Interfaces
         public Task<int> DeleteRecommentAsync(int Id, int UserId);
         public Task<int> PinTheCommentAsync(int Id, int TrackId, int UserId);
         public Task<int> UnpinTheCommentAsync(int Id, int TrackId, int UserId);
+        public Task<int> LikeAsync(int Id, int UserId);
+        public Task<int> UnlikeAsync(int Id, int UserId);
+        public IQueryable<int?>? GetLikedComments(int UserId);
         public IQueryable<TrackComment>? GetComments(int Id, int Qty = 40, int Skip = 0);
         public IQueryable<TrackRecomment>? GetRecomments(int Id, int Qty = 30, int Skip = 0);
     }

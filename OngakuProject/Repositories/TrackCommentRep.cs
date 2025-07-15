@@ -16,9 +16,15 @@ namespace OngakuProject.Repositories
             _track = track;
         }
 
+        public IQueryable<int?>? GetLikedComments(int UserId)
+        {
+            if (UserId > 0) return _context.TrackCommentsReaction.AsNoTracking().Where(tcr => tcr.UserId == UserId && !tcr.IsDeleted).Select(tcr => tcr.TrackCommentId);
+            else return null;
+        }
+
         public IQueryable<TrackComment>? GetComments(int Id, int Qty = 40, int Skip = 0)
         {
-            if (Id > 0) return _context.TrackComments.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).OrderByDescending(c => c.IsPinned).ThenByDescending(c => c.SentAt).Select(t => new TrackComment { Id = t.Id, UserId = t.UserId, User = t.User != null ? new User { ImgUrl = t.User.UserImages != null ? t.User.UserImages.Select(t => t.ImgUrl).FirstOrDefault() : null, IsOfficial = t.User.IsOfficial, Nickname = t.User.Nickname, } : null, Text = t.Text, SentAt = t.SentAt, IsEdited = t.EditedAt.HasValue, IsPinned = t.IsPinned }).Skip(Skip).Take(Qty);
+            if (Id > 0) return _context.TrackComments.AsNoTracking().Where(t => t.TrackId == Id && !t.IsDeleted).OrderByDescending(c => c.IsPinned).ThenByDescending(c => c.SentAt).Select(t => new TrackComment { Id = t.Id, UserId = t.UserId, LikesQty = t.TrackCommentReactions != null ?t.TrackCommentReactions.Count(r => !r.IsDeleted) : 0, User = t.User != null ? new User { ImgUrl = t.User.UserImages != null ? t.User.UserImages.Select(t => t.ImgUrl).FirstOrDefault() : null, IsOfficial = t.User.IsOfficial, Nickname = t.User.Nickname, } : null, Text = t.Text, SentAt = t.SentAt, IsEdited = t.EditedAt.HasValue, IsPinned = t.IsPinned }).Skip(Skip).Take(Qty);
             else return null;
         }
 
@@ -142,6 +148,47 @@ namespace OngakuProject.Repositories
                     int Result = await _context.TrackComments.AsNoTracking().Where(t => t.Id == Id && !t.IsDeleted && t.IsPinned).ExecuteUpdateAsync(t => t.SetProperty(t => t.IsPinned, false));
                     if (Result > 0) return Id;
                 }
+            }
+            return 0;
+        }
+
+        public async Task<int> LikeAsync(int Id, int UserId)
+        {
+            if(Id > 0 && UserId > 0)
+            {
+                var CheckLikeAvailability = await _context.TrackCommentsReaction.AsNoTracking().Where(tr => tr.Id == Id && tr.UserId == UserId).Select(tr => new { tr.Id, tr.IsDeleted }).FirstOrDefaultAsync();
+                if (CheckLikeAvailability is not null)
+                {
+                    if (CheckLikeAvailability.IsDeleted)
+                    {
+                        int Result = await _context.TrackCommentsReaction.AsNoTracking().Where(tr => tr.Id == CheckLikeAvailability.Id).ExecuteUpdateAsync(tr => tr.SetProperty(tr => tr.IsDeleted, false).SetProperty(tr => tr.ReactedAt, DateTime.Now));
+                        if (Result > 0) return Id;
+                    }
+                    else return -1;
+                }
+                else
+                {
+                    TrackCommentReaction trackCommentReactionSample = new TrackCommentReaction()
+                    {
+                        UserId = UserId,
+                        TrackCommentId = Id,
+                        ReactedAt = DateTime.Now
+                    };
+                    await _context.AddAsync(trackCommentReactionSample);
+                    await _context.SaveChangesAsync();
+
+                    return trackCommentReactionSample.Id;
+                }
+            }
+            return 0;
+        }
+
+        public async Task<int> UnlikeAsync(int Id, int UserId)
+        {
+            if(Id > 0 && UserId > 0)
+            {
+                int Result = await _context.TrackCommentsReaction.AsNoTracking().Where(tr => tr.Id == Id && tr.UserId == UserId && !tr.IsDeleted).ExecuteUpdateAsync(tr => tr.SetProperty(tr => tr.IsDeleted, true));
+                if (Result > 0) return Id;
             }
             return 0;
         }

@@ -1256,6 +1256,133 @@
     </div>
 </div> *@
 
+@* <form method="post" action="/Comment/Like" id="LikeTheComment_Form">
+    <input type="hidden" name="Id" id="LikeTheComment_Id_Val" value="0" />
+</form>
+<form method="post" action="/Comment/Unlike" id="UnlikeTheComment_Form">
+    <input type="hidden" name="Id" id="UnlikeTheComment_Id_Val" value="0" />
+</form> *@
+
+@* <div class="box-lg-part box-lg-part-for-artist shadow-sm" id="Primary_Container">
+    <div class="box-lg-part-header-for-artist box-lg-part-header">
+        <div class="hstack gap-1">
+            <button type="button" class="btn btn-artist-top-fixed-header me-1"> <i class="fa-solid fa-angle-left"></i> </button>
+            <span class="artist-top-fixed-header-lbl">Artist Name</span>
+            <button type="button" class="btn btn-artist-top-fixed-header btn-artist-page-play-pause-btn btn-play-pause-track ms-auto" id="Header_ArtistTracks_StartToPlay_Btn"> <i class="fa-solid fa-play"></i> </button>
+        </div>
+    </div>
+    <div class="box-lg-part-body box-lg-part-body-for-artist">
+        <div class="artist-page-avatar-box" id="ArtistAvatar_Box">
+            <div class="artist-page-avatar-content">
+                <div class="avatar-page-legacy-img-box" id="ArtistLegacyAvatar_Img_Box">A</div>
+                <img class="avatar-page-legacy-img" src="#" alt="This image cannot be loaded" style="display: none;" id="ArtistLegacyAvatar_Img" />
+                <div class="hstack gap-2">
+                    <button type="button" class="btn btn-user-page-special btn-artist-page-play-pause-btn btn-play-pause-track me-1" id="ArtistTracks_StartToPlay_Btn"> <i class="fa-solid fa-play"></i> </button>
+                    <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1>
+                </div>
+            </div>
+        </div>
+        <div class="artist-page-head-buttons-box">
+            <div class="row">
+                <div class="col">
+                    <form method="get" action="/Artist/GetPageTracks" id="GetArtistPageTracks_Form">
+                        <input type="hidden" name="Id" id="GetArtistPageTracks_Id_Val" value="0" />
+                        <button type="submit" class="btn btn-artist-page-header focused" id="GetArtistPageTracks_SbmtBtn">Music</button>
+                    </form>
+                </div>
+                <div class="col">
+                    <form method="get" action="/Posts/Load" id="LoadUserPosts_Form">
+                        <input type="hidden" name="Id" id="LoadUserPosts_Id_Val" value="0" />
+                        <input type="hidden" name="Id" id="LoadUserPosts_Skip_Val" value="0" />
+                        <button type="submit" class="btn btn-artist-page-header" id="LoadUserPosts_SbmtBtn">Posts</button>
+                    </form>
+                </div>
+                <div class="col">
+                    <div id="AlreadySubscribed_Box" style="display: none;">
+                        <form method="post" action="/Artist/Unsubscribe" id="UnsubscribeFromArtist_Form">
+                            <input type="hidden" name="Id" id="UnsubscribeFromArtist_Id_Val" value="0" />
+                            <button type="submit" class="btn btn-artist-page-header" id="UnsubscribeFromArtist_SbmtBtn"> <i class="fa-solid fa-star"></i> </button>
+                        </form>
+                    </div>
+                    <div id="NotYetSubscribed_Box">
+                        <form method="post" action="/Artist/Subscribe" id="SubscribeForArtist_Form">
+                            <input type="hidden" name="Id" id="SubscribeForArtist_Id_Val" value="0" />
+                            <button type="submit" class="btn btn-artist-page-header" id="SubscribeForArtist_SbmtBtn"> <i class="fa-regular fa-star"></i> </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="dropup">
+                        <button class="btn btn-artist-page-header" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                        <ul class="dropdown-menu dro shadow-sm">
+                            <li><button type="button" class="dropdown-item btn-artist-page-play-pause-btn btn-play-pause-track" id="Dropdown_ArtistTracks_StartToPlay_Btn">Play <span class="float-end"> <i class="fa-solid fa-play"></i> </span></button></li>
+                            <li><button type="button" class="dropdown-item">Share <span class="float-end"> <i class="fa-solid fa-arrow-up-from-bracket"></i> </span></button></li>
+                            <li><button type="button" class="dropdown-item">Statistics <span class="float-end"> <i class="fa-regular fa-chart-bar"></i> </span></button></li>
+                            <li>
+                                <form method="get" action="/Artist/GetCredits" id="GetArtistCredits_Form">
+                                    <input type="hidden" name="Id" id="GetArtistCredits_Id_Val" value="0" />
+                                    <button type="button" class="dropdown-item">Get Credits <span class="float-end"> <i class="fa-solid fa-circle-info"></i> </span></button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-box p-2" id="ArtistAllReleases_Box">
+            <div class="release-box-lg mt-2" id="ArtistLastRelease_Box">
+                <div class="hstack gap-1">
+                    <div class="release-img-box-standard" id="ALR_Img_Box">
+                        <i class="fa-solid fa-music"></i>
+                    </div>
+                    <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" />
+                    <div class="ms-1">
+                        <div class="box-forced-top pt-2">
+                            <small class="card-text">Released <span class="fw-500" id="ALR_ReleaseDate_Span">Fri, 16 May</span></small>
+                        </div>
+                        <div class="box-forced-bottom pb-2">
+                            <span class="badge-standard badge-sm">
+                                <i class="fa-solid fa-certificate"></i> Latest Release
+                            </span>
+                            <div class="mt-1">
+                                <span class="h5" id="ALR_Title_Lbl">Popular Release</span>
+                                <br />
+                                <small class="card-text text-muted" id="ALR_Artists_Span">Main Artist feat. Artists</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-standard btn-sm me-1"> <i class="fa-solid fa-plus"></i> </button>
+                        <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button>
+                    </div>
+                </div>
+            </div>
+         
+            <div class="box-standard mt-2" id="PopularSongs_Box">
+                <h5 class="h5 ms-1">
+                    Popular Songs <small class="card-text text-muted">
+                        <i class="fa-solid fa-angle-right"></i>
+                    </small>
+                </h5>
+                <div class="box-standard mt-2" id="PopularSongs_Row">                   
+                </div>
+            </div>
+            <div class="box-standard mt-2" id="Albums_Box" style="display: none;">
+                <h5 class="h5 ms-1">
+                    Albums <small class="card-text text-muted">
+                        <i class="fa-solid fa-angle-right"></i>
+                    </small>
+                </h5>
+                <div class="box-standard mt-2" id="Albums_Row">
+                </div>
+            </div>
+        </div>
+        <div class="slide-box re-transformed p-2" id="ArtistAllPosts_Box" style="display: none;">
+        </div>
+    </div>
+</div> *@
+
 <div class="box-lg-part shadow-sm" id="Primary_Container">
     <div class="box-lg-part-header p-2">
         <div class="hstack gap-1">
@@ -1285,7 +1412,7 @@
             {
                 @if (UserInfo.ImgUrl != null)
                 {
-                    <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" id="CurrentUserProfile_Img"  />
+                    <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" id="CurrentUserProfile_Img" onmousedown="document.location.href='/Profile/P';" />
                 }
                 else
                 {
@@ -1300,7 +1427,130 @@
     </div>
     <div class="box-lg-part-body mt-5" id="Primary_Box">
         <div class="mt-2">           
-            <p class="card-text">
+            @* <div class="artist-page-avatar-box" id="ArtistAvatar_Box">           
+                <div class="artist-page-avatar-content">
+                    <div class="avatar-page-legacy-img-box" id="ArtistLegacyAvatar_Img_Box">A</div>
+                    <img class="avatar-page-legacy-img" src="#" alt="This image cannot be loaded" style="display: none;" id="ArtistLegacyAvatar_Img" />
+                    <div class="hstack gap-2">
+                        <button type="button" class="btn btn-user-page-special me-1"> <i class="fa-solid fa-play"></i> </button>
+                        <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="artist-page-head-buttons-box">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-artist-page-header focused"> <i class="fa-solid fa-music"></i> Music </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-artist-page-header"> <i class="fa-solid fa-feather-pointed"></i> Posts</button>
+                    </div>
+                    <div class="col">
+                        <div id="AlreadySubscribed_Box" style="display: none;">
+                            <form method="post" action="/Artist/Unsubscribe" id="UnsubscribeFromArtist_Form">
+                                <input type="hidden" name="Id" id="UnsubscribeFromArtist_Id_Val" value="0" />
+                                <button type="submit" class="btn btn-artist-page-header" id="UnsubscribeFromArtist_SbmtBtn"> <i class="fa-solid fa-star"></i> Subscribed</button>
+                            </form>
+                        </div>
+                        <div id="NotYetSubscribed_Box">
+                            <form method="post" action="/Artist/Subscribe" id="SubscribeForArtist_Form">
+                                <input type="hidden" name="Id" id="SubscribeForArtist_Id_Val" value="0" />
+                                <button type="submit" class="btn btn-artist-page-header" id="SubscribeForArtist_SbmtBtn"> <i class="fa-regular fa-star"></i> Subscribe</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dropup">
+                            <button class="btn btn-artist-page-header" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                            <ul class="dropdown-menu dro shadow-sm">
+                                <li><button type="button" class="dropdown-item">Play <span class="float-end"> <i class="fa-solid fa-play"></i> </span></button></li>
+                                <li><button type="button" class="dropdown-item">Share <span class="float-end"> <i class="fa-solid fa-arrow-up-from-bracket"></i> </span></button></li>
+                                <li><button type="button" class="dropdown-item">Statistics <span class="float-end"> <i class="fa-regular fa-chart-bar"></i> </span></button></li>
+                                <li>
+                                    <form method="get" action="/Artist/GetCredits" id="GetArtistCredits_Form">
+                                        <input type="hidden" name="Id" id="GetArtistCredits_Id_Val" value="0" />
+                                        <button type="button" class="dropdown-item">Get Credits <span class="float-end"> <i class="fa-solid fa-circle-info"></i> </span></button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-box" id="ArtistAllReleases_Box">
+                <div class="release-box-lg mt-2" id="ArtistLastRelease_Box">
+                    <div class="hstack gap-1">
+                        <div class="release-img-box-standard" id="ALR_Img_Box">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                        <img src="#" class="release-img-standard" alt="This image cannot be displayed" id="ALR_Img" style="display: none;" />
+                        <div class="ms-1">
+                            <div class="box-forced-top pt-2">
+                                <small class="card-text">Released <span class="fw-500" id="ALR_ReleaseDate_Span">Fri, 16 May</span></small>
+                            </div>
+                            <div class="box-forced-bottom pb-2">
+                                <span class="badge-standard badge-sm">
+                                    <i class="fa-solid fa-certificate"></i> Latest Release
+                                </span>
+                                <div class="mt-1">
+                                    <span class="h5" id="ALR_Title_Lbl">Popular Release</span>
+                                    <br />
+                                    <small class="card-text text-muted" id="ALR_Artists_Span">Main Artist feat. Artists</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-standard btn-sm me-1"> <i class="fa-solid fa-plus"></i> </button>
+                            <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-star"></i> </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box-standard mt-2" id="PopularSongs_Box">
+                    <h5 class="h5 ms-1">
+                        Popular Songs <small class="card-text text-muted">
+                            <i class="fa-solid fa-angle-right"></i>
+                        </small>
+                    </h5>
+                    <div class="box-standard mt-2" id="PopularSongs_Row">
+                        <div class="release-box mt-2">
+                            <div class="hstack gap-1">
+                                <div class="release-img-box-sm">
+                                    <i class="fa-solid fa-music"></i>
+                                </div>
+                                <div class="ms-1">
+                                    <span class="h6">Track Name</span>
+                                    <br />
+                                    <small class="card-text text-muted">Album/Single Name</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <button type="button" class="btn btn-standard btn-sm">
+                                        <i class="fa-solid fa-star"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-standard mt-2" id="Albums_Box" style="display: none;">
+                    <h5 class="h5 ms-1">
+                        Albums <small class="card-text text-muted">
+                            <i class="fa-solid fa-angle-right"></i>
+                        </small>
+                    </h5>
+                    <div class="box-standard mt-2" id="Albums_Row">
+                    </div>
+                </div>
+            </div>
+            <div class="slide-box re-transformed" id="ArtistAllPosts_Box" style="display: none;">
+            </div> *@
+        </div>
+
+            <p class="card-text d-none">
+@*             <div class="box-standard" id="ArtistInfo_Box">
+                <span class="country-flag-span"><img class="country-flag-img" src="https://flagcdn.com/16x12/am.png" srcset="https://flagcdn.com/32x24/am.png 2x, https://flagcdn.com/48x36/am.png 3x" alt="Armenia"> <span class="country-flag-text">Russia</span></span>
+            </div> *@
                 The standard Lorem Ipsum passage, used since the 1500s
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
@@ -1316,7 +1566,7 @@
                 1914 translation by H. Rackham
                 "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."
             </p>
-        </div>
+    </div>
         @* <div class="artist-page-avatar-box" id="ArtistAvatar_Box">
             <div class="artist-page-avatar-content">
                 <h1 class="avatar-page-title" id="ArtistName_Lbl">Imagine Dragons</h1>
@@ -1495,8 +1745,8 @@
                 <span class="card-text fw-500" id="ReleaseInfo_LabelInfo_Span">Rammstein (no label)</span>
             </small>
         </div> *@
-    </div>
 </div>
+@* </div> *@
 
 @* <div class="pagination-parent-box mx-auto" id="PaginationSample_Box">
     <div class="pagination-child-box faded" id="0-PaginationSample_Box" data-max-pages="3">

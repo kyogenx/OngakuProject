@@ -153,6 +153,36 @@ namespace OngakuProject.Controllers
             else return Json(new { success = false, error = -1 });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Like(int Id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(UserId_Str);
+
+                int Result = await _trackComment.LikeAsync(Id, UserId);
+                if (Result > 0) return Json(new { success = true, id = Id, result = Result });
+                else return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Unlike(int Id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(UserId_Str);
+
+                int Result = await _trackComment.UnlikeAsync(Id, UserId);
+                if (Result > 0) return Json(new { success = true, id = Id, result = Result });
+                else return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
+        }
+
         [HttpGet]
         public async Task<IActionResult> TrackComments(int Id, int SkipQty)
         {
@@ -164,11 +194,14 @@ namespace OngakuProject.Controllers
             }
 
             IQueryable<TrackComment>? CommentsPreview = _trackComment.GetComments(Id, 35);
+            IQueryable<int?>? LikedCommentsPreview = _trackComment.GetLikedComments(UserId);
             if(CommentsPreview != null)
             {
                 bool CheckTrackOwnership = await _track.CheckTrackOwnership(Id, UserId);
                 List<TrackComment>? Comments = await CommentsPreview.ToListAsync();
-                if (Comments.Count > 0) return Json(new { success = true, id = Id, isOwner = CheckTrackOwnership, currentUserId = UserId, result = Comments });
+                List<int?>? LikedComments = LikedCommentsPreview != null ? await LikedCommentsPreview.ToListAsync() : null;
+
+                if (Comments.Count > 0) return Json(new { success = true, id = Id, isOwner = CheckTrackOwnership, currentUserId = UserId, result = Comments, likedComments = LikedComments });
                 else return Json(new { success = true, isOwner = false, id = Id, currentUserId = UserId });
             }
             return Json(new { success = false, currentUserId = UserId });

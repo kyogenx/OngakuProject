@@ -12,6 +12,10 @@ namespace OngakuProject.ViewModels
         public string? Searchname { get; set; }
         [MaxLength(2500, ErrorMessage = "Entered description is too long (max 2500 characters)")]
         public string? Description { get; set; }
+        [MaxLength(350, ErrorMessage = "Entered website link is kinda incorrect")]
+        public string? Website { get; set; }
+        public byte ArtistType { get; set; }
+        public DateTime? FormedAt { get; set; }
         public string? ImgUrl { get; set; }
     }
 }
