@@ -32,6 +32,15 @@ body {
     transition: all ease 0.24s;
 }
 
+.text-indent {
+    text-indent: 30px;
+    transition: all ease 0.25s;
+}
+.text-outdent {
+    text-indent: 0;
+    transition: all ease 0.25s;
+}
+
 .bg-soft-danger {
     background-color: #dc3545 !important;
     opacity: 0.75 !important;
@@ -760,6 +769,18 @@ body {
     background-color: #f0f0f0;
 }
 
+.form-control-undetermined {
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 15px;
+    white-space: pre-wrap;
+    transition: all ease 0.3s;
+}
+.form-control-undetermined:focus {
+    background-color: #f0f0f0;
+    outline: none !important;
+}
+
 .box-date-time-picker {
     padding: 8px;
     z-index: 100002;
@@ -959,14 +980,8 @@ input[type=number] {
     flex-wrap: wrap;
     margin-right: 0;
     margin-left: -2.5rem;
-    display: none;
-    transform: translateX(1200px);
     transition: all ease 0.3s;
-}
-.bottom-navbar-custom-row-box.active {
-    opacity: 1;
-    transform: translateX(0);
-    display: flex;
+    display: none;
 }
 
 .bottom-navbar-adjustable {
@@ -995,10 +1010,11 @@ input[type=number] {
 }
 
 .bottom-navbar-pagination {
-    flex: 0 0 12.5%;
-    max-width: 12.5%;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
+    flex: 0 0 20%;
+    max-width: 20%;
+    border-radius: 99px;
+    background-color: #f8f9fa;
+    padding: 0 2.25rem 0 0;
     transition: all ease 0.3s;
 }
 
@@ -1038,7 +1054,8 @@ input[type=number] {
     background-color: #f0f0f0;
 }
 .btn-bottom-navbar.rounded {
-    width: 45%;
+    width: auto;
+    min-width: 30%;
     margin: 0 1.75px 0 1.75px;
     border-radius: 99px !important;
 }
@@ -3289,6 +3306,11 @@ input[type=number] {
         padding: 0;
         margin-top: auto;
     }
+
+    .bottom-navbar-pagination {
+        flex: 0 0 45%;
+        max-width: 45%;
+    }
 }
 
 @media (min-width: 390px) and (max-width: 767.98px) {
@@ -3413,6 +3435,11 @@ input[type=number] {
     .avatar-page-title {
         font-size: 3rem;
     }
+
+    .bottom-navbar-pagination {
+        flex: 0 0 45%;
+        max-width: 45%;
+    }
 }
 /*Redesign new media player for lower devices (<1024px)*/
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -3506,6 +3533,11 @@ input[type=number] {
 
     .avatar-page-title {
         font-size: 3.25rem;
+    }
+
+    .bottom-navbar-pagination {
+        flex: 0 0 35%;
+        max-width: 35%;
     }
 }
 

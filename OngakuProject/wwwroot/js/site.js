@@ -4537,16 +4537,227 @@ $(document).on("keyup", ".form-control-juxtaposed", function () {
     }
 });
 
-$("body").on("dblclick", function () {
+$("body").on("click", function () {
     let attributesComponent = {
         id: ["0-TextEditor", "1-TextEditor", "2-TextEditor", "3-TextEditor", "4-TextEditor", "5-TextEditor", "6-TextEditor", "7-TextEditor"],
-        attr: ["data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type"],
-        attrValue: [0, 1, 2, 3, 4, 5, 6, 7]
+        attr: [["data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type"], ["data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target"]],
+        attrValue: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ["Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val"]]
     }
-    callBottomNavbarBox("CustomNavbar_ButtonsBoxPage_Box", [' <i class="fa-solid fa-bold"></i> ', ' <i class="fa-solid fa-italic"></i> ', ' <i class="fa-solid fa-underline"></i> ', ' <i class="fa-solid fa-strikethrough"></i> ', ' <i class="fa-solid fa-indent"></i> ', ' <i class="fa-solid fa-outdent"></i> ', ' <i class="fa-solid fa-list-ul"></i> ', ' <i class="fa-solid fa-link"></i> '], ["Bold-TextEditor", "Italic-TextEditor", "Underline-TextEditor", "Strikethrough-TextEditor", "Indent_TextEditor", "Outdent_TextEditor", "UnorderedList_TextEditor", "AddLink_TextEditor"], attributesComponent, true);
+    callBottomNavbarBox("CustomNavbar_ButtonsBoxPage_Box", [' <i class="fa-solid fa-bold"></i> ', ' <i class="fa-solid fa-italic"></i> ', ' <i class="fa-solid fa-underline"></i> ', ' <i class="fa-solid fa-strikethrough"></i> ', ' <i class="fa-solid fa-indent"></i> ', ' <i class="fa-solid fa-outdent"></i> ', ' <i class="fa-solid fa-list-ul"></i> ', ' <i class="fa-solid fa-list"></i> ', ' <i class="fa-solid fa-list-check"></i> ', ' <i class="fa-solid fa-link"></i> '], ["btn-text-editor"], ["Bold-TextEditor", "Italic-TextEditor", "Underline-TextEditor", "Strikethrough-TextEditor", "Indent_TextEditor", "Outdent_TextEditor", "UnorderedList_TextEditor", 'UnorderedSquaredList_TextEditor', 'UnorderedCheckedList_TextEditor', "AddLink_TextEditor"], attributesComponent, true);
 });
 
-function callBottomNavbarBox(parentBox_Id, buttonsHtmlArr = [], buttonsIdsArr = [], buttonsAttrsArr = { id: [], attr: [], attrValue: [] }, openOnCreate = false) {
+$(document).on("keyup", ".form-control-undetermined", function (event) {
+    let keyCode = event.keyCode;
+    let thisId = $(this).attr("id");
+    if (keyCode != undefined && thisId != undefined) {
+        console.log($(this).html());
+        console.log($("#" + thisId + "_Val").val());
+        switch (keyCode) {
+            case 13:
+/*                textCustomization(thisId, thisId, -1);*/
+                break;
+            default:
+                console.log("Undefined action");
+                break;
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-text-editor", function () {
+    const thisId = $(this).attr("id");
+    const targetId = $(this).attr("data-target");
+    const type = parseInt($(this).attr("data-type"));
+    if (thisId != undefined && targetId != undefined && type != undefined) {
+        if ($(this).hasClass("bg-chosen-bright")) $(".btn-text-editor").removeClass("bg-chosen-bright");
+        else {
+            $(".btn-text-editor").removeClass("bg-chosen-bright");
+            $(this).addClass("bg-chosen-bright");
+
+            textCustomization(targetId, "Input_Val-Representation_Lbl", type);
+        }
+    }
+});
+
+function textCustomization(inputTarget_Id, previewTarget_Id, type) {
+    if ((inputTarget_Id != undefined || inputTarget_Id != null) && (previewTarget_Id != undefined || previewTarget_Id != null)) {
+        type = parseInt(type);
+        let preText;
+        let midText;
+        let postText;
+        let preAttr = null;
+        let postAttr = null;
+        let currentText = null;
+        let currentValue = null;
+
+        let selectionEnd = 0;
+        let selectionStart = 0;
+        let realSelectionEnd = 0;
+        let realSelectionStart = 0;
+        let caretPositions = null;
+        let isContentEditableElement = $("#" + inputTarget_Id).attr("contenteditable");
+
+        if (isContentEditableElement) {
+            currentValue = $("#" + inputTarget_Id + "_Val").val();
+            currentText = $("#" + inputTarget_Id).text();
+        }
+        else {
+            currentValue = $("#" + inputTarget_Id).val();
+            currentText = textPurification(currentValue);
+        }
+
+        caretPositions = getRichTextBoxCaretPosition(inputTarget_Id);
+        if (caretPositions != null) {
+            selectionEnd = caretPositions[1];
+            selectionStart = caretPositions[0];
+        }
+
+        if (selectionStart != selectionEnd) {
+            preText = currentText.substring(0, selectionStart);
+            midText = currentText.substring(selectionStart, selectionEnd);
+            postText = currentText.substring(selectionEnd, currentText.length);
+
+            realSelectionStart = currentValue.indexOf(midText, selectionStart);
+            realSelectionEnd = currentValue.indexOf(postText, selectionEnd);
+            realSelectionEnd = realSelectionEnd == -1 ? realSelectionStart + midText.length : realSelectionEnd;
+
+            preText = currentValue.substring(0, realSelectionStart);
+            midText = currentValue.substring(realSelectionStart, realSelectionEnd);
+            postText = currentValue.substring(realSelectionEnd, currentValue.length);
+        }
+        else {
+            midText = null;
+            postText = currentText.substring(selectionStart, currentText.length);
+            realSelectionStart = currentValue.indexOf(postText, selectionStart);
+
+            preText = currentValue.substring(0, realSelectionStart);
+            if (selectionStart < currentText.length) postText = currentValue.substring(realSelectionStart, currentValue.length);
+            else postText = "";
+        }
+
+        switch (type) {
+            case 0:
+                preAttr = "[[";
+                postAttr = "]]";
+                break;
+            case 1:
+                preAttr = "[{";
+                postAttr = "]]";
+                break;
+            case 2:
+                preAttr = "[_";
+                postAttr = "]]";
+                break;
+            case 3:
+                preAttr = "[-";
+                postAttr = "]]";
+                break;
+            case 4:
+                preAttr = "[>";
+                postAttr = "<]";
+                break;
+            case 5:
+                preAttr = "[<";
+                postAttr = "<]";
+                break;
+            case 6:
+                preAttr = "[#";
+                postAttr = "#]";
+                break;
+            default:
+                preAttr = "";
+                postAttr = "";
+                break;
+        }
+
+        if (midText != null) currentText = preText + preAttr + midText + postAttr + postText;
+        else currentText = preText + preAttr + postText + postAttr;
+
+        if (isContentEditableElement) {
+            currentValue = currentText;
+            $("#" + inputTarget_Id + "_Val").val(currentValue);
+            $("#" + inputTarget_Id).html(textPurification(currentText));
+        }
+        else $("#" + inputTarget_Id).val(currentText);
+    }
+} 
+
+function getRichTextBoxCaretPosition(elementId) {
+    if (elementId != undefined || elementId != null) {
+        const selector = window.getSelection();
+        let element = document.getElementById(elementId);
+        if (element != null) {
+            let caretEndPosition = 0;
+            let caretStartPosition = 0;
+            if (selector.rangeCount > 0) {
+                const range = selector.getRangeAt(0);
+                const preRange = range.cloneRange();
+                const postRange = range.cloneRange();
+                preRange.selectNodeContents(element);
+                postRange.selectNodeContents(element);
+                preRange.setEnd(range.startContainer, range.startOffset);
+                postRange.setEnd(range.endContainer, range.endOffset);
+
+                caretEndPosition = postRange.toString().length;
+                caretStartPosition = preRange.toString().length;
+            }
+
+            return [caretStartPosition, caretEndPosition];
+        }
+        else return null;
+    }
+    else return null;
+}
+
+function textPurification(text) {
+    if (text != undefined || text != null) {
+        text = text.replaceAll("<br>", "\n");
+        text = text.replaceAll("<br/>", "\n");
+        text = text.replaceAll("[[", '<span class="fw-500">');
+        text = text.replaceAll("[{", "<span class='fst-italic'>");
+        text = text.replaceAll("[_", "<span class='text-decoration-underline'>");
+        text = text.replaceAll("[-", "<span class='text-decoration-line-through'>");
+        text = text.replaceAll("[>", "<p class='text-indent'>");
+        text = text.replaceAll("[<", "<p class='text-outdent'>");
+        text = text.replaceAll("[#", "<ul>");
+        text = text.replaceAll("#]", "</ul>");
+        text = text.replaceAll("[%", "<li>");
+        text = text.replaceAll("%]", "</li>");
+        text = text.replaceAll("]]", "</span>");
+        text = text.replaceAll("<]", "</p>");
+
+        const cleanText = DOMPurify.sanitize(text, {
+            ALLOWED_TAGS: ["ul", "li", "p", "span", "br"]
+        });
+        return cleanText;
+    }
+    else return null;
+}
+
+function textPurger(text) {
+    if (text != undefined || text != null) {
+        text = text.replaceAll("<br>", "\n");
+        text = text.replaceAll("<br/>", "\n");
+        text = text.replaceAll('<span class="fw-500">', "[[");
+        text = text.replaceAll("<span class='fw-500'>", "[[");
+
+        text = text.replaceAll("<span class='fst-italic'>", "[{");
+        text = text.replaceAll("<span class='text-decoration-underline'>", "[_");
+        text = text.replaceAll("<span class='text-decoration-line-through'>", "[-");
+        text = text.replaceAll("<p class='text-indent'>", "[>");
+        text = text.replaceAll("<p class='text-outdent'>", "[<");
+        text = text.replaceAll("<ul>", "[#");
+        text = text.replaceAll("</ul>", "#]");
+        text = text.replaceAll("<li>", "[%");
+        text = text.replaceAll("</li>", "%]");
+        text = text.replaceAll("</span>", "]]");
+        text = text.replaceAll("</p>", "<]");
+
+        return text;
+    }
+    else return null;
+}
+
+function callBottomNavbarBox(parentBox_Id, buttonsHtmlArr = [], buttonClassesArr = [], buttonsIdsArr = [], buttonsAttrsArr = { id: [], attr: [], attrValue: [] }, openOnCreate = false) {
     if (parentBox_Id != null || parentBox_Id != undefined) {
         let divExists = document.getElementById(parentBox_Id);
         if (divExists == null) {
@@ -4568,45 +4779,48 @@ function callBottomNavbarBox(parentBox_Id, buttonsHtmlArr = [], buttonsIdsArr = 
                 let newButton;
                 let buttonBox;
                 let rowIndex = 0;
-                let rowsQty = Math.ceil(buttonsHtmlArr.length / 6);
+                let rowsQty = Math.ceil(buttonsHtmlArr.length / 5);
                 let buttonParentBoxSample;
                 let buttonParentBoxes = [];
 
                 const closeBtn = elementDesigner("button", "btn btn-bottom-navbar rounded btn-swap-to-standard-navbar btn-sm", ' <i class="fa-solid fa-xmark"></i> ');
                 const nextPageBtn = elementDesigner("button", "btn btn-bottom-navbar rounded btn-bottom-navbar-pagination btn-to-next-navbar-page btn-sm", ' <i class="fa-solid fa-angle-right"></i> ');
-                const prevPageBtn = elementDesigner("button", "btn btn-bottom-navbar rounded btn-to-prev-navbar-page btn-sm", ' <i class="fa-solid fa-angle-left"></i> ');
+                const prevPageBtn = elementDesigner("button", "btn btn-bottom-navbar rounded btn-bottom-navbar-pagination btn-to-prev-navbar-page btn-sm super-disabled", ' <i class="fa-solid fa-angle-left"></i> ');
 
                 nextPageBtn.attr("data-page", 0);
                 prevPageBtn.attr("data-page", 0);
-                nextPageBtn.attr("data-parent-box-id", parentBox_Id);
-                prevPageBtn.attr("data-parent-box-id", parentBox_Id);
+                nextPageBtn.attr("data-page-qty", rowsQty);
+                prevPageBtn.attr("data-page-qty", rowsQty);
+                nextPageBtn.attr("data-parent-id", parentBox_Id);
+                prevPageBtn.attr("data-parent-id", parentBox_Id);
 
                 parentMenuRoomBox.append(closeBtn);
                 parentMenuRoomBox.append(prevPageBtn);
                 parentMenuRoomBox.append(nextPageBtn);
 
-                if (rowsQty > 1) {
+                closeBtn.fadeIn(0);
+                if (rowsQty < 1) {
                     prevPageBtn.fadeOut(0);
                     nextPageBtn.fadeOut(0);
                 }
                 else {
-                    prevPageBtn.fadeOut(0);
-                    nextPageBtn.fadeOut(0);
+                    nextPageBtn.fadeIn(0);
+                    prevPageBtn.fadeIn(0);
                 }
 
                 for (let i = 0; i < rowsQty; i++) {
                     buttonParentBoxSample = elementDesigner("div", "bottom-navbar-custom-row-box", null);
-                    buttonParentBoxSample.fadeOut(0);
                     buttonParentBoxSample.attr("id", i + "-" + parentBox_Id + "_AuxButtonsParent_Box");
-                    buttonParentBoxes.push(buttonParentBoxSample)
+                    buttonParentBoxes.push(buttonParentBoxSample);
                 }
 
                 for (let i = 0; i < buttonParentBoxes.length; i++) {
                     $(parentMainRoomBox).append(buttonParentBoxes[i]);
                 }
 
-                $(buttonParentBoxes[0]).fadeIn(0);
-                $(buttonParentBoxes[0]).addClass("active");
+                $(buttonParentBoxes[0]).css("display", "flex");
+                $(buttonParentBoxes[0]).css("opacity", 1);
+                $(buttonParentBoxes[0]).css("transform", "translateX(0)");
 
                 for (let i = 0; i < buttonsHtmlArr.length; i++) {
                     buttonBox = elementDesigner("div", "col", null);
@@ -4614,11 +4828,28 @@ function callBottomNavbarBox(parentBox_Id, buttonsHtmlArr = [], buttonsIdsArr = 
 
                     if (i > 0 && i % 5 == 0) rowIndex++;
                     newButton.attr("id", buttonsIdsArr[i]);
-                    for (let j = 0; j < buttonsAttrsArr.id.length; j++) {
-                        if (buttonsAttrsArr.id[j]== buttonsIdsArr[i]) {
-                            newButton.attr(buttonsAttrsArr.attr[j], buttonsAttrsArr.attrValue[j]);
+
+                    if (buttonsAttrsArr.attr.length > 0) {
+                        if (buttonsAttrsArr.attr.length == 1) {
+                            for (let j = 0; j < buttonsAttrsArr.id.length; j++) {
+                                if (newButton.attr("id") == buttonsIdsArr[j]) newButton.attr(buttonsAttrsArr.attr[j], buttonsAttrsArr.attrValue[j]);
+                            }
+                        }
+                        else {
+                            for (let j = 0; j < buttonsAttrsArr.attr.length; j++) {
+                                for (let k = 0; k < buttonsAttrsArr.attr[j].length; k++) {
+                                    if (newButton.attr("id") == buttonsIdsArr[k])  newButton.attr(buttonsAttrsArr.attr[j][k], buttonsAttrsArr.attrValue[j][k]);
+                                } 
+                            }
                         }
                     }
+
+                    if (buttonClassesArr.length > 0) {
+                        for (let c = 0; c < buttonClassesArr.length; c++) {
+                            newButton.addClass(buttonClassesArr[c]);
+                        }
+                    }
+
                     buttonBox.append(newButton);
                     $(buttonParentBoxes[rowIndex]).append(buttonBox);
                 }
@@ -4631,31 +4862,93 @@ function callBottomNavbarBox(parentBox_Id, buttonsHtmlArr = [], buttonsIdsArr = 
     }
 }
 
+$(document).on("mousedown", ".btn-to-prev-navbar-page", function () {
+    let currentPage = $(this).attr("data-page");
+    let parenBoxId = $(this).attr("data-parent-id");
+
+    if (currentPage != undefined && parenBoxId != undefined) {
+        currentPage = parseInt(currentPage) - 1;
+        let checkPageAvailability = document.getElementById(currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box");
+
+        if (checkPageAvailability != null) {
+            $(".bottom-navbar-custom-row-box").fadeOut(300);
+            $(".bottom-navbar-custom-row-box").css("opacity", 0);
+            $(".bottom-navbar-custom-row-box").css("transform", "translateX(250px)");
+            setTimeout(function () {
+                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").css("opacity", 1);
+                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").css("display", "flex");
+            }, 300);
+            setTimeout(function () {
+                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").css("transform", "translateX(0)");
+            }, 325);
+
+            if (currentPage == 0) {
+                $(".btn-to-prev-navbar-page").addClass("super-disabled");
+                $(".btn-to-next-navbar-page").removeClass("super-disabled");
+            }
+            else {
+                $(".btn-to-next-navbar-page").addClass("super-disabled");
+                $(".btn-to-prev-navbar-page").removeClass("super-disabled");
+            }
+            $(".btn-to-prev-navbar-page").attr("data-page", currentPage);
+            $(".btn-to-next-navbar-page").attr("data-page", currentPage);
+        }
+    }
+});
+
 $(document).on("mousedown", ".btn-to-next-navbar-page", function () {
     let currentPage = $(this).attr("data-page");
     let parenBoxId = $(this).attr("data-parent-id");
+    const pagesQty = parseInt($(this).attr("data-page-qty")) - 1;
 
     if (currentPage != undefined && parenBoxId != undefined) {
         currentPage = parseInt(currentPage) + 1;
         let checkPageAvailability = document.getElementById(currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box");
 
-        console.log(currentPage, checkPageAvailability);
         if (checkPageAvailability != null) {
-            $(".bottom-navbar-custom-row-box").removeClass("active");
+            $(".bottom-navbar-custom-row-box").fadeOut(300);
+            $(".bottom-navbar-custom-row-box").css("opacity", 0);
+            $(".bottom-navbar-custom-row-box").css("transform", "translateX(250px)");
             setTimeout(function () {
-                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").fadeIn(0);
-                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").addClass("active");
+                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").css("opacity", 1);
+                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").css("display", "flex");
             }, 300);
+            setTimeout(function () {
+                $("#" + currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box").css("transform", "translateX(0)");
+            }, 325);
+            $(".btn-to-prev-navbar-page").removeClass("super-disabled");
         }
         else {
             currentPage = 0;
             checkPageAvailability = document.getElementById(currentPage + "-" + parenBoxId + "_AuxButtonsParent_Box");
-            $(".bottom-navbar-custom-row-box").removeClass("active");
+
+            $(".bottom-navbar-custom-row-box").fadeOut(300);
+            $(".bottom-navbar-custom-row-box").css("opacity", 0);
+            $(".bottom-navbar-custom-row-box").css("transform", "translateX(250px)");
             setTimeout(function () {
-                checkPageAvailability.classList.add("active");
+                checkPageAvailability.style.display = "flex";
+                checkPageAvailability.style.opacity = 1;
             }, 300);
+            setTimeout(function () {
+                $("#" + checkPageAvailability.id).css("transform", "translateX(0)");
+            }, 325);
         }
-        $(this).attr("data-page", currentPage);
+
+        if (currentPage > 0 && currentPage < pagesQty) {
+            $(".btn-to-next-navbar-page").removeClass("super-disabled");
+            $(".btn-to-prev-navbar-page").removeClass("super-disabled");
+        }
+        else if (currentPage <= pagesQty) {
+            $(".btn-to-next-navbar-page").addClass("super-disabled");
+            $(".btn-to-prev-navbar-page").removeClass("super-disabled");
+        }
+        else {
+            $(".btn-to-next-navbar-page").removeClass("super-disabled");
+            $(".btn-to-prev-navbar-page").removeClass("super-disabled");
+        }
+
+        $(".btn-to-prev-navbar-page").attr("data-page", currentPage);
+        $(".btn-to-next-navbar-page").attr("data-page", currentPage);
     }
 });
 
