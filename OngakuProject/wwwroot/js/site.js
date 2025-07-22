@@ -576,6 +576,8 @@ $(document).on("submit", "#EditUserBio_Form", function (event) {
     event.preventDefault();
     let url = $(this).attr("action");
     let data = $(this).serialize();
+    //callTextCustomizationBar();
+    //btn-solo-input
     buttonDisabler(false, "EditUser_Bio_Val-DistantSbmt_Btn", "Updating...");
 
     $.post(url, data, function (response) {
@@ -3803,7 +3805,7 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         let senderUserInfoBox = elementDesigner("div", "box-standard", null);
         let senderUsernameLbl = elementDesigner("span", "h6", username);
         let dropdownBox = elementDesigner("div", "dropdown", null);
-        let dropdownBtn = $(' <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let dropdownBtn = $('<button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
         let dropdownUl = elementDesigner("ul", "dropdown-menu dropdown-menu-sm-end shadow-sm", null);
         let dropdownLi1 = $("<li></li>");
         let dropdownLi2 = $("<li></li>");
@@ -4537,29 +4539,11 @@ $(document).on("keyup", ".form-control-juxtaposed", function () {
     }
 });
 
-$("body").on("click", function () {
-    let attributesComponent = {
-        id: ["0-TextEditor", "1-TextEditor", "2-TextEditor", "3-TextEditor", "4-TextEditor", "5-TextEditor", "6-TextEditor", "7-TextEditor"],
-        attr: [["data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type"], ["data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target"]],
-        attrValue: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ["Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val", "Input_Val"]]
-    }
-    callBottomNavbarBox("CustomNavbar_ButtonsBoxPage_Box", [' <i class="fa-solid fa-bold"></i> ', ' <i class="fa-solid fa-italic"></i> ', ' <i class="fa-solid fa-underline"></i> ', ' <i class="fa-solid fa-strikethrough"></i> ', ' <i class="fa-solid fa-indent"></i> ', ' <i class="fa-solid fa-outdent"></i> ', ' <i class="fa-solid fa-list-ul"></i> ', ' <i class="fa-solid fa-list"></i> ', ' <i class="fa-solid fa-list-check"></i> ', ' <i class="fa-solid fa-link"></i> '], ["btn-text-editor"], ["Bold-TextEditor", "Italic-TextEditor", "Underline-TextEditor", "Strikethrough-TextEditor", "Indent_TextEditor", "Outdent_TextEditor", "UnorderedList_TextEditor", 'UnorderedSquaredList_TextEditor', 'UnorderedCheckedList_TextEditor', "AddLink_TextEditor"], attributesComponent, true);
-});
-
-$(document).on("keyup", ".form-control-undetermined", function (event) {
-    let keyCode = event.keyCode;
+$(document).on("keyup", ".form-control-undetermined", function () {
     let thisId = $(this).attr("id");
-    if (keyCode != undefined && thisId != undefined) {
-        console.log($(this).html());
-        console.log($("#" + thisId + "_Val").val());
-        switch (keyCode) {
-            case 13:
-/*                textCustomization(thisId, thisId, -1);*/
-                break;
-            default:
-                console.log("Undefined action");
-                break;
-        }
+    if (thisId != undefined) {
+        let thisHtml = $(this).html();
+        $("#" + thisId + "_Val").val(textPurger(thisHtml));
     }
 });
 
@@ -4567,117 +4551,126 @@ $(document).on("mousedown", ".btn-text-editor", function () {
     const thisId = $(this).attr("id");
     const targetId = $(this).attr("data-target");
     const type = parseInt($(this).attr("data-type"));
+
     if (thisId != undefined && targetId != undefined && type != undefined) {
-        if ($(this).hasClass("bg-chosen-bright")) $(".btn-text-editor").removeClass("bg-chosen-bright");
+        if ($(this).hasClass("bg-chosen-bright")) {
+            $(".btn-text-editor").removeClass("bg-chosen-bright");
+            textCustomization(targetId, targetId, -1);
+        }
         else {
             $(".btn-text-editor").removeClass("bg-chosen-bright");
             $(this).addClass("bg-chosen-bright");
-
-            textCustomization(targetId, "Input_Val-Representation_Lbl", type);
+            textCustomization(targetId, targetId, type);
         }
     }
 });
 
+function callTextCustomizationBar(texteditorElement_Id) {
+    if (texteditorElement_Id != undefined || texteditorElement_Id != null) {
+        let attributesComponent = {
+            id: ["0-TextEditor", "1-TextEditor", "2-TextEditor", "3-TextEditor", "4-TextEditor", "5-TextEditor", "6-TextEditor", "7-TextEditor", "8-TextEditor", "9-TextEditor"],
+            attr: [["data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type", "data-type"], ["data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target", "data-target"]],
+            attrValue: [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id, texteditorElement_Id]]
+        }
+        callBottomNavbarBox("CustomNavbar_ButtonsBoxPage_Box", [' <i class="fa-solid fa-bold"></i> ', ' <i class="fa-solid fa-italic"></i> ', ' <i class="fa-solid fa-underline"></i> ', ' <i class="fa-solid fa-strikethrough"></i> ', ' <i class="fa-solid fa-indent"></i> ', ' <i class="fa-solid fa-outdent"></i> ', ' <i class="fa-solid fa-list-ul"></i> ', ' <i class="fa-solid fa-list"></i> ', ' <i class="fa-solid fa-list-ol"></i> ', ' <i class="fa-solid fa-border-top-left"></i> '], ["btn-text-editor"], ["Bold-TextEditor", "Italic-TextEditor", "Underline-TextEditor", "Strikethrough-TextEditor", "Indent_TextEditor", "Outdent_TextEditor", "UnorderedList_TextEditor", 'UnorderedSquaredList_TextEditor', 'UnorderedCheckedList_TextEditor', "Quote_TextEditor"], attributesComponent, true);
+    }
+}
+
 function textCustomization(inputTarget_Id, previewTarget_Id, type) {
     if ((inputTarget_Id != undefined || inputTarget_Id != null) && (previewTarget_Id != undefined || previewTarget_Id != null)) {
         type = parseInt(type);
-        let preText;
-        let midText;
-        let postText;
-        let preAttr = null;
-        let postAttr = null;
         let currentText = null;
-        let currentValue = null;
-
-        let selectionEnd = 0;
-        let selectionStart = 0;
-        let realSelectionEnd = 0;
-        let realSelectionStart = 0;
-        let caretPositions = null;
+        let customElement = null;
+        let parentCustomElement = null;
+        let thisInputElement = $("#" + inputTarget_Id);
         let isContentEditableElement = $("#" + inputTarget_Id).attr("contenteditable");
 
-        if (isContentEditableElement) {
-            currentValue = $("#" + inputTarget_Id + "_Val").val();
-            currentText = $("#" + inputTarget_Id).text();
-        }
-        else {
-            currentValue = $("#" + inputTarget_Id).val();
-            currentText = textPurification(currentValue);
-        }
+        if (isContentEditableElement) currentText = $("#" + inputTarget_Id).html();
+        else currentText = $("#" + inputTarget_Id).val();
 
-        caretPositions = getRichTextBoxCaretPosition(inputTarget_Id);
-        if (caretPositions != null) {
-            selectionEnd = caretPositions[1];
-            selectionStart = caretPositions[0];
+        let range = null;
+        const selection = window.getSelection();
+        if (selection.rangeCount) {
+            if (selection.anchorOffset != selection.focusOffset) range = selection.getRangeAt(0);
+            else {
+                if (selection.anchorOffset != currentText.length) {
+                    range = selection.getRangeAt(0);
+                    let lastChild = thisInputElement[0].lastChild;
+                    range.setEnd(lastChild, lastChild.length);
+                    selection.removeAllRanges();
+                }
+                else {
+                    range = selection.getRangeAt(0);
+                    let lastChild = thisInputElement[0].lastChild;
+                    range.setStart(range.startContainer, --range.startOffset);
+                    range.setEnd(lastChild, lastChild.length);
+                    selection.removeAllRanges();
+                }
+            }
         }
-
-        if (selectionStart != selectionEnd) {
-            preText = currentText.substring(0, selectionStart);
-            midText = currentText.substring(selectionStart, selectionEnd);
-            postText = currentText.substring(selectionEnd, currentText.length);
-
-            realSelectionStart = currentValue.indexOf(midText, selectionStart);
-            realSelectionEnd = currentValue.indexOf(postText, selectionEnd);
-            realSelectionEnd = realSelectionEnd == -1 ? realSelectionStart + midText.length : realSelectionEnd;
-
-            preText = currentValue.substring(0, realSelectionStart);
-            midText = currentValue.substring(realSelectionStart, realSelectionEnd);
-            postText = currentValue.substring(realSelectionEnd, currentValue.length);
-        }
-        else {
-            midText = null;
-            postText = currentText.substring(selectionStart, currentText.length);
-            realSelectionStart = currentValue.indexOf(postText, selectionStart);
-
-            preText = currentValue.substring(0, realSelectionStart);
-            if (selectionStart < currentText.length) postText = currentValue.substring(realSelectionStart, currentValue.length);
-            else postText = "";
-        }
+        else range = null;
 
         switch (type) {
             case 0:
-                preAttr = "[[";
-                postAttr = "]]";
+                customElement = document.createElement("span");
+                customElement.classList.add("fw-500");
                 break;
             case 1:
-                preAttr = "[{";
-                postAttr = "]]";
+                customElement = document.createElement("span");
+                customElement.classList.add("fst-italic");
                 break;
             case 2:
-                preAttr = "[_";
-                postAttr = "]]";
+                customElement = document.createElement("span");
+                customElement.classList.add("text-decoration-underline");
                 break;
             case 3:
-                preAttr = "[-";
-                postAttr = "]]";
+                customElement = document.createElement("span");
+                customElement.classList.add("text-decoration-line-through");
                 break;
             case 4:
-                preAttr = "[>";
-                postAttr = "<]";
+                customElement = document.createElement("span");
+                customElement.classList.add("text-indent");
                 break;
             case 5:
-                preAttr = "[<";
-                postAttr = "<]";
+                customElement = document.createElement("span");
+                customElement.classList.add("text-outdent");
                 break;
             case 6:
-                preAttr = "[#";
-                postAttr = "#]";
+                customElement = document.createElement("li");
+                parentCustomElement = document.createElement("ul");
+                customElement.classList.add("list-standard");
+                parentCustomElement.append(customElement);
+                break;
+            case 7:
+                customElement = document.createElement("li");
+                parentCustomElement = document.createElement("ul");
+                customElement.classList.add("list-squared");
+                parentCustomElement.append(customElement);
+                break;
+            case 8:
+                customElement = document.createElement("li");
+                parentCustomElement = document.createElement("ul");
+                customElement.classList.add("list-dashed");
+                parentCustomElement.append(customElement);
+                break;
+            case 9:
+                customElement = document.createElement("span");
+                parentCustomElement = document.createElement("div");
+                customElement.classList.add("quote-box");
+                parentCustomElement.append(customElement);
                 break;
             default:
-                preAttr = "";
-                postAttr = "";
+                customElement = document.createElement("span");
                 break;
         }
 
-        if (midText != null) currentText = preText + preAttr + midText + postAttr + postText;
-        else currentText = preText + preAttr + postText + postAttr;
-
-        if (isContentEditableElement) {
-            currentValue = currentText;
-            $("#" + inputTarget_Id + "_Val").val(currentValue);
-            $("#" + inputTarget_Id).html(textPurification(currentText));
+        if (customElement != null) {
+            customElement.append(range.extractContents());
+            if (parentCustomElement == null) range.insertNode(customElement);
+            else range.insertNode(parentCustomElement);
         }
-        else $("#" + inputTarget_Id).val(currentText);
+        currentText = $("#" + inputTarget_Id).html();
+        if (isContentEditableElement) $("#" + inputTarget_Id + "_Val").val(textPurger(currentText));
     }
 } 
 
@@ -4712,21 +4705,24 @@ function textPurification(text) {
     if (text != undefined || text != null) {
         text = text.replaceAll("<br>", "\n");
         text = text.replaceAll("<br/>", "\n");
+        text = text.replaceAll("[~", "<br/>");
         text = text.replaceAll("[[", '<span class="fw-500">');
         text = text.replaceAll("[{", "<span class='fst-italic'>");
         text = text.replaceAll("[_", "<span class='text-decoration-underline'>");
         text = text.replaceAll("[-", "<span class='text-decoration-line-through'>");
         text = text.replaceAll("[>", "<p class='text-indent'>");
         text = text.replaceAll("[<", "<p class='text-outdent'>");
-        text = text.replaceAll("[#", "<ul>");
-        text = text.replaceAll("#]", "</ul>");
-        text = text.replaceAll("[%", "<li>");
-        text = text.replaceAll("%]", "</li>");
+        text = text.replaceAll("[|", "<ul><li class='list-squared'>");
+        text = text.replaceAll("[%", "<ul><li class='list-standard'>");
+        text = text.replaceAll("[&", "<ul><li class='list-dashed'>");
+        text = text.replaceAll("[)", "<div class='quote-box'>");
+        text = text.replaceAll("(]", "</div>");
+        text = text.replaceAll("%]", "</li></ul>");
         text = text.replaceAll("]]", "</span>");
         text = text.replaceAll("<]", "</p>");
 
         const cleanText = DOMPurify.sanitize(text, {
-            ALLOWED_TAGS: ["ul", "li", "p", "span", "br"]
+            ALLOWED_TAGS: ["div", "ul", "li", "p", "span", "br"]
         });
         return cleanText;
     }
@@ -4735,22 +4731,26 @@ function textPurification(text) {
 
 function textPurger(text) {
     if (text != undefined || text != null) {
-        text = text.replaceAll("<br>", "\n");
-        text = text.replaceAll("<br/>", "\n");
         text = text.replaceAll('<span class="fw-500">', "[[");
         text = text.replaceAll("<span class='fw-500'>", "[[");
-
         text = text.replaceAll("<span class='fst-italic'>", "[{");
+        text = text.replaceAll('<span class="fst-italic">', "[{");
         text = text.replaceAll("<span class='text-decoration-underline'>", "[_");
+        text = text.replaceAll('<span class="text-decoration-underline">', "[_");
         text = text.replaceAll("<span class='text-decoration-line-through'>", "[-");
+        text = text.replaceAll('<span class="text-decoration-line-through">', "[-");
         text = text.replaceAll("<p class='text-indent'>", "[>");
+        text = text.replaceAll('<p class="text-indent">', "[>");
         text = text.replaceAll("<p class='text-outdent'>", "[<");
+        text = text.replaceAll('<p class="text-outdent">', "[<");
         text = text.replaceAll("<ul>", "[#");
         text = text.replaceAll("</ul>", "#]");
         text = text.replaceAll("<li>", "[%");
         text = text.replaceAll("</li>", "%]");
         text = text.replaceAll("</span>", "]]");
         text = text.replaceAll("</p>", "<]");
+        text = text.replaceAll("\n", "<br/>");
+        text = text.replaceAll("<br/>", "[~");
 
         return text;
     }
@@ -5964,6 +5964,10 @@ $(document).on("mousedown", ".btn-solo-input", function () {
     let input = $(this).attr("data-input");
     if (input != undefined && thisId != undefined) {
         slideElements(false, thisId, input);
+        if ($(this).hasClass("call-text-editor")) {
+            const textBoxId = $(this).attr("data-text-box");
+            if (textBoxId != undefined) callTextCustomizationBar(textBoxId);
+        }
     }
 });
 

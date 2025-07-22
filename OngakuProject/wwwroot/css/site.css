@@ -41,6 +41,26 @@ body {
     transition: all ease 0.25s;
 }
 
+.quote-box {
+    border: none;
+    border-radius: 0;
+    margin-top: 2.5px;
+    margin-bottom: 2.5px;
+    padding: 3px 6px 3px 6px;
+    background-color: transparent;
+    border-left: 3px solid #f0f0f0;
+}
+
+.list-standard {
+    list-style-type: initial;
+}
+.list-squared {
+    list-style-type: square;
+}
+.list-dashed {
+    list-style-type: decimal;
+}
+
 .bg-soft-danger {
     background-color: #dc3545 !important;
     opacity: 0.75 !important;
@@ -779,6 +799,13 @@ body {
 .form-control-undetermined:focus {
     background-color: #f0f0f0;
     outline: none !important;
+}
+.form-control-undetermined[placeholder]:empty::before {
+    content: attr(placeholder);
+    color: #555;
+}
+.form-control-undetermined[placeholder]:empty:focus::before {
+    content: "";
 }
 
 .box-date-time-picker {

@@ -180,12 +180,13 @@
                     <h6 class="h6 ms-1">Bio</h6>
                     <button type="button" class="btn btn-distance-submitter btn-sm ms-auto" data-form="EditUserBio_Form" id="EditUser_Bio_Val-DistantSbmt_Btn"><i class="fa-regular fa-circle-check"></i> Saved</button>
                 </div>
-                <button type="button" class="btn btn-select-primary-skin btn-solo-input slide-element active" id="EditUserDescription_Call_Btn" data-input="BioEdit_Box">Artist Bio ∙ <span class="text-muted" id="EditUserWebsite_Webpage_Val-Indicator_Span">0/1500</span> <span class="float-end text-muted ms-1"> <i class="fa-regular fa-keyboard"></i> </span></button>
+                <button type="button" class="btn btn-select-primary-skin btn-solo-input call-text-editor slide-element active" id="EditUserDescription_Call_Btn" data-input="BioEdit_Box" data-text-box="EditUser_Bio">Artist Bio ∙ <span class="text-muted" id="EditUserWebsite_Webpage_Val-Indicator_Span">0/1500</span> <span class="float-end text-muted ms-1"> <i class="fa-regular fa-keyboard"></i> </span></button>
                 <div class="slide-element" id="BioEdit_Box" style="display: none;">
                     <div class="hstack gap-2">
                         <div class="w-100">
+                            <div class="form-textarea form-control-undetermined form-control-select-like form-control-guard" contenteditable="true" maxlegth="1500" data-min-length="1" placeholder="Your bio (max 1500 chars)" id="EditUser_Bio"></div>
                             <form method="post" action="/Profile/EditBio" id="EditUserBio_Form">
-                                <textarea class="form-textarea form-control-select-like form-control-guard form-control-distance" id="EditUser_Bio_Val" name="Description" placeholder="Your bio (max 1500 chars)" maxlength="1500"></textarea>
+                                <textarea class="d-none" id="EditUser_Bio_Val" name="Description" placeholder="Your bio (max 1500 chars)" maxlength="1500"></textarea>
                             </form>
                             <input type="hidden" id="EditUser_Bio_Val-Base_Val" />
                         </div>
