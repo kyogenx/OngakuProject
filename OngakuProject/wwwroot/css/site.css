@@ -21,6 +21,16 @@ html {
     overflow-y: scroll;
     overflow-x: hidden;
 }
+.min-height-150 {
+    min-height: 150px !important;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.min-height-240 {
+    min-height: 240px !important;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
 
 body {
   margin-bottom: 60px;
@@ -140,6 +150,20 @@ body {
     display: block;
     transform: scale(1);
     transition: all ease 0.25s;
+}
+.slide-element.type1-pending {
+    display: block;
+    transform: scale(0.9);
+    opacity: 0.75;
+    filter: blur(3px);
+    transition: all ease 0.2s;
+}
+.slide-element.type1-active {
+    opacity: 1;
+    display: block;
+    transform: scale(1);
+    filter: none;
+    transition: all ease 0.2s;
 }
 
 .btn-distance-submitter {
@@ -281,10 +305,17 @@ body {
     background-color: #f0f0f0;
 }
 
+.box-border-bottom {
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid #f0f0f0 !important;
+    transition: all ease 0.3s;
+}
+
 .box-border-top {
     border: none;
     border-radius: 0;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid #f0f0f0 !important;
     transition: all ease 0.3s;
 }
 
@@ -652,8 +683,8 @@ body {
 .box-lg-part-inner {
     z-index: 9000;
     width: 63%;
-    min-height: 250px;
     max-height: 80%;
+    min-height: 275px;
     overflow-y: auto;
     overflow-x: hidden;
     left: 37%;
@@ -665,14 +696,29 @@ body {
     border: 1px solid #f0f0f0;
     position: fixed;
     display: none;
+    transform: none;
+    transition: all ease 0.3s;
+}
+.box-lg-part-inner.passive {
+    filter: blur(2px);
+    pointer-events: none;
+    transform: translateY(25px) scale(0.975);
     transition: all ease 0.3s;
 }
 
 .box-lg-inner-part-header {
-    width: 100%;
-    border-radius: 10px 10px 0 0;
     border: 0;
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 4px 4px 4px;
+    border-radius: 10px 10px 0 0;
     border-bottom: 1px solid #f0f0f0;
+    transition: all ease 0.3s;
+}
+
+.box-lg-inner-part-box {
+    padding: 4px;
+    border-radius: 10px;
     transition: all ease 0.3s;
 }
 
@@ -693,6 +739,47 @@ body {
     border-radius: 10px;
     background-color: #f8f9fa;
     border: 1px solid #f8f9fa;
+}
+
+.box-post-or-poll {
+    padding: 6px;
+    border-radius: 0;
+    margin: 3px 0 3px 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all ease 0.3s;
+}
+
+.box-bot-hidden {
+    z-index: 100;
+    width: 99%;
+    height: auto;
+    padding: 6px;
+    bottom: -250px;
+    margin-top: 3px;
+    min-height: 75px;
+    border-radius: 15px;
+    border: 1px solid #f0f0f0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(248, 249, 250, 0.5);
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: absolute;
+    transform: scale(1);
+    transition: all ease 0.3s;
+}
+.box-bot-hidden.pending {
+    bottom: 20px;
+    display: block;
+    transform: scale(1);
+    transition: all ease 0.3s;
+}
+.box-bot-hidden.active {
+    bottom: 5px;
+    display: block;
+    transform: scale(1);
+    transition: all ease 0.3s;
 }
 
 .box-select-overlay {
@@ -2080,6 +2167,58 @@ input[type=number] {
     border-top: 1px solid #f0f0f0;
 }
 
+.form-range {
+    height: 5px;
+    min-width: 475px;
+    background: #ddd;
+    border: 1px solid #f0f0f0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 99px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+/* Track (Chrome, Safari, Edge) */
+.form-range::-webkit-slider-runnable-track {
+  height: 5px;
+  background: #ddd;
+  border: 1px solid #f0f0f0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 99px;
+}
+
+/* Firefox */
+.form-range::-moz-range-track {
+    width: 30px;
+    height: 14px;
+    background: #2b2b2b;
+    border-radius: 10px;
+    border: 1px solid #f0f0f0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Thumb (Chrome, Safari, Edge) */
+.form-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 30px;
+    height: 14px;
+    background: #2b2b2b;
+    border-radius: 10px;
+    margin-top: -5px;
+    cursor: pointer;
+}
+
+.form-range::-moz-range-thumb {
+    cursor: pointer;
+    width: 30px;
+    height: 14px;
+    background: #2b2b2b;
+    border-radius: 10px;
+}
+
 .form-control {
     cursor: pointer;
     border-radius: 10px;
@@ -2269,12 +2408,34 @@ input[type=number] {
     margin-top: 8px;
     margin-bottom: 8px;
     bottom: -1200px; /*56px - on open*/
-    background-color: white;
+    background-color: transparent;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: none; /*flex - on open*/
     justify-content: center;
     position: sticky;
     width: 100%;
     transition: all ease 0.3s;
+}
+
+.box-sticky-bottom {
+    height: auto;
+    z-index: 1000;
+    border-radius: 10px;
+    transition: all ease 0.3s;
+    width: 99%;
+    position: sticky;
+    margin-left: 0.5%;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    padding: 6px;
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    border: 1px solid #f0f0f0;
+    background-color: transparent;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .box-sticky-at-bottom-header {
@@ -2284,6 +2445,11 @@ input[type=number] {
     border-bottom: 1px solid #f0f0f0;
     width: 100%;
     transition: all ease 0.3s;
+}
+
+.btn-horizontally-scrolling {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
 }
 
 .btn-sticky-at-bottom {
@@ -2309,8 +2475,8 @@ input[type=number] {
 }
 
 .super-disabled {
-    pointer-events: none;
     opacity: 0.55;
+    pointer-events: none;
 }
 .super-disabled.untouched {
     opacity: 1;
@@ -2328,12 +2494,23 @@ input[type=number] {
     display: none;
     bottom: -1200px;
 }
-
+.box-lg-part-inner
 .profile-avatar {
     height: 85px;
     width: 85px;
     font-size: 55px;
     background-color: white;
+    color: #2b2b2b;
+    text-align: center;
+    content: '<i class="fa-solid fa-face-smile"></i>';
+    border-radius: 99px;
+    transition: all ease 1s;
+}
+.profile-avatar-md {
+    height: 45px;
+    width: 45px;
+    font-size: 28px;
+    background-color: #f8f9fa;
     color: #2b2b2b;
     text-align: center;
     content: '<i class="fa-solid fa-face-smile"></i>';
@@ -2355,6 +2532,13 @@ input[type=number] {
 .profile-avatar-img {
     height: 85px;
     width: 85px;
+    border-radius: 99px;
+    object-fit: cover;
+    transition: all ease 0.4s;
+}
+.profile-avatar-img-md {
+    height: 45px;
+    width: 45px;
     border-radius: 99px;
     object-fit: cover;
     transition: all ease 0.4s;
@@ -2734,6 +2918,123 @@ input[type=number] {
     text-decoration: underline;
 }
 
+.mention-span {
+    cursor: pointer;
+    color: #2b2b2b;
+    font-family: 10px;
+    border-radius: 15px;
+    background-color: #f0f0f0;
+    padding: 1px 10px 2px 10px;
+    transition: all ease 0.3s;
+}
+.mention-span:hover,
+.mention-span:active {
+    background-color: #e0e0e0;
+}
+
+.text-user-mention {
+    color: #0d6efd;
+    font-weight: 500;
+    transition: all ease 0.3s;
+}
+.text-user-mention:hover,
+.text-user-mention:active {
+    color: #6c757d;
+}
+
+.box-poll-option {
+    padding: 6px;
+    margin-top: 4px;
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    border: 1px solid transparent;
+    -webkit-backdrop-filter: blur(8px);
+    background-color: transparent;
+    transition: all ease 0.3s;
+}
+.box-poll-option:hover,
+.box-poll-option:active {
+    background-color: #f0f0f0;
+}
+
+.box-poll-in-post-option {
+    cursor: pointer;
+    padding: 4px 4px 6px 6px;
+    margin: 2px 0 2px 0;
+    border-radius: 10px;
+    font-weight: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background-color: transparent;
+    border: 1px solid transparent;
+    transition: all ease 0.3s;
+}
+.box-poll-in-post-option:hover,
+.box-poll-in-post-option:active {
+    background-color: #f0f0f0;
+}
+.box-poll-in-post-option.active {
+    border: 1px solid #f0f0f0;
+}
+.box-poll-in-post-option.active:hover,
+.box-poll-in-post-option.active:active {
+    background-color: #e0e0e0;
+    border: 1px solid #e0e0e0;
+}
+
+.box-poll-in-post-voice-part {
+    width: 25%;
+    height: 4.5px;
+    border-radius: 99px;
+    background-color: #f0f0f0;
+    transition: all ease 0.3s;
+}
+
+.btn-poll-or-post-settings {
+    cursor: pointer;
+    padding: 4.5px;
+    color: #6c757d;
+    width: 100%;
+    border-radius: 10px;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: all ease 0.3s;
+}
+.btn-poll-or-post-settings:hover,
+.btn-poll-or-post-settings:active {
+    color: #2b2b2b;
+    transform: translateY(-2px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(248, 249, 250, 0.45);
+}
+
+.badge-voice-qty {
+    font-size: 13px;
+    padding: 2px 4px;
+    color: #2b2b2b;
+    font-weight: 400;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    backdrop-filter: blur(8px);
+}
+
+.box-mention-search {
+    width: 100%;
+    padding: 6px;
+    cursor: pointer;
+    margin: 2px 3px;
+    border-radius: 15px;
+    background-color: transparent;
+    transition: all ease 0.3s;
+}
+.box-mention-search:hover,
+.box-mention-search:active {
+    background-color: #f0f0f0;
+}
+
 .bg-chosen {
     background-color: #2b2b2b;
 }
@@ -3035,6 +3336,11 @@ input[type=number] {
     white-space: pre-wrap;
 }
 
+.tooltip {
+    z-index: 10000;
+    transition: margin 0.15s ease, transform 0s ease;
+}
+
 .tooltip-standard {
     z-index: 10000;
 }
@@ -3261,6 +3567,10 @@ input[type=number] {
 }
 
 @media (max-width: 389.90px) {
+    .form-range {
+        min-width: 250px;
+    }
+
     .box-select {
         width: auto;
         min-width: 70%;
@@ -3343,6 +3653,10 @@ input[type=number] {
 @media (min-width: 390px) and (max-width: 767.98px) {
     html {
         font-size: 14px;
+    }
+
+    .form-range {
+        min-width: 280px;
     }
 
     .box-select {
@@ -3474,6 +3788,10 @@ input[type=number] {
         font-size: 15px;
     }
 
+    .form-range {
+        min-width: 400px;
+    }
+
     .box-select {
         width: auto;
         min-width: 25%;
@@ -3571,6 +3889,10 @@ input[type=number] {
 @media (min-width: 1024px) and (max-width: 1360px) {
     html {
         font-size: 16px;
+    }
+
+    .form-range {
+        min-width: 475px;
     }
 
     .box-select {

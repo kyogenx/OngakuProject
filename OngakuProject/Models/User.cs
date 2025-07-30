@@ -34,15 +34,20 @@ namespace OngakuProject.Models
         public int? CountryId { get; set; }
         public Genre? Genre { get; set; }
         public Country? Country { get; set; }
-        public List<UserImage>? UserImages { get; set; }
-        public List<TrackArtist>? TrackArtists { get; set; }
-        public List<TrackCredit>? TrackCredits { get; set; }
-        public List<Playlist>? Playlists { get; set; }
-        public List<Favorite>? Favorites { get; set; }
-        public List<TrackHistory>? History { get; set; }
-        public List<UserListener>? UserListeners { get; set; }
-        public List<UserSubscribtion>? UserSubscribtions { get; set; }
+        public List<UserImage>? UserImages { get; set; } = new List<UserImage>();
+        public List<TrackArtist>? TrackArtists { get; set; } = new List<TrackArtist>();
+        public List<TrackCredit>? TrackCredits { get; set; } = new List<TrackCredit>();
+        public List<Playlist>? Playlists { get; set; } = new List<Playlist>();
+        public List<Favorite>? Favorites { get; set; } = new List<Favorite>();
+        public List<TrackHistory>? History { get; set; } = new List<TrackHistory>();
+        public List<UserListener>? UserListeners { get; set; } = new List<UserListener>();
+        public List<UserSubscribtion>? UserSubscribtions { get; set; } = new List<UserSubscribtion>();
         public List<UserPlaylist>? UserPlaylists { get; set; } = new List<UserPlaylist>();
+        public List<Post>? Posts { get; set; } = new List<Post>();
+        public List<RePost>? Reposts { get; set; } = new List<RePost>();
+        public List<Poll>? Polls { get; set; } = new List<Poll>();
+        public List<PollOptionVote>? PollOptions { get; set; } = new List<PollOptionVote>();
+
         [NotMapped]
         public int ImgId { get; set; }
         [NotMapped]

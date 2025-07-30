@@ -12,6 +12,7 @@ let playerPosition = 0;
 let sentRequest = null;
 let openedContainers = [];
 let openedSmContainers = [];
+let openInsideLgCardsArr = [];
 let openedCards = [];
 const userLocale = Intl.DateTimeFormat().resolvedOptions().locale;
 let dayOfWeekShortArr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -574,10 +575,11 @@ $("#ProfileUpdateMainInfo_Form").on("submit", function (event) {
 
 $(document).on("submit", "#EditUserBio_Form", function (event) {
     event.preventDefault();
+    $("#EditUser_Bio_Val").val(textPurger($("#EditUser_Bio_Val").val()));
+
     let url = $(this).attr("action");
     let data = $(this).serialize();
     //callTextCustomizationBar();
-    //btn-solo-input
     buttonDisabler(false, "EditUser_Bio_Val-DistantSbmt_Btn", "Updating...");
 
     $.post(url, data, function (response) {
@@ -587,7 +589,7 @@ $(document).on("submit", "#EditUserBio_Form", function (event) {
             $("#EditUser_Bio_Val-DistantSbmt_Btn").html(' <i class="fa-solid fa-check"></i> Saved');
             if (response.result != null) {
                 $("#EditResults_Description_Box").fadeIn(300);
-                $("#EditResults_Description_Span").html(response.result.length > 0 ? response.result : "No bio for this artist");
+                $("#EditResults_Description_Span").html(response.result.length > 0 ? textPurification(response.result) : "No bio for this artist");
                 callAlert('<i class="fa-regular fa-circle-check anime-spin-shift"></i>', null, null, "Your bio has been successfully updated", 3.5, "Close", -1, null);
             }
             else {
@@ -595,6 +597,10 @@ $(document).on("submit", "#EditUserBio_Form", function (event) {
                 $("#EditResults_Description_Span").html("No bio for this artist");
                 callAlert('<i class="fa-solid fa-delete-left"></i>', null, null, "Your bio has been successfully deleted", 3.5, "Close", -1, null);
             }
+            slideElements(false, "BioEdit_Box", "EditUserDescription_Call_Btn");
+            swapToRegularNavbar();
+            //btn-change-elements
+
             buttonUndisabler(false, "EditUser_Bio_Val-DistantSbmt_Btn", ' <i class="fa-regular fa-circle-check"></i> Saved');
             $("#EditUser_Bio_Val-DistantSbmt_Btn").removeClass("active");
         }
@@ -768,9 +774,8 @@ $(document).on("submit", "#EditUserWebsite_Form", function (event) {
 });
 
 $(document).on("mousedown", ".btn-distance-submitter", function () {
-    let formId = $(this).attr("data-form");
     let thisId = $(this).attr("id");
-
+    let formId = $(this).attr("data-form");
     if (thisId != undefined && formId != undefined) $("#" + formId).submit();
 });
 
@@ -3467,7 +3472,7 @@ $(document).on("submit", "#GetTrackComments_Form", function (event) {
                 }
 
                 $.each(response.result, function (index) {
-                    createCommentBox("CommentsBody_Box", response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, response.result[index].likesQty, response.result[index].isEdited, response.result[index].isLiked, response.result[index].isPinned, response.isOwner, true);
+                    createCommentBox("CommentsBody_Box", "Track", null, response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, response.result[index].likesQty, response.result[index].isEdited, response.result[index].isLiked, response.result[index].isPinned, response.isOwner, true);
                 });
                 $("#CommentsQty_Span").html(response.result.length);
             }
@@ -3508,7 +3513,7 @@ $(document).on("submit", "#GetTrackRecomments_Form", function (event) {
                 buttonDisabler(true, "btn-reply-to-comment", 'Loaded');
                 $("#CommentRepliesQty_Span").text(response.result.length.toLocaleString());
                 $.each(response.result, function (index) {
-                    createCommentBox("RepliesBody_Box", response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false, false, false);
+                    createCommentBox("RepliesBody_Box", "Track", null, response.result[index].id, response.currentUserId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false, false, false);
                 });
             }
             else {
@@ -3544,7 +3549,7 @@ $(document).on("submit", "#SendComment_Form", function (event) {
             if (currentCommentsQty != undefined && currentCommentsQty <= 0) $("#CommentsBody_Box").empty();       
 
             let currentUserImgSrc = $("#CurrentUserProfile_Img").attr("src");
-            createCommentBox("CommentsBody_Box", response.id, response.currentUserId, currentUserImgSrc == undefined ? null : currentUserImgSrc, response.result.userId, "You", response.result.text, new Date(), 0, response.result.editedAt == null ? false : true, false, false, response.isOwner, true);
+            createCommentBox("CommentsBody_Box", "Track", null, response.id, response.currentUserId, currentUserImgSrc == undefined ? null : currentUserImgSrc, response.result.userId, "You", response.result.text, new Date(), 0, response.result.editedAt == null ? false : true, false, false, response.isOwner, true);
             $("#CommentsQty_Span").text(++currentCommentsQty);
             buttonDisabler(false, "SendComment_SbmtBtn", ' <i class="fa-regular fa-circle-check"></i> ');
         }
@@ -3627,7 +3632,7 @@ $(document).on("submit", "#ReplyToTrackComment_Form", function (event) {
             let currentUserImgSrc = $("#CurrentUserProfile_Img").attr("src");
             $("#RTC_SbmtBtn").html(' <i class="fa-regular fa-circle-check"></i> ');
 
-            createCommentBox("RepliesBody_Box", response.id, response.currentUserId, currentUserImgSrc, response.currentUserId, "You", response.result.text, new Date(), 0, false, false, false, false, false);
+            createCommentBox("RepliesBody_Box", "Track", null, response.id, response.currentUserId, currentUserImgSrc, response.currentUserId, "You", response.result.text, new Date(), 0, false, false, false, false, false);
             $("#CommentRepliesQty_Span").text(++repliesQty);
         }
         else {
@@ -3796,9 +3801,1002 @@ $(document).on("submit", "#DeleteTrackRecomment_Form", function (event) {
     });
 });
 
-function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc, userId, username, text, sentAt_Date = new Date(), likesQty = 0, isEdited = false, isLiked = false, isPinned = false, isForParentOwner = false, canBeReplied = true) {
+$(document).on("submit", "#CreatePoll_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#CreatePost_Form-DistantSbmt_Btn").html();
+    buttonDisabler(false, "CreatePost_Form-DistantSbmt_Btn", "Creating...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            callAlert(' <i class="fa-regular fa-circle-check anime-spin-shift"></i> ', null, null, "Poll has been successfully posted", 3.75, "Done", -1, null);
+            uncallAContainer(false, 'CreatePoll_Container');
+            setTimeout(function () {
+                $("#IsAnonym_Val").val(false);
+                $("#IsSkippable_Val").val(false);
+                $("#PollMaxOptions_Val").val(1);
+                $("#PollDuration_Val").val(1440);
+                for (let i = 0; i < 6; i++) {
+                    if (i > 2) $("#" + i + "-PollOption_Box").remove();
+                    else $("#" + i + "-CreatePoll_Option_Val").val(null);
+                }
+                $("#2-PollOption_Box").append('<button type="button" class="btn btn-standard-rounded btn-delete-created-item btn-sm super-disabled" id="PollOption_Box-DeleteItem_Btn"> <i class="fa-solid fa-xmark"></i> </button>');
+            }, 350);
+        }
+        else {
+            if(response.error == 0) callAlert(' <i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-iteration-delay: 0.35s; --fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2;"></i> ', null, null, "An internal error prevented the poll from being posted", 4, "Got It", -1, null);
+            else callAlert(' <i class="fa-solid fa-right-to-bracket"></i> ', null, null, "Please sign in to post a poll", 3.5, "Got It", -1, null);
+        }
+
+        setTimeout(function () {
+            buttonUndisabler(false, "CreatePost_Form-DistantSbmt_Btn", baseHtml);
+        }, 1500);
+    });
+});
+
+$(document).on("submit", "#GetUserPolls_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#GetUserPolls_SbmtBtn").html();
+    buttonDisabler(false, "GetUserPolls_SbmtBtn", '<div class="box-btn-group-member-icon"> <i class="fa-solid fa-spinner fa-spin-pulse"></i> </div><span class="card-text ms-1">Loading...</span><small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>');
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            callInsideLgContainer()
+            //function createInsideLgCard CreateNewPoll_Btn
+/*            <form method="post" action="/Poll/End" id="EndThePoll_Form"><input type="hidden" name="Id" id="EndThePoll_Id_Val" value="0" /></form>*/
+            createInsideLgCard("PollsInformation", "User Polls", null, '<button type="button" class="btn btn-standard btn-open-polls-filter btn-sm"> <i class="fa-solid fa-sort"></i> Sort</button>', '<button type="button" class="btn btn-standard btn-create-new-poll btn-sm ms-auto"> <i class="fa-solid fa-plus"></i> New Poll</button>');
+            $("#PollsInformation_Box").empty();
+            $("#PollsInformation_Box").append('<div class="d-none"><input type="hidden" id="PollQty_Val" value="0" /> <form method="get" action="/Poll/GetLiveDatas" id="GetPollLiveDatas_Form"> <input type="hidden" name="Id" id="GetPollLiveDatas_Id_Val" value="0" /> </form><form method="post" action="/Poll/Vote" id="VoteInPoll_Form"><input type="hidden" name="Id" id="VoteInPoll_Id_Val" value="0" /><input type="hidden" name="PollId" id="VoteInPoll_PollId_Val" value="0" /><input type="hidden" name="LoadResults" id="VoteInPoll_LoadResults_Val" value="true" /></form> <form method="get" action="/PollComment/Get" id="GetPollComments_Form"><input type="hidden" name="Id" id="GetPollComments_Id_Val" value="0" /> <input type="hidden" name="Skip" id="GetPollComments_SkipQty_Val" value="0" /></form></div>');
+
+            if (response.result.length > 0) {
+                $.each(response.result, function (index) {
+                    //let pollBox = createPollAuthorBox(response.result[index].id, response.result[index].question, response.result[index].pollOptions, response.result[index].expiresAt, response.result[index].totalVotesQty, response.result[index].isAnonymous, response.result[index].isSkippable, response.result[index].votedOptionId);
+                    let pollBox = createRegularPollBox(response.result[index].id, 1, "Ado", "12658-0de.jpg", response.result[index].expiresAt, response.result[index].question, response.result[index].pollOptions, response.result[index].votedOptionId, response.result[index].totalVotesQty, response.result[index].isAnonymous, response.result[index].isSkippabled);
+                    if (pollBox != null) {
+                        $("#PollsInformation_Box").append(pollBox);
+                    }
+                });
+            }
+            else {
+                $("#PollsInformation_Box").append('<div class="box-backgrounded text-center p-2"> <h2 class="h2"> <i class="fa-solid fa-square-poll-vertical"></i> </h2> <h4 class="h4">No Polls</h4> <small class="card-text text-muted">You haven’t created any polls yet</small> </div>');
+            }
+            $("#PollQty_Val").val(response.result.length);
+
+            setTimeout(function () {
+                callInsideLgContainer(false, "PollsInformation_Container");
+            }, 150);
+        }
+        else {
+            if (response.error == 0) callAlert(' <i class="fa-solid fa-square-poll-vertical"></i> ', null, null, "Polls can’t be accessed right now", 3.5, "Got It", -1, null);
+            else callAlert(' <i class="fa-solid fa-right-to-bracket"></i> ', null, null, "Sign in to view your polls", 3.5, "Okay", -1, null);
+        }
+
+        setTimeout(function () {
+            buttonUndisabler(false, "GetUserPolls_SbmtBtn", baseHtml);
+        }, 500);
+    });
+});
+
+$(document).on("submit", "#GetPollLiveDatas_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    const baseHtml = $(".btn-load-poll-datas").html();
+    buttonDisabler(true, "btn-load-poll-datas", " <i class='fa-solid fa-spinner fa-spin-pulse'></i> Loading...");
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.result.length > 0) {
+                const totalVotesFormatted = new Intl.NumberFormat("en", {
+                    notation: "compact",
+                    compactDisplay: "short"
+                }).format(response.totalVotesQty);
+
+                setPollResults(response.id, response.votedOptionId, response.totalVotesQty, response.result);
+                if (response.totalVotesQty == 1) {
+                    $("#" + response.id + "-PollTotalVotesQty_Span").html(" ∙ One vote");
+                    $("#" + response.id + "-TotalVotesQty_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> One vote');
+                }
+                else {
+                    $("#" + response.id + "-PollTotalVotesQty_Span").html(" ∙ " + totalVotesFormatted + " votes");
+                    $("#" + response.id + "-TotalVotesQty_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> ' + totalVotesFormatted);
+                }
+            }
+            else {
+                $("#" + response.id + "-PollTotalVotesQty_Span").html(" ∙ No votes");
+                $("#" + response.id + "-TotalVotesQty_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> No Votes');
+            }
+
+            $("#" + response.id + "-OptionsParent_Box").attr("data-results-loaded", true);
+            $("#" + response.id + "-AuthorOptionsParent_Box").attr("data-results-loaded", true);
+
+            setTimeout(function () {
+                buttonUndisabler(true, "btn-load-poll-datas", baseHtml);
+                $("#" + response.id + "-GetPollLiveDatas_Btn").addClass("super-disabled");
+                $("#" + response.id + "-GetPollLiveDatas_Btn").html(' <i class="fa-solid fa-bars-progress"></i> Datas Loaded');
+            }, 750);
+        }
+        else callAlert(' <i class="fa-solid fa-right-to-bracket"></i> ', null, null, "Sign in to view your polls", 3.5, "Okay", -1, null);
+    });
+});
+
+$(document).on("submit", "#EndThePoll_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    const baseHtml = $("#EndThePoll_SbmtBtn").html();
+    buttonDisabler(false, "EndThePoll_SbmtBtn", " <i class='fa-solid fa-spinner fa-spin-pulse'></i> Loading...");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let pollOptionButtons = document.getElementsByClassName("box-poll-in-post-option");
+            $("#" + response.result + "-ForceFinishPoll_Btn").remove();
+            $("#" + response.result + "-ParticipateInPoll_Btn").addClass("super-disabled");
+            $("#" + response.result + "-ParticipateInPoll_Btn").removeClass("btn-participate-in-poll");
+            $("#" + response.result + "-ParticipateInPoll_Btn").html(' ∙ <i class="fa-solid fa-flag-checkered"></i> Poll Finished');
+            $("#" + response.result + "-ExpirationDuration_Span").html("poll finished");
+
+            if (pollOptionButtons.length > 0) {
+                for (let i = 0; i < pollOptionButtons.length; i++) {
+                    if ($(pollOptionButtons[i]).attr("data-poll-id") == response.result) {
+                        $(pollOptionButtons[i]).removeClass("btn-vote-in-poll");
+                    }
+                }
+            }
+            buttonUndisabler(false, "EndThePoll_SbmtBtn", baseHtml);
+            callAlert('<i class="fa-solid fa-flag-checkered"></i>', null, null, "Poll finalized successfully", 3.5, "Done", -1, null);
+        }
+        else {
+            if(response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Unable to finalize the poll. Please try again", 3.75, "Got It", -1, null);
+            else callAlert('<i class="fa-solid fa-right-to-bracket"></i>', null, null, "Sign in to create and edit polls and posts", 4, "Got It", -1, null);
+        }
+        uncallAProposal();
+    });
+});
+
+$(document).on("submit", "#DeleteThePoll_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const baseHtml = $("#DeleteThePoll_SbmtBtn").html();
+    buttonDisabler(false, "DeleteThePoll_SbmtBtn", ' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Deleting...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let pollsQty = parseInt($("#PollQty_Val").val()) - 1;
+            $("#PollQty_Val").val(pollsQty);
+
+            if (pollsQty > 0) {
+                hideBySlidingToLeft(false, null, response.result + "-AuthorPoll_Box");
+                setTimeout(function () {
+                    $("#" + response.result + "-AuthorPoll_Box").remove();
+                }, 750);
+            }
+            else {
+                hideBySlidingToLeft(false, null, response.result + "-AuthorPoll_Box");
+                setTimeout(function () {
+                    $("#" + response.result + "-AuthorPoll_Box").remove();
+                    $("#PollsInformation_Box").append('<div class="box-backgrounded text-center p-2"> <h2 class="h2"> <i class="fa-solid fa-square-poll-vertical"></i> </h2> <h4 class="h4">No Polls</h4> <small class="card-text text-muted">You haven’t created any polls yet</small> </div>');
+                }, 750);
+            }
+
+            hideBySlidingToLeft(false, null, response.result + "-AuthorPoll_Box");
+            setTimeout(function () {
+                $("#" + response.result + "-AuthorPoll_Box").remove();
+            }, 750);
+            setTimeout(function () {
+                buttonUndisabler(false, "DeleteThePoll_SbmtBtn", baseHtml);
+            }, 1000);
+        }
+        else {
+            if (response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Unable to delete the poll. Please try again later", 3.75, "Got It", -1, null);
+            else callAlert('<i class="fa-solid fa-right-to-bracket"></i>', null, null, "Sign in to create, edit or delete posts & polls", 4, "Got It", -1, null);
+        }
+        uncallAProposal();
+    });
+});
+
+$(document).on("submit", "#VoteInPoll_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    $(".btn-vote-in-poll").addClass("super-disabled");
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let optionButtons = document.getElementsByClassName("box-poll-in-post-option");
+            let optionText = $("#" + response.result + "-AuthorPollOptionText_Lbl").html();
+
+            $("#" + response.result + "-AuthorPollOptionText_Lbl").html(optionText);
+            $("#" + response.result + "-AuthorOptionsParent_Box").attr("data-results-loaded", true);
+            $("#" + response.result + "-AuthorPoll_IsVoted_Span").html(' <i class="fa-regular fa-circle-check"></i> ');
+
+            $("#" + response.result + "-PollOptionText_Lbl").html(optionText);
+            $("#" + response.result + "-OptionsParent_Box").attr("data-results-loaded", true);
+            $("#" + response.result + "-Poll_IsVoted_Span").html(' <i class="fa-regular fa-circle-check"></i> ');
+
+            $("#" + response.pollId + "-ParticipateInPoll_Btn").addClass("super-disabled");
+            $("#" + response.pollId + "-ParticipateInPoll_Btn").removeClass("btn-participate-in-poll");
+            $("#" + response.pollId + "-ParticipateInPoll_Btn").removeClass("btn-stop-participating-in-poll");
+            $("#" + response.pollId + "-ParticipateInPoll_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> Voted');
+            $("#" + response.pollId + "-PollStatus_Span").html(null);
+            $("#" + response.pollId + "-PollStatus_Span").fadeOut(300);
+
+            if (optionButtons.length > 0) {
+                for (let i = 0; i < optionButtons.length; i++) {
+                    if ($(optionButtons).attr("data-poll-id") == response.pollId) {
+                        $(optionButtons).removeClass("super-disabled");
+                        $(optionButtons).removeClass("btn-vote-in-poll");
+                    }
+                }
+            }
+
+            if (response.liveDatas != null && parseInt(response.totalVotesQty) > 0) {
+                const totalVotesFormatted = new Intl.NumberFormat("en", {
+                    notation: "compact",
+                    compactDisplay: "short"
+                }).format(response.totalVotesQty);
+
+                setPollResults(response.pollId, response.id, response.totalVotesQty, response.liveDatas);
+                if (response.totalVotesQty == 1) {
+                    $("#" + response.id + "-PollTotalVotesQty_Span").html(" ∙ One vote");
+                    $("#" + response.id + "-TotalVotesQty_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> One vote');
+                }
+                else {
+                    $("#" + response.id + "-PollTotalVotesQty_Span").html(" ∙ " + totalVotesFormatted + " votes");
+                    $("#" + response.id + "-TotalVotesQty_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> ' + totalVotesFormatted);
+                }
+            }
+            else {
+                $("#" + response.pollId + "-PollTotalVotesQty_Span").html(" ∙ No votes");
+                $("#" + response.id + "-TotalVotesQty_Btn").html(' <i class="fa-solid fa-check-to-slot"></i> No votes');
+            }
+            $("#" + response.pollId + "-AuthorOptionsParent_Box").attr("data-results-loaded", true);
+
+            setTimeout(function () {
+                buttonUndisabler(true, "btn-load-poll-datas", baseHtml);
+                $("#" + response.id + "-GetPollLiveDatas_Btn").addClass("super-disabled");
+                $("#" + response.id + "-GetPollLiveDatas_Btn").html(' <i class="fa-solid fa-bars-progress"></i> Datas Loaded');
+            }, 750);
+
+            callAlert('<i class="fa-solid fa-check-to-slot"></i>', null, null, "You've successfully voted", 3.5, "Done", -1, null);
+        }
+        else {
+            callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "You cannot participate in this poll. Please try again later", 3.75, "Got It", -1, null);
+        }
+
+        setTimeout(function () {
+            $(".btn-vote-in-poll").removeClass("super-disabled");
+        }, 1500);
+    });
+});
+
+$(document).on("submit", "#GetPollComments_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    let baseHtml = ' <i class="fa-regular fa-message"></i> ';
+    buttonDisabler(true, "btn-poll-comments", null);
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            let isReady = createInsideLgCard("PollComments", "Poll Comments", '<div class="box-bordered p-2"> <div class="d-none"><form method="get" action="/PollComment/GetReplies" id="GetPollCommentReplies_Form"><input type="hidden" name="Id" id="GetPollCommentReplies_Id_Val" value="0" /> </form> <form method="post" action="/PollComment/Delete" id="DeletePollComment_Form"><input type="hidden" name="Id" id="DeletePollComment_Id_Val" value="0" /></form> <input type="hidden" id="PollComments_CommsQty_Val" value="0" /> </div> <h5 class="h5"><i class="fa-solid fa-square-poll-vertical"></i> Poll Comments</h5> <span class="card-text" id="PollSample_Question_Lbl">Poll Question (Shortened)</span> <br/> <small class="card-text text-muted"><span class="card-text" id="PollSample_ExpirationDate_Span">expires in 6h</span> ∙ <span class="card-text" id="PollSample_VotesQty_Span">153k votes</span></small> <div class="d-none"> <form method="post" action="/PollComments/Send" id="SendPollComments_Form"> <input type="hidden" name="SendPollComments_PollId_Val" value="0" /> </form> </div> </div> <div class="box-standard mt-3" id="AvailablePollComments_Box"> </div>', '<button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id="PollComments_Container-Close_Btn"><i class="fa-solid fa-angle-left"></i> Back</button>', null);
+
+            const pollQuestion = $("#" + response.pollId + "-Question_Lbl").html();
+            const pollVotesQty = $("#" + response.pollId + "-TotalVotesQty_Span").html();
+            const pollExpirationDate = $("#" + response.pollId + "-ExpiresIn_Span").html();
+
+            if(pollQuestion != undefined) $("#PollSample_Question_Lbl").html(pollQuestion);
+            if (pollVotesQty != undefined) $("#PollSample_VotesQty_Span").html(pollVotesQty + " vote(s)");
+            if (pollExpirationDate != undefined) $("#PollSample_ExpirationDate_Span").html(pollExpirationDate);
+
+            $("#AvailablePollComments_Box").empty();
+            $("#PollComments_CommsQty_Val").val(response.result.length);
+            if (response.result.length > 0) {
+                $.each(response.result, function (index) {
+                    createCommentBox("AvailablePollComments_Box", "Poll", "poll", response.result[index].id, response.userId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false);
+                });
+            }
+            else {
+                $("#AvailablePollComments_Box").append('<div class="box-standard text-center"> <h2 class="h2"> <i class="fa-solid fa-comment-slash"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">There are no comments on this poll yet</small> </div>');
+            }
+
+            swapToTextBoxNavbar();
+            bottomNavbarTextFormCustomization("/PollComment/Send", "SendPollComment_Form", "SendPollComment_Text_Val", "Text", "SendPollComment_SbmtBtn", ["PollId"], [0], ["SendPollComment_PollId_Val"], ["form-control-guard"], ["maxlength", "data-min-length"], [750, 1], "Comment text...", ' <i class="fa-solid fa-arrow-up"></i> ', "btn-standard-rounded");
+            $("#SendPollComment_PollId_Val").val(response.pollId);
+
+            if (isReady) {
+                setTimeout(function () {
+                    callInsideLgContainer(false, "PollComments_Container", false);
+                }, 150);
+            }
+        }
+        else {
+            callAlert(' <i class="fa-solid fa-comment-slash"></i> ', null, null, "We couldn’t load comments for this poll. Please try again", 3.75, "Close", -1, null);
+        }
+
+        setTimeout(function () {
+            buttonUndisabler(true, "btn-poll-comments", baseHtml);
+        }, 750);
+    });
+});
+
+$(document).on("submit", "#SendPollComment_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const buttonHtml = $("#SendPollComment_SbmtBtn").html();
+    buttonDisabler(false, "SendPollComment_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let commsQty = parseInt($("#PollComments_CommsQty_Val").val()) + 1;
+            if (commsQty == 1) $("#AvailablePollComments_Box").empty();
+
+            createCommentBox("AvailablePollComments_Box", "Poll", response.result, response.model.userId, response.userImg, response.model.userId, "You", response.model.text, new Date(), 0, false, false, false);
+            $("#PollComments_CommsQty_Val").val(commsQty);
+
+            setTimeout(function () {
+                buttonUndisabler(false, "SendPollComment_SbmtBtn", buttonHtml);
+            }, 750);
+        }
+        else {
+            if (response.error == 0) callAlert('<i class="fa-solid fa-arrow-up anime-rewind-shift"></i>', null, null, "Failed to send comment due to an unexpected error. Please try again later", 3.75, "Okay", -1, null);
+            else callAlert('<i class="fa-solid fa-arrow-up anime-rewind-shift"></i>', null, null, "Sign in to send, edit or like comments", 3.5, "Okay", -1, null);
+        }
+
+        $("#SendPollComment_Text_Val").val(null);
+    });
+});
+
+$(document).on("submit", "#EditPollComment_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const baseHtml = $("#EditPollComment_SbmtBtn").html();
+    buttonDisabler(false, "EditPollComment_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#" + response.result + "-PollIsCommentEdited_Span").fadeIn(300);
+            $("#" + response.result + "-PollCommentContent_Span").html(response.text);
+            callKawaiiAlert(0, "Comment edited", '<i class="fa-solid fa-pencil"></i>', null, null, 2, false);
+        }
+        else {
+            if(response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Failed to edit the comment. Please try again later", 3.75, "Close", -1, null);
+            else callAlert('<i class="fa-solid fa-arrow-up anime-rewind-shift"></i>', null, null, "Sign in to edit comments", 3.25, "Okay", -1, null);
+        }
+        swapToDefaultMode();
+        bottomNavbarTextFormCustomization("/PollComment/Send", "SendPollComment_Form", "SendPollComment_Text_Val", "Text", "SendPollComment_SbmtBtn", ["PollId"], [0], ["SendPollComment_PollId_Val"], ["form-control-guard"], ["maxlength", "data-min-length"], [750, 1], "Comment text...", ' <i class="fa-solid fa-arrow-up"></i> ', "btn-standard-rounded");
+        setTimeout(function () {
+            buttonUndisabler(false, "EditPollComment_SbmtBtn", baseHtml);
+        }, 750);
+    });
+});
+
+$(document).on("submit", "#DeletePollComment_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const baseHtml = $(".btn-submit-delete-poll-comment").html();
+    buttonDisabler(true, "btn-submit-delete-poll-comment", ' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Loading...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let currentCommsQty = parseInt($("#PollComments_CommsQty_Val").val()) - 1;
+            if (currentCommsQty > 0) {
+                hideBySlidingToLeft(false, null, response.result + "-PollComment_Box");
+                setTimeout(function () {
+                    $("#" + response.result + "-PollComment_Box").remove();
+                }, 750);
+            }
+            else {
+                hideBySlidingToLeft(false, null, response.result + "-PollComment_Box");
+                setTimeout(function () {
+                    $("#AvailablePollComments_Box").empty();
+                    $("#AvailablePollComments_Box").append('<div class="box-standard text-center"> <h2 class="h2"> <i class="fa-solid fa-comment-slash"></i> </h2> <h4 class="h4">No Comments</h4> <small class="card-text text-muted">There are no comments on this poll yet</small> </div>');
+                }, 750);
+
+                callKawaiiAlert(0, "Comment deleted", '<i class="fa-regular fa-trash-can"></i>', null, null, 2.25, false);
+            }
+        }
+        else {
+            if (response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Failed to delete the comment. Please try again later", 3.5, "Close", -1, null);
+            else callAlert('<i class="fa-solid fa-arrow-up anime-rewind-shift"></i>', null, null, "Sign in to delete your comments", 3.25, "Got It", -1, null);
+        }
+
+        uncallAProposal();
+        setTimeout(function () {
+            buttonUndisabler(false, "btn-submit-delete-poll-comment", baseHtml);
+        }, 750);
+    });
+});
+
+$(document).on("submit", "#GetPollCommentReplies_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const baseHtml = $(".btn-reply-to-poll-comment").html();
+    buttonDisabler(true, "btn-reply-to-poll-comment", null);
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            let isReady = createInsideLgCard("PollCommentReplies", "Poll Comment Replies", '<div class="d-none"> <input type="hidden" id="PollCommentReplies_Qty_Val" value="0" /></div> <div class="box-standard mt-1" id="AvailablePollCommentReplies_Box"> </div>', '<button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id="PollCommentReplies_Container-Close_Btn"><i class="fa-solid fa-angle-left"></i> Back</button>', null);
+
+            $("#AvailablePollCommentReplies_Box").empty();
+            $("#PollCommentReplies_Qty_Val").val(response.result.length);
+            if (response.result.length > 0) {
+                $.each(response.result, function (index) {
+                    createCommentBox("AvailablePollCommentReplies_Box", "Poll", "poll", response.result[index].id, response.userId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false, false);
+                });
+            }
+            else $("#AvailablePollCommentReplies_Box").append('<div class="box-standard text-center mt-1 p-2"> <h2 class="h2"> <i class="fa-solid fa-reply"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">This poll comment has no replies yet</small> </div>');
+
+            swapToTextBoxNavbar();
+            bottomNavbarTextFormCustomization("/PollComment/Reply", "ReplyToPollComment_Form", "ReplyToPollComment_Text_Val", "Text", "ReplyToPollComment_SbmtBtn", ["PollCommentId"], [response.id], ["ReplyToPollComment_PollCommentId_Val"], ["form-control-guard"], ["data-min-length", "maxlength"], [1, 500], "Reply text...", ' <i class="fa-solid fa-arrow-up"></i> ', ["btn-standard-rounded"]);
+
+            if (isReady) {
+                setTimeout(function () {
+                    callInsideLgContainer(false, "PollCommentReplies_Container", true);
+                }, 150);
+            }
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Failed to get this comment replies. Please try again later", 3.5, "Close", -1, null);
+
+        setTimeout(function () {
+            buttonUndisabler(true, "btn-reply-to-poll-comment", baseHtml);
+        }, 750);
+    });
+});
+
+$(document).on("submit", "#ReplyToPollComment_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const baseHtml = $("#ReplyToPollComment_SbmtBtn").html();
+    buttonDisabler(false, "ReplyToPollComment_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let repliesQty = parseInt($("#PollCommentReplies_Qty_Val").val());
+            if (repliesQty <= 0) $("#AvailablePollCommentReplies_Box").empty();
+
+            $("#PollCommentReplies_Qty_Val").val(++repliesQty);
+            $("#ReplyToPollComment_Text_Val").val(null);
+            createCommentBox("AvailablePollCommentReplies_Box", "Poll", "poll", response.result, response.model.userId, response.userImg, response.model.userId, "You", response.model.text, response.model.sentAt, 0, false, false, false, true, false);
+        }
+        else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Couldn’t post your reply. Please try again later", 3.5, "Got It", -1, null);
+
+        setTimeout(function () {
+            buttonUndisabler(false, "ReplyToPollComment_SbmtBtn", baseHtml);
+        }, 750);
+    });
+});
+
+$(document).on("mousedown", ".btn-participate-in-poll", function () {
+    let pollId = getTrueId($(this).attr("id"), false);
+    if (pollId != undefined) {
+        $("#" + pollId + "-PollStatus_Span").html(' ∙ <i class="fa-solid fa-check-to-slot"></i> Vote Mode On');
+        $("#" + pollId + "-PollStatus_Span").fadeIn(300);
+
+        let pollOptionButtons = document.getElementsByClassName("box-poll-in-post-option");
+        if (pollOptionButtons.length > 0) {
+            for (let i = 0; i < pollOptionButtons.length; i++) {
+                if ($(pollOptionButtons[i]).attr("data-poll-id") == pollId) {
+                    $(pollOptionButtons[i]).addClass("btn-vote-in-poll");
+                }
+            }
+        }
+
+        $(this).removeClass("btn-participate-in-poll");
+        $(this).addClass("btn-stop-participating-in-poll");
+        $(this).html(' <i class="fa-solid fa-circle-stop"></i> Stop Voting');
+    }
+});
+
+$(document).on("mousedown", ".btn-stop-participating-in-poll", function () {
+    let pollId = getTrueId($(this).attr("id"), false);
+    if (pollId != undefined) {
+        $("#" + pollId + "-PollStatus_Span").html(null);
+        $("#" + pollId + "-PollStatus_Span").fadeOut(300);
+
+        let pollOptionButtons = document.getElementsByClassName("box-poll-in-post-option");
+        if (pollOptionButtons.length > 0) {
+            for (let i = 0; i < pollOptionButtons.length; i++) {
+                if ($(pollOptionButtons[i]).attr("data-poll-id") == pollId) {
+                    $(pollOptionButtons[i]).removeClass("btn-vote-in-poll");
+                }
+            }
+        }
+
+        $(this).addClass("btn-participate-in-poll");
+        $(this).removeClass("btn-stop-participating-in-poll");
+        $(this).html(' <i class="fa-solid fa-check-to-slot"></i> Vote');
+    }
+});
+
+$(document).on("mousedown", ".btn-pre-finish-poll", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        //callAProposal('<i class="fa-solid fa-flag-checkered"></i>', "End Poll", "Ending the poll will stop new votes. Results will be finalized and shown to viewers. A special flag will indicate it was ended early", "End", ["btn-finish-poll"], ["data-poll-id"], [trueId], false, null, 20);
+        callAProposal('<i class="fa-solid fa-flag-checkered"></i>', "End Poll", "Ending the poll will stop new votes. Results will be finalized and shown to viewers. A special flag will indicate it was ended early", "End", null, null, null, true, '<form method="post" action="/Poll/End" id="EndThePoll_Form"><input type="hidden" name="Id" id="EndThePoll_Id_Val" value="0" /><button type="submit" class="btn btn-standard-bolded bg-chosen-bright w-100" id="EndThePoll_SbmtBtn"> <i class="fa-solid fa-flag-checkered"></i> End</button></form>', 20);
+
+        setTimeout(function () {
+            $("#EndThePoll_Id_Val").val(trueId);
+        }, 300);
+    }
+});
+
+$(document).on("mousedown", ".btn-pre-delete-poll", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        //function uncallAProposal
+        callAProposal('<i class="fa-regular fa-trash-can text-danger"></i>', "Delete Poll", "Are you sure you want to delete this poll? This action is permanent and cannot be undone. All votes and results will be lost", null, null, null, null, true, '            <form method="post" action="/Poll/Delete" id="DeleteThePoll_Form"><input type="hidden" name="Id" id="DeleteThePoll_Id_Val" value="0" /><button type="submit" class="btn btn-standard-bolded btn-classic-styled bg-danger text-light w-100" id="DeleteThePoll_SbmtBtn"> <i class="fa-regular fa-trash-can"></i> Delete</button></form>', 30);
+        setTimeout(function () {
+            $("#DeleteThePoll_Id_Val").val(trueId);
+        }, 300);
+    }
+});
+
+$(document).on("mousedown", ".btn-vote-in-poll", function () {
+    let pollId = $(this).attr("data-poll-id");
+    let trueId = getTrueId($(this).attr("id"), false);
+
+    if (trueId != undefined && pollId != undefined) {
+        let areResultsLoaded = $("#" + pollId + "-AuthorOptionsParent_Box").attr("data-results-loaded");
+        areResultsLoaded = areResultsLoaded == undefined ? $("#" + pollId + "-OptionsParent_Box").attr("data-results-loaded") : areResultsLoaded;
+        areResultsLoaded = areResultsLoaded == "false" ? true : false;
+
+        $("#VoteInPoll_Id_Val").val(trueId);
+        $("#VoteInPoll_PollId_Val").val(pollId);
+        $("#VoteInPoll_LoadResults_Val").val(areResultsLoaded);
+        $("#VoteInPoll_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-load-poll-datas", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        let areResultsLoaded = $("#" + trueId + "-AuthorOptionsParent_Box").attr("data-results-loaded");
+        areResultsLoaded = areResultsLoaded == "true" ? true : false;
+        if (!areResultsLoaded) {
+            $("#GetPollLiveDatas_Id_Val").val(trueId);
+            $("#GetPollLiveDatas_Form").submit();
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-poll-comments", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        $("#GetPollComments_Id_Val").val(trueId);
+        $("#GetPollComments_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-edit-poll-comment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        const currentText = $("#" + trueId + "-PollCommentContent_Span").html();
+        if (currentText != undefined) {
+            swapToTextBoxNavbar();
+            swapToEditMode(0, currentText);
+            bottomNavbarTextFormCustomization("/PollComment/Edit", "EditPollComment_Form", "EditPollComment_Text_Val", "Text", "EditPollComment_SbmtBtn", ["Id"], [trueId], ["EditPollComment_Id_Val"], ["form-control-guard"], ["maxlength", "data-min-length"], [500, 1], "Edit your comment...", ' <i class="fa-solid fa-check"></i> ', "btn-standard-rounded");
+            $("#EditPollComment_Text_Val").val(currentText);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-pre-delete-poll-comment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        callAProposal('<i class="fa-regular fa-trash-can text-danger"></i>', "Delete Comment", "Are you sure you want to delete this comment?", "Yes, Certainly", ["btn-delete-poll-comment", "bg-danger text-light"], ["data-comment-id"], [trueId], false, null);
+    }
+});
+
+$(document).on("mousedown", ".btn-delete-poll-comment", function () {
+    let id = $(this).attr("data-comment-id");
+    if (id != undefined) {
+        $("#DeletePollComment_Id_Val").val(id);
+        $("#DeletePollComment_Form").submit();
+    }
+});
+
+$(document).on("mousedown", ".btn-reply-to-poll-comment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        $("#GetPollCommentReplies_Id_Val").val(trueId);
+        $("#GetPollCommentReplies_Form").submit();
+    }
+});
+
+function setPollResults(poll_Id, currentUser_VoteOption_Id, totalVoicesQty = 0, resultsArr = []) {
+    if ((poll_Id != undefined && poll_Id != null) && (resultsArr.length > 0) && (parseInt(totalVoicesQty) > 0)) {
+        for (let i = 0; i < resultsArr.length; i++) {
+            const percFromTotal = (parseFloat(resultsArr[i].groupVotesQty) / totalVoicesQty) * 100;
+
+            $("#" + resultsArr[i].pollOptionId + "-Poll_VoicePercLine_Box").fadeIn(300);
+            $("#" + resultsArr[i].pollOptionId + "-Poll_VoiceQtyBadge_Span").fadeIn(300);
+            $("#" + resultsArr[i].pollOptionId + "-Poll_VoicePercLine_Box").css("width", percFromTotal + "%");
+            $("#" + resultsArr[i].pollOptionId + "-Poll_VoiceQtyBadge_Span").html(percFromTotal.toFixed(1) + "% ∙ " + resultsArr[i].groupVotesQty.toLocaleString());
+
+            $("#" + resultsArr[i].pollOptionId + "-AuthorPoll_VoicePercLine_Box").fadeIn(300);
+            $("#" + resultsArr[i].pollOptionId + "-AuthorPoll_VoiceQtyBadge_Span").fadeIn(300);
+            $("#" + resultsArr[i].pollOptionId + "-AuthorPoll_VoicePercLine_Box").css("width", percFromTotal + "%");
+            $("#" + resultsArr[i].pollOptionId + "-AuthorPoll_VoiceQtyBadge_Span").html(percFromTotal.toFixed(1) + "% ∙ " + resultsArr[i].groupVotesQty.toLocaleString());
+        }
+
+        if (currentUser_VoteOption_Id != null || currentUser_VoteOption_Id != undefined) {
+            $("#" + currentUser_VoteOption_Id + "-AuthorPoll_IsVoted_Span").html(' <i class="fa-regular fa-circle-check"></i> ');
+            $("#" + currentUser_VoteOption_Id + "-AuthorPoll_IsVoted_Span").fadeIn(300);
+        }
+    }
+}
+
+function createRegularPollBox(poll_Id = 0, user_Id = 0, user_Nickname = null, user_ImgSrc = null, expiration_Date = new Date(), questionText, options = [], votedOptionId = null, totalVotesQty = 0, isAnonym = false, isSkippable = false) {
+    if ((poll_Id != null || poll_Id != undefined) && (user_Id != null || user_Id != undefined) && (user_Nickname != null || user_Nickname != undefined) && (questionText != null || questionText != undefined)) {
+        let mainBox = elementDesigner("div", "box-post-or-poll", null);
+        let headerStackBox = elementDesigner("div", "hstack gap-2", null);
+        let avatarBox = null;
+        let headerInfoBox = elementDesigner("div", "ms-2", null);
+        let userName_Lbl = elementDesigner("span", "h6", user_Nickname);
+        let infoBoxSeparator = $("<br />");
+        let statsMain_Span = elementDesigner("small", "card-text text-muted", null);
+        let statsType_Span = elementDesigner("span", "card-text", null);
+        let statsExpiresIn_Span = elementDesigner("span", "card-text", null);
+        let statsIsAnonym_Span = elementDesigner("span", "card-text", null);
+
+        let expiresIn_Html = null;
+        let todayDate = new Date();
+        let expiresIn_DateDiff = getDateDiffs(todayDate, new Date(expiration_Date));
+
+        let question_Box = elementDesigner("div", "box-standard mt-2", null);
+        let question_Lbl = elementDesigner("p", "card-text white-space-on", questionText);
+
+        let optionsParentBox = elementDesigner("div", "box-bordered mt-1 p-1", null);
+        let additionalBtnsBox = elementDesigner("div", "box-standard row mt-2", null);
+        let additionalBtnsCol0 = elementDesigner("div", "col", null);
+        let additionalBtnsCol1 = elementDesigner("div", "col", null);
+        let additionalBtnsCol2 = elementDesigner("div", "col", null);
+        let additionalBtnsCol3 = elementDesigner("div", "col", null);
+
+        let additionalBtn0 = elementDesigner("button", "btn btn-poll-or-post-settings btn-like-the-poll btn-sm", ' <i class="fa-regular fa-heart"></i> ');
+        let additionalBtn1 = elementDesigner("button", "btn btn-poll-or-post-settings btn-poll-comments btn-sm", ' <i class="fa-regular fa-message"></i> ');
+        let additionalBtn2 = elementDesigner("button", "btn btn-poll-or-post-settings btn-poll-votes-display btn-sm", ' <i class="fa-solid fa-check-to-slot"></i> ');
+        let additionalBtn3 = $('<button type="button" class="btn btn-poll-or-post-settings btn-sm" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let dropdownBox = elementDesigner("div", "dropdown", null);
+        let dropdownMenuBox = $("<ul class='dropdown-menu shadow-sm'></ul>");
+        let dropdownLi0 = $("<li></li>");
+        let dropdownLi1 = $("<li></li>");
+        let dropdownLi2 = $("<li></li>");
+        let dropdownBtn0 = elementDesigner("button", "dropdown-item btn-skip-the-poll", ' <i class="fa-solid fa-bars-progress"></i> Show Results');
+        let dropdownBtn1 = elementDesigner("button", "dropdown-item", ' <i class="fa-regular fa-chart-bar"></i> Show Stats Chart');
+        let dropdownBtn2 = elementDesigner("button", "dropdown-item text-danger", ' <i class="fa-regular fa-flag"></i> Report');
+        let onlyVotesQtySpan = elementDesigner("span", "card-text", null);
+
+        if (user_ImgSrc != null || user_ImgSrc != undefined) {
+            avatarBox = $("<img src='#' class='profile-avatar-img-md' alt='This image cannot be displayed' />");
+            avatarBox.attr("src", "/ProfileImages/" + user_ImgSrc);
+        }
+        else {
+            avatarBox = elementDesigner("div", "profile-avatar-md", user_Nickname[0]);
+        }
+
+        if (expiresIn_DateDiff != null) {
+            expiresIn_Html = "expires in ";
+            if (expiresIn_DateDiff.days > 0) expiresIn_Html += expiresIn_DateDiff.days + "d ";
+            if (expiresIn_DateDiff.hours > 0) expiresIn_Html += expiresIn_DateDiff.hours + "h";
+            else expiresIn_Html += "less than an hour";
+
+            statsExpiresIn_Span.html(expiresIn_Html);
+            statsExpiresIn_Span.attr("id", poll_Id + "-ExpiresIn_Span");
+        }
+
+        if (isAnonym) statsIsAnonym_Span.html(' ∙ <i class="fa-solid fa-masks-theater"></i> anonym poll');
+        else statsIsAnonym_Span.html(' ∙ <i class="fa-regular fa-square-check"></i> open poll');
+
+        let totalVotesFormatted = new Intl.NumberFormat("en", {
+            notation: "compact",
+            compactDisplay: "short"
+        }).format(totalVotesQty);
+
+        optionsParentBox.attr("data-results-loaded", false);
+        optionsParentBox.attr("id", poll_Id + "-OptionsParent_Box");
+        onlyVotesQtySpan.html(totalVotesFormatted);
+        additionalBtn2.html(' <i class="fa-solid fa-check-to-slot"></i> ');
+        additionalBtn2.append(onlyVotesQtySpan);
+
+        for (let i = 0; i < options.length; i++) {
+            let optionIsVotedSpan = elementDesigner("span", "card-text", null);
+            let optionChildBox = elementDesigner("div", "box-poll-in-post-option", null);
+            let optionText = elementDesigner("span", "card-text", options[i].option);
+            let optionVotePercLineBox = elementDesigner("div", "box-poll-in-post-voice-part", null);
+            let optionVoteQtyBadgeSpan = elementDesigner("small", "badge-voice-qty float-end ms-1", null);
+
+            optionChildBox.append(optionVoteQtyBadgeSpan)
+            optionChildBox.append(optionIsVotedSpan);
+            optionChildBox.append(optionText);
+            optionChildBox.append(optionVotePercLineBox);
+
+            optionVoteQtyBadgeSpan.attr("id", options[i].id + "-Poll_VoiceQtyBadge_Span");
+            optionVotePercLineBox.attr("id", options[i].id + "-Poll_VoicePercLine_Box");
+            optionIsVotedSpan.attr("id", options[i].id + "-Poll_IsVoted_Span");
+            optionText.attr("id", options[i].id + "-PollOptionText_Lbl");
+            optionChildBox.attr("id", options[i].id + "-PollOption_Box");
+            optionChildBox.attr("data-poll-id", poll_Id);
+
+            if (parseInt(options[i].votesQty) > 0) {
+                let currentPercFromTotal = parseFloat(options[i].votesQty) / parseFloat(totalVotesQty) * 100;
+                let currentVotesFormatted = new Intl.NumberFormat("en", {
+                    notation: "compact",
+                    compactDisplay: "short"
+                }).format(options[i].votesQty);
+
+                optionVotePercLineBox.fadeIn(300);
+                optionVoteQtyBadgeSpan.fadeIn(300);
+                optionVotePercLineBox.css("width", currentPercFromTotal + "%");
+                optionVoteQtyBadgeSpan.html(currentPercFromTotal.toFixed(1) + "% ∙ " + currentVotesFormatted);
+            }
+            else {
+                optionVotePercLineBox.fadeOut(0);
+                optionVoteQtyBadgeSpan.fadeOut(0);
+            }
+
+            if (parseInt(votedOptionId) == undefined || parseInt(votedOptionId) == 0) optionChildBox.addClass("btn-vote-in-poll");
+            else {
+                if (parseInt(votedOptionId) == options[i].id) {
+                    optionIsVotedSpan.fadeIn(300);
+                    optionChildBox.addClass("active");
+                    optionIsVotedSpan.html(' <i class="fa-regular fa-circle-check"></i> ');
+                }
+                else optionIsVotedSpan.fadeOut(0);
+            }
+            optionsParentBox.append(optionChildBox);
+        }
+
+        if (isSkippable && (votedOptionId == null || votedOptionId == undefined)) {
+            let skipBox = elementDesigner("div", "box-poll-in-post-option btn-skip-the-poll", null);
+            let skipText = elementDesigner("span", "card-text", ' <i class="fa-solid fa-bars-progress"></i> Show Results');
+            skipBox.append(skipText);
+
+            skipBox.attr("id", poll_Id + "-SkipThePoll_Box");
+            optionsParentBox.append(skipBox);
+        }
+
+        additionalBtn1.attr("id", poll_Id + "-GetPollComments_Btn");
+        additionalBtn2.attr("id", poll_Id + "-TotalVotesQty_Btn");
+        onlyVotesQtySpan.attr("id", poll_Id + "-TotalVotesQty_Span");
+        question_Lbl.attr("id", poll_Id + "-Question_Lbl");
+
+        statsMain_Span.append(statsType_Span);
+        statsMain_Span.append(statsExpiresIn_Span);
+        statsMain_Span.append(statsIsAnonym_Span);
+
+        headerInfoBox.append(userName_Lbl);
+        headerInfoBox.append(infoBoxSeparator);
+        headerInfoBox.append(statsMain_Span);
+
+        headerStackBox.append(avatarBox);
+        headerStackBox.append(headerInfoBox);
+
+        question_Box.append(question_Lbl);
+
+        dropdownLi0.append(dropdownBtn0);
+        dropdownLi1.append(dropdownBtn1);
+        dropdownLi2.append(dropdownBtn2);
+        dropdownMenuBox.append(dropdownLi0);
+        dropdownMenuBox.append(dropdownLi1);
+        dropdownMenuBox.append(dropdownLi2);
+        dropdownBox.append(additionalBtn3);
+        dropdownBox.append(dropdownMenuBox);
+
+        additionalBtnsCol0.append(additionalBtn0);
+        additionalBtnsCol1.append(additionalBtn1);
+        additionalBtnsCol2.append(additionalBtn2);
+        additionalBtnsCol3.append(dropdownBox);
+        additionalBtnsBox.append(additionalBtnsCol0);
+        additionalBtnsBox.append(additionalBtnsCol1);
+        additionalBtnsBox.append(additionalBtnsCol2);
+        additionalBtnsBox.append(additionalBtnsCol3);
+
+        mainBox.append(headerStackBox);
+        mainBox.append(question_Box);
+        mainBox.append(optionsParentBox);
+        mainBox.append(additionalBtnsBox);
+
+        return mainBox;
+    }
+    else return null;
+}
+
+function createPollAuthorBox(poll_Id, pollQuestion, pollOptions = [], expiresAt_Date = new Date(), totalVotesQty = 0, isAnonym = false, isSkippable = false, votedOptionId) {
+    if ((poll_Id != null || poll_Id != undefined) && (pollQuestion != undefined || pollQuestion != null) && (pollOptions.length > 1)) {
+        expiresAt_Date = new Date(expiresAt_Date);
+        let todayDate = new Date();
+        let pollExpirationHtml = null;
+        let pollExpirationDuration = getDateDiffs(todayDate, expiresAt_Date);
+
+        if (pollExpirationDuration != null) {
+            if (pollExpirationDuration.days > 0) pollExpirationHtml = pollExpirationDuration.days + "d ";
+            else pollExpirationHtml = "";
+
+            if (pollExpirationDuration.hours > 0) pollExpirationHtml += pollExpirationDuration.hours + "h";
+            else pollExpirationHtml = "less than an hour";
+        }
+
+        let pollBox = elementDesigner("div", "box-post-or-poll", null);
+        let headerStackBox = elementDesigner("div", "hstack gap-1", null);
+        let headerStackInfoDiv = elementDesigner("div", "box-standard", null);
+
+        let pollQuestionLbl = elementDesigner("span", "card-text white-space-on", pollQuestion);
+        let pollTypeIcon = elementDesigner("small", "card-text text-muted", null);
+        let pollExpiresAfter = elementDesigner("small", "card-text text-muted", null);
+        let pollTotalVotesQtySpan = elementDesigner("small", "card-text text-muted", null);
+        let pollStatusSpan = elementDesigner("small", "card-text text-muted", null);
+        let pollInfoSeparator = $("<br />");
+
+        let dropdownMoreInfoBox = elementDesigner("div", "dropdown ms-auto", null);
+        let dropdownBtn = $('<button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>');
+        let dropdownUl = $('<ul class="dropdown-menu shadow-sm"></ul>');
+        let participateInPollBtn = elementDesigner("button", "dropdown-item btn-participate-in-poll", ' <i class="fa-solid fa-check-to-slot"></i> Participate');
+        let getLiveDatasBtn = elementDesigner("button", "dropdown-item btn-load-poll-datas", ' <i class="fa-solid fa-bars-progress"></i> Show Datas');
+        let finishPollBtn = elementDesigner("button", "dropdown-item btn-pre-finish-poll", ' <i class="fa-solid fa-flag-checkered"></i> Finish Poll');
+        let deletePollBtn = elementDesigner("button", "dropdown-item text-danger btn-pre-delete-poll", ' <i class="fa-regular fa-trash-can"></i> Delete Poll');
+        let dropdownLi0 = $("<li></li>");
+        let dropdownLi1 = $('<li></li>');
+        let dropdownLi2 = $('<li></li>');
+        let dropdownLi3 = $('<li></li>');
+
+        getLiveDatasBtn.attr("id", poll_Id + "-GetPollLiveDatas_Btn");
+        finishPollBtn.attr("id", poll_Id + "-ForceFinishPoll_Btn");
+        deletePollBtn.attr("id", poll_Id + "-PreDeletePoll_Btn");
+        pollExpiresAfter.attr("id", poll_Id + "-ExpirationDuration_Span");
+        pollTotalVotesQtySpan.attr("id", poll_Id + "-PollTotalVotesQty_Span");
+        pollStatusSpan.attr("id", poll_Id + "-PollStatus_Span");
+        pollStatusSpan.fadeOut(0);
+
+        dropdownLi0.append(participateInPollBtn);
+        dropdownLi1.append(getLiveDatasBtn);
+        dropdownLi2.append(finishPollBtn);
+        dropdownLi3.append(deletePollBtn);
+        dropdownUl.append(participateInPollBtn);
+        dropdownUl.append(dropdownLi1);
+        dropdownUl.append(dropdownLi2);
+        dropdownUl.append(dropdownLi3);
+        dropdownMoreInfoBox.append(dropdownUl);
+        dropdownMoreInfoBox.append(dropdownBtn);
+
+        headerStackInfoDiv.append(pollQuestionLbl);
+        headerStackInfoDiv.append(pollInfoSeparator);
+        headerStackInfoDiv.append(pollTypeIcon);
+        headerStackInfoDiv.append(pollExpiresAfter.html(" ∙ " + pollExpiresAfter));
+        headerStackInfoDiv.append(pollTotalVotesQtySpan);
+        headerStackInfoDiv.append(pollStatusSpan);
+
+        let optionsParentBox = elementDesigner("div", "box-bordered mt-1", null);
+        optionsParentBox.attr("data-results-loaded", false);
+        optionsParentBox.attr("id", poll_Id + "-AuthorOptionsParent_Box");
+        for (let i = 0; i < pollOptions.length; i++) {
+            let optionIsVotedSpan = elementDesigner("span", "card-text", null);
+            let optionChildBox = elementDesigner("div", "box-poll-in-post-option", null);
+            let optionText = elementDesigner("span", "card-text", pollOptions[i].option);
+            let optionVotePercLineBox = elementDesigner("div", "box-poll-in-post-voice-part", null);
+            let optionVoteQtyBadgeSpan = elementDesigner("small", "badge-voice-qty float-end ms-1", null);
+
+            optionChildBox.append(optionVoteQtyBadgeSpan)
+            optionChildBox.append(optionIsVotedSpan);
+            optionChildBox.append(optionText);
+            optionChildBox.append(optionVotePercLineBox);
+
+            if (parseInt(pollOptions[i].votesQty) > 0) {
+                let currentPercFromTotal = parseFloat(pollOptions[i].votesQty) / parseFloat(totalVotesQty) * 100;
+                let currentVotesFormatted = new Intl.NumberFormat("en", {
+                    notation: "compact",
+                    compactDisplay: "short"
+                }).format(pollOptions[i].votesQty);
+
+                optionIsVotedSpan.fadeIn(300);
+                optionVotePercLineBox.fadeIn(300);
+                optionVotePercLineBox.css("width", currentPercFromTotal + "%");
+                optionVoteQtyBadgeSpan.html(currentPercFromTotal.toFixed(1) + "% ∙ " + currentVotesFormatted);
+            }
+            else {
+                optionVoteQtyBadgeSpan.fadeOut(0);
+                optionVotePercLineBox.fadeOut(0);
+            }
+            
+            if (parseInt(votedOptionId) == undefined || parseInt(votedOptionId) == 0) optionChildBox.addClass("btn-vote-in-poll");
+            else {
+                if (parseInt(votedOptionId) == options[i].id) {
+                    optionIsVotedSpan.fadeIn(300);
+                    optionChildBox.addClass("active");
+                    optionIsVotedSpan.html(' <i class="fa-regular fa-circle-check"></i> ');
+                }
+                else optionIsVotedSpan.fadeOut(0);
+            }
+
+            optionVoteQtyBadgeSpan.attr("id", pollOptions[i].id + "-AuthorPoll_VoiceQtyBadge_Span");
+            optionVotePercLineBox.attr("id", pollOptions[i].id + "-AuthorPoll_VoicePercLine_Box");
+            optionIsVotedSpan.attr("id", pollOptions[i].id + "-AuthorPoll_IsVoted_Span");
+            optionText.attr("id", pollOptions[i].id + "-AuthorPollOptionText_Lbl");
+            optionChildBox.attr("id", pollOptions[i].id + "-AuthorPollOption_Box");
+            optionChildBox.attr("data-poll-id", poll_Id);
+            optionsParentBox.append(optionChildBox);
+        }
+
+        let pollAdditionalInfoBox = elementDesigner("div", "box-standard row mt-1", null);
+        let pollAddCol1 = elementDesigner("div", "col", null);
+        let pollAddCol2 = elementDesigner("div", "col", null);
+        let pollAddCol3 = elementDesigner("div", "col", null);
+        let pollOptionsQtyBtn = elementDesigner("button", "btn btn-poll-or-post-settings btn-sm", null);
+        let pollIsAnonymBtn = elementDesigner("button", "btn btn-poll-or-post-settings btn-sm", null);
+        let pollIsSkippableBtn = elementDesigner("button", "btn btn-poll-or-post-settings btn-sm", null);
+
+        pollOptionsQtyBtn.html(' <i class="fa-solid fa-list-ul"></i> Options: ' + pollOptions.length);
+        if (isAnonym) pollIsAnonymBtn.html(' <i class="fa-solid fa-masks-theater"></i> Anonym');
+        else pollIsAnonymBtn.html(' <i class="fa-solid fa-check-to-slot"></i> Open Poll');
+        if (isSkippable) pollIsSkippableBtn.html(' <i class="fa-solid fa-angles-right"></i> Skippable');
+        else pollIsSkippableBtn.html('  <i class="fa-solid fa-angle-right"></i> Unskippable');
+
+        pollAddCol1.append(pollOptionsQtyBtn);
+        pollAddCol2.append(pollIsAnonymBtn);
+        pollAddCol3.append(pollIsSkippableBtn);
+
+        pollAdditionalInfoBox.append(pollAddCol1);
+        pollAdditionalInfoBox.append(pollAddCol2);
+        pollAdditionalInfoBox.append(pollAddCol3);
+
+        pollTypeIcon.html(' <i class="fa-solid fa-square-poll-vertical"></i> ');
+        pollExpiresAfter.html(" expires in " + pollExpirationHtml);
+
+        headerStackBox.append(headerStackInfoDiv);
+        headerStackBox.append(dropdownMoreInfoBox);
+
+        pollBox.attr("id", poll_Id + "-AuthorPoll_Box");
+
+        pollBox.append(headerStackBox);
+        pollBox.append(optionsParentBox);
+        pollBox.append(pollAdditionalInfoBox);
+
+        return pollBox;
+    }
+    else return null;
+}
+
+function getDateDiffs(firstDate = new Date(), secondDate = new Date()) {
+    if ((firstDate != null || firstDate != undefined) && (secondDate != null || secondDate != undefined)) {
+        firstDate = new Date(firstDate);
+        secondDate = new Date(secondDate);
+
+        let dateDiff = Math.abs(firstDate - secondDate);
+        if (dateDiff > 0) {
+            const seconds = Math.round(dateDiff / 1000);
+            const minutes = Math.round(dateDiff / (1000 * 60));
+            let hours = Math.round(dateDiff / (1000 * 60 * 60));
+            let days = hours > 24 ? Math.round(hours / 24) : 0;
+            if (days > 0) hours = hours - (days * 24);
+
+            return {
+                days: days,
+                hours: hours,
+                minutes: minutes,
+                seconds: seconds
+            };
+        }
+        else return null;
+    }
+    else return null;
+}
+
+function createCommentBox(applyTo_BoxId, uniqueIdPart = null, uniqueClassPart = null, index = 0, currentUserId, avatarImgSrc, userId, username, text, sentAt_Date = new Date(), likesQty = 0, isEdited = false, isLiked = false, isPinned = false, isForParentOwner = false, canBeReplied = true) {
     if (applyTo_BoxId != null || applyTo_BoxId != undefined) {
         sentAt_Date = new Date(sentAt_Date);
+        uniqueIdPart = (uniqueIdPart == null || uniqueIdPart == undefined) ? "" : uniqueIdPart;
+        uniqueClassPart = (uniqueClassPart == null || uniqueClassPart == undefined) ? "" : uniqueClassPart + "-";
+
         let elementBox = elementDesigner("div", "box-comment", null);
         let elementHeaderBox = elementDesigner("div", "box-comment-header hstack gap-2", null);
         let senderAvatarBox = null;
@@ -3823,7 +4821,7 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         let elementBodyBox = elementDesigner("div", "box-comment-body", null);
         let elementTextSpan = elementDesigner("small", "card-text white-space-on", text);
         let elementFooterBox = elementDesigner("div", "box-comment-footer hstack gap-2", null);
-        let elementReplyBtn = $('<button type="button" class="btn btn-standard-bolded btn-reply-to-track-comment btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>');
+        let elementReplyBtn = $('<button type="button" class="btn btn-standard-bolded btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>');
         let elementLikeBtn = $('<button type="button" class="btn btn-standard btn-sm me-1"> <i class="fa-regular fa-heart"></i> </button>');
         let elementFooterAdditionalInfoBox = elementDesigner("div", "ms-auto", null);
         let sentAtDateSpan = elementDesigner("small", "card-text text-muted me-1", dateAndTimeFormation(4, sentAt_Date)[0]);
@@ -3847,7 +4845,7 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         }
         else senderAvatarBox = elementDesigner("div", "profile-avatar-sm me-1", username[0]);
 
-        dropdownBtn2 = $('<button type="button" class="dropdown-item btn-reply-to-track-comment"> <i class="fa-solid fa-reply"></i> Reply</button>');
+        dropdownBtn2 = $('<button type="button" class="dropdown-item"> <i class="fa-solid fa-reply"></i> Reply</button>');
         dropdownBtn3 = $('<button type="button" class="dropdown-item"> <i class="fa-regular fa-circle-user"></i> Go to ' + username + '`s Page</button>');
         dropdownBtn4 = $('<button type="button" class="dropdown-item"> <i class="fa-regular fa-flag"></i> Report</button>');
         if (currentUserId == userId) {
@@ -3859,17 +4857,20 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
             dropdownLi1.append(dropdownBtn1);
             dropdownLi5.append(dropdownDivider1);
             dropdownLi6.append(dropdownBtn6);
+
             if (canBeReplied) {
-                dropdownBtn1.addClass("btn-edit-track-comment");
-                dropdownBtn6.addClass("btn-pre-delete-track-comment");
-                dropdownBtn1.attr("id", index + "-EditTrackComment_Btn");
-                dropdownBtn6.attr("id", index + "-PreDeleteTrackComment_Btn");
+                dropdownBtn1.addClass("btn-edit-" + uniqueClassPart + "comment");
+                dropdownBtn2.addClass("btn-reply-to-" + uniqueClassPart + "comment");
+                dropdownBtn6.addClass("btn-pre-delete-" + uniqueClassPart + "comment");
+                dropdownBtn1.attr("id", index + "-" + uniqueIdPart + "EditComment_Btn");
+                dropdownBtn6.attr("id", index + "-" + uniqueIdPart + "PreDeleteComment_Btn");
             }
             else {
-                dropdownBtn1.addClass("btn-edit-track-recomment");
-                dropdownBtn6.addClass("btn-pre-delete-track-recomment");
-                dropdownBtn1.attr("id", index + "-EditTrackReComment_Btn");
-                dropdownBtn6.attr("id", index + "-PreDeleteTrackReComment_Btn");
+                dropdownBtn1.addClass("btn-edit-" + uniqueClassPart + "recomment");
+                dropdownBtn2.addClass("btn-reply-to-" + uniqueClassPart + "recomment");
+                dropdownBtn6.addClass("btn-pre-delete-" + uniqueClassPart + "recomment");
+                dropdownBtn1.attr("id", index + "-" + uniqueIdPart + "EditReComment_Btn");
+                dropdownBtn6.attr("id", index + "-" + uniqueIdPart + "PreDeleteReComment_Btn");
             }
         }
 
@@ -3901,33 +4902,36 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
         elementBox.append(elementHeaderBox);
         elementBox.append(elementBodyBox);
         elementBox.append(elementFooterBox);
+       
+        elementLikeBtn.addClass("btn-like-the-" + uniqueClassPart + "comment");
+        elementReplyBtn.addClass("btn-reply-to-" + uniqueClassPart + "comment");
 
         if (!canBeReplied) {
             dropdownBtn2.remove();
             elementReplyBtn.remove();
-            elementBox.attr("id", index + "-Recomment_Box");
-            isEditedSpan.attr("id", index + "-IsRecommentEdited_Span");
-            elementTextSpan.attr("id", index + "-RecommentContent_Span");
-            dropdownBox.attr("id", index + "-RecommentDropdown_Box");
+            elementBox.attr("id", index + "-" + uniqueIdPart + "Recomment_Box");
+            isEditedSpan.attr("id", index + "-" + uniqueIdPart + "IsRecommentEdited_Span");
+            elementTextSpan.attr("id", index + "-" + uniqueIdPart + "RecommentContent_Span");
+            dropdownBox.attr("id", index + "-" + uniqueIdPart + "RecommentDropdown_Box");
         }
         else {
-            elementBox.attr("id", index + "-Comment_Box");
-            isEditedSpan.attr("id", index + "-IsCommentEdited_Span");
-            isPinnedSpan.attr("id", index + "-IsCommentPinned_Span");
-            elementTextSpan.attr("id", index + "-CommentContent_Span");
-            elementReplyBtn.attr("id", index + "-ReplyToTrackComment_Btn");
-            dropdownBtn2.attr("id", index + "-ReplyToTrackComment_Dropdown_Btn");
-            dropdownBox.attr("id", index + "-CommentDropdown_Box");
+            elementBox.attr("id", index + "-" + uniqueIdPart + "Comment_Box");
+            isEditedSpan.attr("id", index + "-" + uniqueIdPart + "IsCommentEdited_Span");
+            isPinnedSpan.attr("id", index + "-" + uniqueIdPart + "IsCommentPinned_Span");
+            elementTextSpan.attr("id", index + "-" + uniqueIdPart + "CommentContent_Span");
+            elementReplyBtn.attr("id", index + "-" + uniqueIdPart + "ReplyToComment_Btn");
+            dropdownBtn2.attr("id", index + "-" + uniqueIdPart + "ReplyToComment_Dropdown_Btn");
+            dropdownBox.attr("id", index + "-" + uniqueIdPart + "CommentDropdown_Box");
 
             elementLikeBtn.attr("data-qty", likesQty);
             if (isLiked) {
-                elementLikeBtn.addClass("btn-unlike-comment");
-                elementLikeBtn.attr("id", index + "-UnlikeComment_Btn");
+                elementLikeBtn.addClass("btn-unlike-" + uniqueClassPart + "comment");
+                elementLikeBtn.attr("id", index + "-" + uniqueIdPart + "UnlikeComment_Btn");
                 elementLikeBtn.html(likesQty > 0 ? ' <i class="fa-solid fa-heart"></i> ' + likesQty.toLocaleString() : ' <i class="fa-solid fa-heart"></i> ');
             }
             else {
-                elementLikeBtn.addClass("btn-like-comment");
-                elementLikeBtn.attr("id", index + "-LikeComment_Btn");
+                elementLikeBtn.addClass("btn-like-" + uniqueClassPart + "comment");
+                elementLikeBtn.attr("id", index + "-" + uniqueIdPart + "LikeComment_Btn");
                 elementLikeBtn.html(likesQty > 0 ? ' <i class="fa-regular fa-heart"></i> ' + likesQty.toLocaleString() : ' <i class="fa-regular fa-heart"></i> ');
             }
             elementFooterBox.prepend(elementLikeBtn);
@@ -3936,12 +4940,12 @@ function createCommentBox(applyTo_BoxId, index = 0, currentUserId, avatarImgSrc,
                 dropdownLi7 = $("<li></li>");
                 dropdownBtn5 = $("<button type='button' class='dropdown-item'></button>");
                 if (isPinned) {
-                    dropdownBtn5.addClass("btn-unpin-comment");
+                    dropdownBtn5.addClass("btn-unpin-" + uniqueClassPart + "comment");
                     dropdownBtn5.attr("id", index + "-UnpinComment_Btn");
                     dropdownBtn5.html(' <i class="fa-solid fa-thumbtack-slash"></i> Unpin');
                 }
                 else {
-                    dropdownBtn5.addClass("btn-pin-comment");
+                    dropdownBtn5.addClass("btn-pin-" + uniqueClassPart + "comment");
                     dropdownBtn5.attr("id", index + "-PinComment_Btn");
                     dropdownBtn5.html(' <i class="fa-solid fa-thumbtack"></i> Pin');
                 }
@@ -4237,6 +5241,15 @@ $(document).on("mousedown", ".btn-swap-to-standard-navbar", function () {
 });
 $(document).on("mousedown", ".btn-swap-to-textbox-navbar", function () {
     swapToTextBoxNavbar();
+});
+
+$(document).on("mousedown", ".btn-create-new-poll", function () {
+    let isReady = createInsideLgCard('CreatePoll', 'New Poll', '<div> <form method="post" action="/Poll/Create" id="CreatePoll_Form"> <div> <div class="d-none" id="PollMisc_Box"> <input type="hidden" name="IsAnonym" id="IsAnonym_Val" value="false" /> <input type="hidden" name="DurationInMinutes" id="PollDuration_Val" value="1440" /> <input type="hidden" name="IsSkippable" id="IsSkippable_Val" value="false" /> <input type="hidden" name="MaxChoicesQty" id="PollMaxOptions_Val" value="1" /> <input type="hidden" name="NecessaryVoicesQty" id="PollMaxVotesQty_Val" value="-1" /> </div> <textarea class="form-textarea form-control form-control-guard min-height-150" name="Question" id="CreatePoll_Question_Val" placeholder="Ask a question..." data-min-length="1" maxlength="140"></textarea> </div> <div class="mt-2" id="PollOptionDesign_Box"> <input type="hidden" id="PollOption_Box_MinVal" value="1" /> <input type="hidden" id="PollOption_Box_Val" value="1" /> <input type="hidden" id="PollOption_Box_MaxVal" value="6" /> <div class="hstack gap-2 mt-2" id="0-PollOption_Box"> <input type="text" class="form-control form-control-guard" name="Options" id="0-CreatePoll_Option_Val" placeholder="Add Option 1" maxlength="45" /> </div> <div class="hstack gap-2 mt-2" id="1-PollOption_Box"> <input type="text" class="form-control form-control-guard" name="Options" id="1-CreatePoll_Option_Val" placeholder="Add Option 2" maxlength="45" /> <button type="button" class="btn btn-standard-rounded btn-delete-created-item btn-sm super-disabled" id="PollOption_Box-DeleteItem_Btn"> <i class="fa-solid fa-xmark"></i> </button> </div> </div> </form> </div> </div> <div class="box-sticky-bottom x-row-sliding-only-box shadow-sm"> <button type="button" class="btn btn-standard btn-horizontally-scrolling btn-create-new-item btn-sm me-2" id="PollOption_Box-CreateNew_Btn" data-parent="PollOptionDesign_Box" data-placeholder="Add Option"> <i class="fa-solid fa-plus"></i> Add Option</button> <button type="button" class="btn btn-standard btn-horizontally-scrolling btn-call-select btn-sm me-2" id="PollMaxOptions-Select_Btn" data-unique="select-poll-options" data-values="1,2,3,4,5,6" data-text="1,2,3,4,5,6"> <i class="fa-solid fa-list-check"></i> Options ∙ <span class="text-muted" id="PollMaxOptions_Span">1</span></button> <button type="button" class="btn btn-standard btn-horizontally-scrolling btn-call-duration-select btn-sm me-2" id="PollDuration-Select_Btn" data-type="0"> <i class="fa-regular fa-clock"></i> Duration ∙ <span class="text-muted" id="PollDuration_Span">1 day</span></button> <button type="button" class="btn btn-standard btn-horizontally-scrolling btn-call-unlim-number-slider btn-sm me-2" id="PollMaxVotesQty-Select_Btn" data-min="0" data-max="1000000" data-step="10" data-header="Vote Limit"> <i class="fa-solid fa-bars-progress"></i> Max Votes ∙ <span class="text-muted" id="PollMaxVotesQty_Span"> <i class="fa-solid fa-infinity"></i> </span></button> <button type="button" class="btn btn-standard btn-horizontally-scrolling btn-switcher btn-sm me-2" data-value="IsAnonym_Val" data-tt="On" data-ft="Off"> <i class="fa-solid fa-masks-theater"></i> Anonym Poll ∙ <span class="text-muted" id="IsAnonym_Val_Span">Off</span></button> <button type="button" class="btn btn-standard btn-horizontally-scrolling btn-switcher btn-sm me-2" data-value="IsSkippable_Val" data-tt="Yes" data-ft="No"> <i class="fa-solid fa-angles-right"></i> Skippable Poll ∙ <span class="text-muted" id="IsSkippable_Val_Span">No</span></button> </div>', '<button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id="CreatePoll_Container-Close_Btn"> <i class="fa-solid fa-xmark"></i> Cancel</button>', '<div class="dropdown ms-auto"> <button type="button" class="btn btn-standard btn-sm" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-check"></i> Save</button> <ul class="dropdown-menu shadow-sm"> <li><button type="button" class="dropdown-item btn-distance-submitter active bg-transparent text-dark" data-form="CreatePoll_Form" id="CreatePost_Form-DistantSbmt_Btn"> <i class="fa-solid fa-check-double"></i> Save Now</button></li> <li><button type="button" class="dropdown-item btn-distance-submitter super-disabled"> <i class="fa-solid fa-clock"></i> Delayed Poll</button></li> </ul> </div>');
+    if (isReady) {
+        setTimeout(function () {
+            callInsideLgContainer(false, "CreatePoll_Container", false);
+        }, 150);
+    }
 });
 
 function bottomNavbarTextFormCustomization(formActionUrl, formId, formInputId = null, formInputName = null, formSubmitButtonId = null, formNewInputNames = [], formNewInputValues = [], formNewIds = [], formInputClasses = [], formInputAttributes = [], formInputAttributeValues = [], formInputPlaceholderText = null, formSubmitButtonHtml = null, formSubmitButtonClasses = []) {
@@ -4539,11 +5552,175 @@ $(document).on("keyup", ".form-control-juxtaposed", function () {
     }
 });
 
+$(document).on("submit", "#MentionSearch_Form", function (event) {
+    event.preventDefault();
+    let url = $(this).attr("action");
+    let data = $(this).serialize();
+    let baseHtml = $("#MentionedUsersQty_Span").html();
+    $("#MentionedUsersQty_Span").html('<small class="card-text"> <i class="fa-solid fa-spinner fa-spin-pulse"></i> Searching...</small>');
+
+    $.get(url, data, function (response) {
+        if (response.success) {
+            if (response.result.length > 0) {
+                let mentionBoxId = $("#MentionSearch_MentionBoxId_Val").val();
+                if (mentionBoxId != null || mentionBoxId != undefined) {
+                    $("#FoundMentions_Box").empty();
+                    $.each(response.result, function (index) {
+                        let boxMentionSearchResult = elementDesigner("div", "box-mention-search btn-add-mention", null);
+                        let boxMentionSearchInsight = elementDesigner("div", "hstack gap-2", null);
+                        let boxMentionSearchInsightInfoBox = elementDesigner("div", "box-standard ms-1", null);
+                        let boxMentionAvatar = null;
+                        let boxMentionNicknameLbl = elementDesigner("span", "h6", response.result[index].nickname);
+                        let boxMentionSearchnameSpan = elementDesigner("small", "card-text text-muted", "@" + response.result[index].searchname);
+                        let boxMentionNameSeparator = $("<br/>");
+
+                        if (response.result[index].imgUrl != null) {
+                            boxMentionAvatar = $("<img class='profile-avatar-img-md' alt='This image cannot be displayed' />");
+                            boxMentionAvatar.attr("src", "/ProfileImages/" + response.result[index].imgUrl);
+                        }
+                        else boxMentionAvatar = elementDesigner("div", "profile-avatar-md", response.result[index].nickname[0]);
+
+                        boxMentionSearchInsightInfoBox.append(boxMentionNicknameLbl);
+                        boxMentionSearchInsightInfoBox.append(boxMentionNameSeparator);
+                        boxMentionSearchInsightInfoBox.append(boxMentionSearchnameSpan);
+                        boxMentionSearchInsight.append(boxMentionAvatar);
+                        boxMentionSearchInsight.append(boxMentionSearchInsightInfoBox);
+                        boxMentionSearchResult.append(boxMentionSearchInsight);
+
+                        boxMentionSearchResult.attr("data-text-box", mentionBoxId);
+                        boxMentionSearchResult.attr("data-searchname", response.result[index].searchname);
+                        boxMentionSearchResult.attr("id", response.result[index].id + "-UserMentionSearch_Box");
+
+                        $("#FoundMentions_Box").append(boxMentionSearchResult);
+                    });
+                    openInsideBottomBox("FoundMentionsMain_Box");
+                }
+                else closeInsideBottomBox("FoundMentionsMain_Box");
+            }
+            else $("#PostMentions_Box").html("You haven't mentioned anyone in your post yet");
+        }
+        else $("#PostMentions_Box").html("You haven't mentioned anyone in your post yet");
+        $("#MentionedUsersQty_Span").html(baseHtml);
+    });
+});
+//btn-select-primary
+$(document).on("mousedown", ".btn-add-mention", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    let textBoxId = $(this).attr("data-text-box");
+    let searchname = $(this).attr("data-searchname");
+    if (trueId != undefined && searchname != undefined && textBoxId != undefined) {
+        applyUserMentionToTextBox(textBoxId, searchname);
+
+        //const mentionedUsersQty = getMentionedUsers(textBoxId, "PostMentions_Box");
+        //if (mentionedUsersQty != null) {
+        //    $("#MentionedUsersQty_Separator").fadeIn(300);
+        //    $("#MentionedUsersQty_Span").text(mentionedUsersQty.length);
+        //}
+        //else {
+        //    $("#MentionedUsersQty_Span").text(0);
+        //    $("#MentionedUsersQty_Separator").fadeOut(300);
+        //}
+        closeInsideBottomBox("FoundMentionsMain_Box");
+    }
+});
+
+function applyUserMentionToTextBox(textBox_Id, username_or_searchname) {
+    if (textBox_Id != null || textBox_Id != undefined) {
+        let wholeValue = null;
+        let caretStartPosition = 0;
+        let wholeNodeValue = null;
+        let lastAtIndexBeforeCaret = 0;
+        let textBoxElement = $("#" + textBox_Id);
+        if (textBoxElement != null) {
+            if (textBoxElement.attr("contenteditable")) {
+                const selection = window.getSelection();
+                let range = selection.getRangeAt(0);
+                console.log(range);
+
+                caretStartPosition = selection.focusOffset;
+                wholeValue = $("#" + textBox_Id + "_Val").val();
+                wholeNodeValue = $("#" + textBox_Id).text();
+            }
+            else {
+                wholeValue = $("#" + textBox_Id).val();
+                caretStartPosition = $("#" + textBox_Id).prop("selectionStart");
+            }
+        }
+        console.log(caretStartPosition);
+        wholeNodeValue = wholeNodeValue.substring(0, caretStartPosition);
+        console.log(wholeNodeValue);
+        lastAtIndexBeforeCaret = wholeNodeValue.substring(0, caretStartPosition).lastIndexOf("@", 0);
+        console.log(lastAtIndexBeforeCaret);
+    }
+}
+
+function getMentionedUsers(elementId, appendElementId = null) {
+    if (elementId != null || elementId != undefined) {
+        let element = $("#" + elementId);
+        if (element != null) {
+            let fullValue = element.attr("contenteditable") ? $("#" + elementId + "_Val").val() : $("#" + elementId).val();
+            if (fullValue != undefined && fullValue.length > 0) {
+                let endIndex = 0;
+                let mentionedUsersArr = [];
+                for (let i = 0; i < fullValue.length; i++) {
+                    if (fullValue[i] == "@") {
+                        endIndex = fullValue.indexOf("]]", i);
+                        mentionedUsersArr.push(fullValue.substring(i, endIndex));
+                    }
+                }
+
+                if (mentionedUsersArr.length > 0) {
+                    if (appendElementId != null || appendElementId != undefined) {
+                        $("#" + appendElementId).empty();
+                        for (let i = 0; i < mentionedUsersArr.length; i++) {
+                            let mentionSpan = elementDesigner("span", "mention-span", mentionedUsersArr[i]);
+                            mentionSpan.attr("id", i + "-MentionedUser_Span");
+                            $("#" + appendElementId).append(mentionSpan);
+                        }
+                    }
+
+                    return mentionedUsersArr;
+                }
+                else {
+                    if (appendElementId != null || appendElementId != undefined) $("#" + appendElementId).html("You haven't mentioned anyone in your post yet");
+                    return null;
+                }
+            }
+        }
+        else return null;
+    }
+    else return null;
+}
+
 $(document).on("keyup", ".form-control-undetermined", function () {
     let thisId = $(this).attr("id");
     if (thisId != undefined) {
         let thisHtml = $(this).html();
         $("#" + thisId + "_Val").val(textPurger(thisHtml));
+        $("#" + thisId + "_Val").keyup();
+        /*        if (keyCode == 50 && event.shiftKey) {*/
+        //@([A-Za-z0-9_]{1,15})
+        //(?:^|[^A-Za-z0-9_])@([A-Za-z0-9_]{1,15})
+
+        let searchnameRegex = "@([A-Za-z0-9_]{1,15})";
+        let thisValue = $("#" + thisId + "_Val").val();
+        let lastAtIndex = thisValue.lastIndexOf("@");
+        let valueAfterLastMention = thisValue.substring(lastAtIndex, thisValue.length);
+
+        let currentSearchString = $("#MentionSearch_Searchname_Val").val();
+        let matchingSearchnameValue = valueAfterLastMention.match(searchnameRegex);
+
+        if ((matchingSearchnameValue != null) && (currentSearchString.toLowerCase() != matchingSearchnameValue[1].toLowerCase())) {
+            clearTimeout(timeoutValue);
+            setTimeout(function () {
+                $("#MentionSearch_Searchname_Val").val(matchingSearchnameValue[1]);
+                $("#MentionSearch_Form").submit();
+            }, 500);
+        }
+
+        //let mentionedUsersArr = getMentionedUsers(thisId + "_Val", "PostMentions_Box");
+        //if (mentionedUsersArr != null) $("#MentionedUsersQty_Span").html("∙ " + mentionedUsersArr.length);
+        //slideElements(false, "FoundMentionsMain_Box", "PostMentionsMain_Box");
     }
 });
 
@@ -4586,7 +5763,7 @@ function textCustomization(inputTarget_Id, previewTarget_Id, type) {
         let isContentEditableElement = $("#" + inputTarget_Id).attr("contenteditable");
 
         if (isContentEditableElement) currentText = $("#" + inputTarget_Id).html();
-        else currentText = $("#" + inputTarget_Id).val();
+        else currentText = textPurger($("#" + inputTarget_Id).val());
 
         let range = null;
         const selection = window.getSelection();
@@ -4666,13 +5843,64 @@ function textCustomization(inputTarget_Id, previewTarget_Id, type) {
 
         if (customElement != null) {
             customElement.append(range.extractContents());
-            if (parentCustomElement == null) range.insertNode(customElement);
-            else range.insertNode(parentCustomElement);
+            if (parentCustomElement == null) {
+                range.insertNode(customElement);
+                range.setStartAfter(customElement);
+                range.collapse(true);
+            }
+            else {
+                range.insertNode(parentCustomElement);
+                range.setStartAfter(parentCustomElement);
+                range.collapse(true);
+            }
+            selection.removeAllRanges();
+            selection.addRange(range);
         }
+
         currentText = $("#" + inputTarget_Id).html();
-        if (isContentEditableElement) $("#" + inputTarget_Id + "_Val").val(textPurger(currentText));
+        if (isContentEditableElement) {
+            $("#" + inputTarget_Id + "_Val").val(textPurger(currentText));
+            $("#" + inputTarget_Id + "_Val").keyup();
+        }
     }
 } 
+
+function openInsideBottomBox(elementId) {
+    if (elementId != undefined || elementId != null) {
+        let parentElement = $("#" + elementId)[0].parentElement;
+        if (parentElement != null) {
+            const parentElementHeight = parentElement.offsetHeight;
+            $("#" + elementId).fadeIn(0);
+            $("#" + elementId).addClass("pending");
+            $("#" + elementId).css("max-height", parentElementHeight + "px");
+            setTimeout(function () {
+                $("#" + elementId).removeClass("pending");
+                $("#" + elementId).addClass("active");
+            }, 300);
+        }
+    }
+}
+
+function closeInsideBottomBox(elementId) {
+    if (elementId != undefined || elementId != null) {
+        $("#" + elementId).removeClass("active");
+        $("#" + elementId).addClass("pending");
+        setTimeout(function () {
+            $("#" + elementId).removeClass("pending");
+        }, 300);
+        setTimeout(function () {
+            $("#" + elementId).css("max-height", 0);
+            $("#" + elementId).fadeOut(0);
+        }, 450);
+    }
+}
+
+$(document).on("mousedown", ".btn-close-bot-hidden-box", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    if (trueId != undefined) {
+        closeInsideBottomBox(trueId);
+    }
+});
 
 function getRichTextBoxCaretPosition(elementId) {
     if (elementId != undefined || elementId != null) {
@@ -4706,10 +5934,12 @@ function textPurification(text) {
         text = text.replaceAll("<br>", "\n");
         text = text.replaceAll("<br/>", "\n");
         text = text.replaceAll("[~", "<br/>");
+        text = text.replaceAll("{{", "<span>");
         text = text.replaceAll("[[", '<span class="fw-500">');
         text = text.replaceAll("[{", "<span class='fst-italic'>");
         text = text.replaceAll("[_", "<span class='text-decoration-underline'>");
         text = text.replaceAll("[-", "<span class='text-decoration-line-through'>");
+        text = text.replaceAll("[#", "<span class='text-user-mention'>");
         text = text.replaceAll("[>", "<p class='text-indent'>");
         text = text.replaceAll("[<", "<p class='text-outdent'>");
         text = text.replaceAll("[|", "<ul><li class='list-squared'>");
@@ -4731,6 +5961,7 @@ function textPurification(text) {
 
 function textPurger(text) {
     if (text != undefined || text != null) {
+        text = text.replaceAll('<span>', "{{");
         text = text.replaceAll('<span class="fw-500">', "[[");
         text = text.replaceAll("<span class='fw-500'>", "[[");
         text = text.replaceAll("<span class='fst-italic'>", "[{");
@@ -4739,18 +5970,49 @@ function textPurger(text) {
         text = text.replaceAll('<span class="text-decoration-underline">', "[_");
         text = text.replaceAll("<span class='text-decoration-line-through'>", "[-");
         text = text.replaceAll('<span class="text-decoration-line-through">', "[-");
+        text = text.replaceAll('<span class="text-user-mention">', "[#");
+        text = text.replaceAll("<span class='text-user-mention'>", "[#");
         text = text.replaceAll("<p class='text-indent'>", "[>");
         text = text.replaceAll('<p class="text-indent">', "[>");
         text = text.replaceAll("<p class='text-outdent'>", "[<");
         text = text.replaceAll('<p class="text-outdent">', "[<");
-        text = text.replaceAll("<ul>", "[#");
-        text = text.replaceAll("</ul>", "#]");
-        text = text.replaceAll("<li>", "[%");
-        text = text.replaceAll("</li>", "%]");
+
+        text = text.replaceAll("<ul><li class='list-squared'>", "[|");
+        text = text.replaceAll('<ul><li class="list-squared">', "[|");
+        text = text.replaceAll("<ul><li class='list-standard'>", "[%");
+        text = text.replaceAll('<ul><li class="list-standard">', "[%");
+        text = text.replaceAll("<ul><li class='list-dashed'>", "[&");
+        text = text.replaceAll('<ul><li class="list-dashed">', "[&");
+        text = text.replaceAll("</li></ul>", "%]");
+
         text = text.replaceAll("</span>", "]]");
         text = text.replaceAll("</p>", "<]");
         text = text.replaceAll("\n", "<br/>");
         text = text.replaceAll("<br/>", "[~");
+
+        return text;
+    }
+    else return null;
+}
+
+function textDiffuser(text) {
+    if (text != undefined || text != null) {
+        text = text.replaceAll("{{", "");
+        text = text.replaceAll("[[", "");
+        text = text.replaceAll("[{", "");
+        text = text.replaceAll("[_", "");
+        text = text.replaceAll("[-", "");
+        text = text.replaceAll("[#", "");
+        text = text.replaceAll("[>", "");
+        text = text.replaceAll("[<", "");
+        text = text.replaceAll("[$", "");
+        text = text.replaceAll("$]", "");
+        text = text.replaceAll("[%", "");
+        text = text.replaceAll("%]", "");
+        text = text.replaceAll("]]", "");
+        text = text.replaceAll("<]", "");
+        text = text.replaceAll("<br/>", "\n");
+        text = text.replaceAll("[~", "\n");
 
         return text;
     }
@@ -4987,6 +6249,24 @@ $(document).on("mousedown", ".btn-select-element", function () {
     }
 });
 
+$(document).on("mousedown", "#ArtistType-Select_Btn", function () {
+    let currentVal = $(this).attr("data-val");
+    callASelect("ArtistType", "ArtistType-Select_Btn", "ArtistType_Result_Span", "EditUserType_Type_Val", "select-artist-type", "ArtistType_Select", currentVal == undefined ? 0 : currentVal, ["Solo Artist", "DJ/Producer", "Group/Band", "Duo", "Orchestra", "Ensembles", "Choir", "Collective", "Theatre Artists"], [0, 1, 2, 3, 4, 5, 6, 7, 8], false);
+});
+
+$(document).on("mousedown", ".btn-call-select", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    let uniqueClassname = $(this).attr("data-unique");
+    let values = $(this).attr("data-values");
+    let texts = $(this).attr("data-text");
+    if (trueId != undefined && uniqueClassname != undefined && values != undefined && texts != undefined) {
+        values = getCommaSeparatedValues(values);
+        texts = getCommaSeparatedValues(texts);
+
+        callASelect(trueId, $(this).attr("id"), trueId + "_Span", trueId + "_Val", uniqueClassname, trueId, 0, values, texts, false);
+    }
+});
+
 $(document).on("mousedown", ".btn-close-select", function () {
     let trueId = getTrueId($(this).attr("id"), false);
     let callerBtn = $(this).attr("data-caller-btn");
@@ -5002,9 +6282,228 @@ $(document).on("keyup", ".form-control-select-search", function () {
     if (keyword != undefined && uniqueClassname != undefined) selectSearch(keyword, uniqueClassname);
 });
 
-$(document).on("mousedown", "#ArtistType-Select_Btn", function () {
-    let currentVal = $(this).attr("data-val");
-    callASelect("ArtistType", "ArtistType-Select_Btn", "ArtistType_Result_Span", "EditUserType_Type_Val", "select-artist-type", "ArtistType_Select", currentVal == undefined ? 0 : currentVal, ["Solo Artist", "DJ/Producer", "Group/Band", "Duo", "Orchestra", "Ensembles", "Choir", "Collective", "Theatre Artists"], [0, 1, 2, 3, 4, 5, 6, 7, 8], false);
+$(document).on("mousedown", ".btn-create-new-item", function () {
+    const thisId = $(this).attr("id");
+    const trueId = getTrueId(thisId, false);
+    const parentId = $(this).attr("data-parent");
+    let currentIndex = $("#" + trueId + "_Val").val();
+    let maxIndex = $("#" + trueId + "_MaxVal").val();
+    let placeholderSample = $(this).attr("data-placeholder");
+
+    if (thisId != undefined && trueId != undefined && parentId != undefined && currentIndex != undefined) {
+        let lastBoxCopy = $("#" + currentIndex + "-" + trueId).clone();
+        let lastBoxCopyChildrens = lastBoxCopy.children();
+        currentIndex++;
+
+        if (currentIndex < maxIndex) {
+            let canBeAppended = false;
+            let placeholderCurrentIndex = currentIndex + 1;
+            lastBoxCopy.attr("id", currentIndex + "-" + trueId);
+
+            if (lastBoxCopyChildrens != null) {
+                for (let i = 0; i < lastBoxCopyChildrens.length; i++) {
+                    let tempElement = lastBoxCopyChildrens[i];
+                    let tempTrueId = getTrueId(lastBoxCopyChildrens[i].id, true);
+                    let tempElementNodeType = tempElement.nodeName.toLowerCase();
+
+                    if (tempElementNodeType == "input") {
+                        if ($(tempElement).val().length > 0) {
+                            canBeAppended = true;
+                            $(tempElement).val(null);
+                            $("#" + trueId + "-DeleteItem_Btn").remove();
+                            $(tempElement).attr("placeholder", placeholderSample + " " + placeholderCurrentIndex);
+                        }
+                        else {
+                            canBeAppended = false;
+                            break;
+                        }
+                    }
+                    else {
+                        canBeAppended = true;
+                        $("#" + trueId + "-DeleteItem_Btn").remove();
+                    }
+
+                    if (!$(tempElement).hasClass("btn-delete-created-item")) $(tempElement).attr("id", currentIndex + "-" + tempTrueId);
+                }
+
+                if (canBeAppended) {
+                    $("#" + parentId).append(lastBoxCopy);
+                    $("#" + trueId + "_Val").val(currentIndex);
+                    $("#" + trueId + "-DeleteItem_Btn").removeClass("super-disabled");
+                }
+                else callKawaiiAlert(0, "Fill current one to add new", '<i class="fa-solid fa-keyboard"></i>', null, null, 2.75, false);
+
+                if (++currentIndex >= maxIndex) {
+                    $(".btn-create-new-item").addClass("super-disabled");
+                    $(".btn-create-new-item").html(' <i class="fa-solid fa-circle-notch"></i> Fully Filled');
+                }
+                else {
+                    $(".btn-create-new-item").removeClass("super-disabled");
+                    $(".btn-create-new-item").html(' <i class="fa-solid fa-plus"></i> Add Option');
+                }
+            }
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-delete-created-item", function (event) {
+    event.preventDefault();
+    const trueId = getTrueId($(this).attr("id"), false);
+    let currentIndex = $("#" + trueId + "_Val").val();
+    let minValueIndex = $("#" + trueId + "_MinVal").val();
+    if (trueId != undefined && currentIndex != undefined) {
+        if (currentIndex > 1) {
+            minValueIndex = minValueIndex == undefined ? 0 : parseInt(minValueIndex);
+            let deleteButton = elementDesigner("button", "btn btn-standard-rounded btn-delete-created-item btn-sm", ' <i class="fa-solid fa-xmark"></i> ');
+            deleteButton.attr("id", trueId + "-DeleteItem_Btn");
+
+            $("#" + currentIndex + "-" + trueId).remove();
+            $("#" + trueId + "_Val").val(--currentIndex);
+            $("#" + currentIndex + "-" + trueId).append(deleteButton);
+
+            if (currentIndex <= minValueIndex) deleteButton.addClass("super-disabled");
+            else deleteButton.removeClass("super-disabled");
+
+            $(".btn-create-new-item").removeClass("super-disabled");
+            $(".btn-create-new-item").html(' <i class="fa-solid fa-plus"></i> Add Option');
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-call-duration-select", function () {
+    let type = $(this).attr("data-type");
+    let thisId = $(this).attr("id");
+    let trueId = getTrueId(thisId);
+    if (type != undefined && thisId != undefined && trueId != undefined) {
+        type = parseInt(type);
+        switch (type) {
+            case 0:
+                callDurationSelect(trueId, thisId, type, trueId + "_Val", trueId + "_Span", true, true, true);
+                break;
+            case 1:
+                callDurationSelect(trueId, thisId, type, trueId + "_Val", trueId + "_Span", true, true, false);
+                break;
+            case 2:
+                callDurationSelect(trueId, thisId, type, trueId + "_Val", trueId + "_Span", true, false, false);
+                break;
+            default:
+                callDurationSelect(trueId, thisId, type, trueId + "_Val", trueId + "_Span", true, true, true);
+                break;
+        }
+    }
+});
+//CreatePoll_Container
+$(document).on("mousedown", ".btn-call-number-slider", function () {
+    let thisId = $(this).attr("id");
+    let trueId = getTrueId(thisId);
+    let minValue = $(this).attr("data-min");
+    let maxValue = $(this).attr("data-max");
+    let stepValue = $(this).attr("data-step");
+    let baseValue = $("#" + trueId + "_Val").val();
+    let header = $(this).attr("data-header");
+    if (thisId != undefined && trueId != undefined) {
+        callRangeSelect(trueId, thisId, trueId + "_Val", trueId + "_Span", header, baseValue, minValue, maxValue, stepValue, false);
+    }
+});
+
+$(document).on("mousedown", ".btn-call-unlim-number-slider", function () {
+    let thisId = $(this).attr("id");
+    let trueId = getTrueId(thisId);
+    let minValue = $(this).attr("data-min");
+    let maxValue = $(this).attr("data-max");
+    let stepValue = $(this).attr("data-step");
+    let baseValue = $("#" + trueId + "_Val").val();
+    let header = $(this).attr("data-header");
+    if (thisId != undefined && trueId != undefined) {
+        callRangeSelect(trueId, thisId, trueId + "_Val", trueId + "_Span", header, baseValue, minValue, maxValue, stepValue, true);
+    }
+});
+
+$(document).on("mousedown", ".btn-submit-duration-select", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    let valuePlaceId = $(this).attr("data-value-place");
+    let displayPlaceId = $(this).attr("data-display-place");
+    let callerBtnId = $("#" + trueId + "-Close_Btn").attr("data-caller-btn");
+    if (valuePlaceId != undefined && displayPlaceId != undefined && trueId != undefined && callerBtnId != undefined) {
+        let finalValue = 0;
+        let daysDisp = null;
+        let minsDisp = null;
+        let hoursDisp = null;
+        let displayFinalValue = null;
+        let parseType = $(this).attr("data-parse-type");
+        let daysValue = parseInt($("#DurationSelect_Day_Val").val());
+        let hoursValue = parseInt($("#DurationSelect_Hour_Val").val());
+        let minutesValue = parseInt($("#DurationSelect_Min_Val").val());
+
+        parseType = parseType == undefined ? 0 : parseType;
+        switch (parseType) {
+            case 0:
+                //parse to minutes
+                finalValue = (daysValue * 24 * 60) + (hoursValue * 60) + minutesValue;
+                break;
+            case 1:
+                //parse to hours (ignore minutes)
+                finalValue = (daysValue * 24) + hoursValue;
+                break;
+            case 2:
+                //parse to days (ignore hours and minutes)
+                finalValue = daysValue * 24;
+                break;
+            default:
+                finalValue = (daysValue * 24 * 60) + (hoursValue * 60) + minutesValue;
+                break;
+        }
+
+        if (daysValue > 1) daysDisp = daysValue + " days ";
+        else if (daysValue == 1) daysDisp = daysValue + " day ";
+        else daysDisp = null;
+
+        if (hoursValue > 1) hoursDisp = hoursValue + " hours ";
+        else if (hoursValue == 1) hoursDisp = hoursValue + " hour ";
+        else hoursDisp = null;
+
+        if (minutesValue > 1) minsDisp = minutesValue + " mins";
+        else if (minutesValue == 1) minsDisp = minutesValue + " min";
+        else minutesValue = null;
+
+        displayFinalValue = daysDisp != null ? daysDisp : "";
+        displayFinalValue += hoursDisp != null ? hoursDisp : "";
+        displayFinalValue += minsDisp != null ? minsDisp : "";
+
+        if (finalValue > 0) {
+            $("#" + valuePlaceId).val(finalValue);
+            $("#" + displayPlaceId).html(displayFinalValue);
+        }
+        else {
+            $("#" + valuePlaceId).val(1);
+            $("#" + displayPlaceId).html("1 min");
+        }
+
+        uncallASelect(trueId, callerBtnId);
+    }
+});
+
+$(document).on("mousedown", ".btn-submit-range-slider", function () {
+    let trueId = getTrueId($(this).attr("id"));
+    const valuePlace = $(this).attr("data-value-place");
+    const callerButtonId = $(this).attr("data-caller-btn");
+    const displayPlace = $(this).attr("data-display-place");
+
+    if (callerButtonId != undefined && trueId != undefined && valuePlace != undefined && displayPlace != undefined) {
+        const value = parseFloat($("#" + trueId + "-Slider_Val").val());
+        const minValue = parseFloat($("#" + trueId + "-Slider_Val").attr("min"));
+        const maxValue = parseFloat($("#" + trueId + "-Slider_Val").attr("max"));
+
+        if ((value >= minValue) && (value <= maxValue)) {
+            $("#" + valuePlace).val(value);
+            $("#" + displayPlace).html(value.toLocaleString());
+        }
+        else {
+            $("#" + valuePlace).val(minValue);
+            $("#" + displayPlace).html(minValue.toLocaleString());
+        }
+        uncallASelect(trueId, callerButtonId);
+    }
 });
 
 function uncallASelect(id, callerButtonId) {
@@ -5073,7 +6572,7 @@ function callASelect(id, callerButtonId, selectOption_Text_PlaceId, selectOption
 
         if (divExists == null) {
             $(".form-control-select-search").removeAttr("data-select-between");
-            if (!includeSearchBar) $("body").append('<div class="box-select shadow-sm" id="' + id + '_Select_Box"><div class="box-select-header"> <button type="button" class="btn btn-standard-rounded btn-close-select float-end ms-1" id="' + id + '-SelectClose_Btn" data-caller-btn="' + callerButtonId + '"> <i class="fa-solid fa-xmark"></i> </button > </div > <div class="box-select-body mt-2" id="' + id + '-SelectBody_Box"> </div> </div>');
+            if (!includeSearchBar) $("body").append('<div class="box-select shadow-sm" id="' + id + '_Select_Box"><div class="box-select-header"> <button type="button" class="btn btn-standard-rounded btn-close-select float-end ms-1" id="' + id + '-SelectClose_Btn" data-caller-btn="' + callerButtonId + '"> <i class="fa-solid fa-xmark"></i> </button > </div> <div class="box-select-body mt-2" id="' + id + '-SelectBody_Box"> </div> </div>');
             else {
                 $("body").append('<div class="box-select shadow-sm" id="' + id + '_Select_Box"><div class="box-select-header"><div class="hstack gap-2"><div class="form-control-search-container w-100"> <span class="card-text text-muted"> <i class="fa-solid fa-magnifying-glass"></i> </span> <input type="text" class="form-control form-control-select-search form-control-search" placeholder="Search..." /> </div> <button type="button" class="btn btn-standard-rounded btn-close-select ms-auto" id="' + id + '-SelectClose_Btn" data-caller-btn="' + callerButtonId + '"> <i class="fa-solid fa-xmark"></i> </button > </div></div > <div class="box-select-body mt-2" id="' + id + '-SelectBody_Box"> </div> </div>');
                 $(".form-control-select-search").attr("data-select-between", selectOptionUniqueClassname);
@@ -5119,6 +6618,153 @@ function callASelect(id, callerButtonId, selectOption_Text_PlaceId, selectOption
     }
 }
 
+function callDurationSelect(id = null, callerButtonId = null, type = 0, valuePlace_Id = null, displayPlace_Id = null, includeDays = true, includeHours = true, includeMinutes = true) {
+    if ((id != null || id != undefined) && (callerButtonId != null || callerButtonId != undefined) && (displayPlace_Id != null || displayPlace_Id != undefined) && (valuePlace_Id != null || valuePlace_Id != undefined)) {
+        let bottomNavbarH = alertBottomValue;
+        let checkSelectAvailability = document.getElementById(id + "_Select_Box");
+        if (checkSelectAvailability == null) {
+            $("body").append('<div class="box-select shadow-sm" id="' + id + '_Select_Box"> <div class="box-select-header hstack gap-2"> <button type="button" class="btn btn-standard-rounded btn-submit-duration-select" data-value-place="' + id + '_Val" data-display-place="' + id + '_Span" data-parse-type="' + type + '" id="' + id + '-Done_Btn">Done</button> <button type="button" class="btn btn-standard-rounded btn-close-select ms-auto" id="' + id + '-Close_Btn" data-caller-btn="' + id + '-Select_Btn"> <i class="fa-solid fa-xmark"></i> </button> </div> <div class="box-select-body mt-3"> <div class="row"> <div class="col text-center" id="DaysSelector_Col_Box"> <h5 class="h5">Days</h5> <div class="box-standard liquid-glass mt-2 p-2" id="DaysSelector_Box"> <button type="button" class="btn btn-standard-rounded btn-reduce-the-value text-center w-100" data-target="DurationSelect_Day_Val"> <i class="fa-solid fa-chevron-up"></i> </button> <input type="number" class="form-control form-control-for-numbers-only text-center mt-2 mb-2" id="DurationSelect_Day_Val" placeholder="Days" step="1" min="0" max="28" value="1" readonly /> <button type="button" class="btn btn-standard-rounded btn-increase-the-value text-center w-100" data-target="DurationSelect_Day_Val"> <i class="fa-solid fa-chevron-down"></i> </button> </div> </div> <div class="col text-center" id="HoursSelector_Col_Box"> <h5 class="h5">Hours</h5> <div class="box-standard" id="HoursSelector_Box"> <div class="box-standard liquid-glass p-2" id="HoursSelector_Box"> <button type="button" class="btn btn-standard-rounded btn-reduce-the-value text-center w-100" data-target="DurationSelect_Hour_Val"> <i class="fa-solid fa-chevron-up"></i> </button> <input type="number" class="form-control form-control-for-numbers-only text-center mt-2 mb-2" id="DurationSelect_Hour_Val" placeholder="Hours" step="1" min="0" max="23" value="0" readonly /> <button type="button" class="btn btn-standard-rounded btn-increase-the-value text-center w-100" data-target="DurationSelect_Hour_Val"> <i class="fa-solid fa-chevron-down"></i> </button> </div> </div> </div> <div class="col text-center" id="MinsSelector_Col_Box"> <h5 class="h5">Minutes</h5> <div class="box-standard" id="MinsSelector_Box"> <div class="box-standard liquid-glass p-2" id="MinsSelector_Box"> <button type="button" class="btn btn-standard-rounded btn-reduce-the-value text-center w-100" data-target="DurationSelect_Min_Val"> <i class="fa-solid fa-chevron-up"></i> </button> <input type="number" class="form-control form-control-for-numbers-only text-center mt-2 mb-2" id="DurationSelect_Min_Val" placeholder="Mins" step="1" min="0" max="59" value="0" readonly /> <button type="button" class="btn btn-standard-rounded btn-increase-the-value text-center w-100" data-target="DurationSelect_Min_Val"> <i class="fa-solid fa-chevron-down"></i> </button> </div> </div> </div> </div> </div> </div>');
+        }
+
+        if (includeDays) {
+            $("#DaysSelector_Col_Box").fadeIn(0);
+        }
+        else {
+            $("#DurationSelect_Day_Val").val(0);
+            $("#DaysSelector_Col_Box").fadeOut(0);
+        }
+
+        if (includeHours) {
+            $("#HoursSelector_Col_Box").fadeIn(0);
+        }
+        else {
+            $("#DurationSelect_Hour_Val").val(0);
+            $("#HoursSelector_Col_Box").fadeOut(0);
+        }
+
+        if (includeMinutes) {
+            $("#MinsSelector_Col_Box").fadeIn(0);
+        }
+        else {
+            $("#DurationSelect_Min_Val").val(0);
+            $("#MinsSelector_Col_Box").fadeOut(0);
+        }
+
+        $("body").append("<div class='box-select-overlay'></div>");
+        setTimeout(function () {
+            bottomNavbarH += 50;
+            $(".box-select-overlay").addClass("active");
+            $("#" + id + "_Select_Box").fadeIn(0);
+            $("#" + callerButtonId).css("transform", "scale(0.95)");
+            $("#" + id + "_Select_Box").css("transform", "scale(1.1) translateX(-50%)");
+            $("#" + id + "_Select_Box").css("bottom", bottomNavbarH + "px");
+            setTimeout(function () {
+                bottomNavbarH -= 40;
+                $("#" + id + "_Select_Box").css("transform", "scale(1) translateX(-50%)");
+                $("#" + id + "_Select_Box").css("bottom", bottomNavbarH + "px");
+            }, 300);
+        }, 150);
+    }
+}
+
+function callRangeSelect(id, callerButtonId = null, valuePlace_Id, displayPlace_Id, headerText = null, base_Value = 0, min_Value = 0, max_Value = 100, step_Value = 1, includeUnlimButton = false) {
+    if ((id != null || id != undefined) && (callerButtonId != undefined || callerButtonId != null) && (valuePlace_Id != undefined || valuePlace_Id != null) || (displayPlace_Id != null || displayPlace_Id != undefined)) {
+        let bottomNavbarH = alertBottomValue;
+        const element = document.getElementById(id);
+
+        min_Value = parseFloat(min_Value) != undefined ? parseFloat(min_Value) : 0;
+        max_Value = parseFloat(max_Value) != undefined ? parseFloat(max_Value) : 100;
+        step_Value = parseFloat(step_Value) != undefined ? parseFloat(step_Value) : 1;
+        base_Value = parseFloat(base_Value) != undefined ? parseFloat(base_Value) : 1;
+
+        if (element == null) $("body").append('<div class="box-select shadow-sm" id="' + id + '_Select_Box"> <div class="box-select-header hstack gap-2"> <button type="button" class="btn btn-standard-rounded btn-submit-range-slider" data-value-place="' + valuePlace_Id + '" data-display-place="' + displayPlace_Id + '" data-caller-btn="' + callerButtonId + '" id = "' + id + '-Done_Btn" > Done</button > <button type="button" class="btn btn-standard-rounded btn-close-select ms-auto" id="' + id + '-Close_Btn" data-caller-btn="' + id + '-Select_Btn"> <i class="fa-solid fa-xmark"></i> </button> </div > <div class="box-select-body mt-3"> <div class="box-standard liquid-glass p-2"><label class="form-label fw-500"><span class="fw-500" id="' + id + '_RangeHeader_Lbl">Max Voices</span> ∙ <span class="card-text" id="' + id + '_RangeValue_Span">1</span></label> <input type="range" class="form-range" id="' + id + '-Slider_Val" /> </div> <div class="box-standard row mt-2"> <div class="col"> <button type="button" class="btn btn-standard-rounded btn-range-slider-set-unlim text-center w-100"> <i class="fa-solid fa-infinity"></i> Unlimited</button> </div> <div class="col"> <button type="button" class="btn btn-standard-rounded btn-range-slider-val-round text-center w-100"> <i class="fa-solid fa-arrow-down-9-1"></i> Round</button> </div> </div> </div>');
+        $("#" + id + "-Slider_Val").val(base_Value);
+        $("#" + id + "-Slider_Val").attr("min", min_Value);
+        $("#" + id + "-Slider_Val").attr("max", max_Value);
+        $("#" + id + "-Slider_Val").attr("step", step_Value);
+
+        if (headerText != null) $("#" + id + "_RangeHeader_Lbl").html(headerText);
+        else $("#" + id + "_RangeHeader_Lbl").text("Slide to Change");
+
+        if (includeUnlimButton) {
+            $(".btn-range-slider-set-unlim").removeClass("super-disabled");
+            $(".btn-range-slider-set-unlim").attr("data-value", id + "-Slider_Val");
+            $(".btn-range-slider-set-unlim").attr("data-display", id + "_RangeValue_Span");
+        }
+        else {
+            $(".btn-range-slider-set-unlim").removeAttr("data-value");
+            $(".btn-range-slider-set-unlim").removeAttr("data-display");
+            $(".btn-range-slider-set-unlim").addClass("super-disabled");
+        }
+
+        if (max_Value >= 10000) {
+            $(".btn-range-slider-val-round").removeClass("super-disabled");
+            $(".btn-range-slider-val-round").attr("data-value", id + "-Slider_Val");
+        }
+        else {
+            $(".btn-range-slider-val-round").removeAttr("data-value");
+            $(".btn-range-slider-val-round").addClass("super-disabled");
+        }
+
+        $("body").append("<div class='box-select-overlay'></div>");
+        setTimeout(function () {
+            bottomNavbarH += 50;
+            $(".box-select-overlay").addClass("active");
+            $("#" + id + "_Select_Box").fadeIn(0);
+            $("#" + callerButtonId).css("transform", "scale(0.95)");
+            $("#" + id + "_Select_Box").css("transform", "scale(1.1) translateX(-50%)");
+            $("#" + id + "_Select_Box").css("bottom", bottomNavbarH + "px");
+            setTimeout(function () {
+                bottomNavbarH -= 40;
+                $("#" + id + "_Select_Box").css("transform", "scale(1) translateX(-50%)");
+                $("#" + id + "_Select_Box").css("bottom", bottomNavbarH + "px");
+            }, 300);
+        }, 150);
+    }
+}
+
+$(document).on("mousedown", ".btn-range-slider-set-unlim", function () {
+    let valueTarget = $(this).attr("data-value");
+    if (valueTarget != undefined) {
+        let displayPlaceId = $(this).attr("data-display");
+        if (!$(this).hasClass("triggered")) {
+            $("#" + valueTarget).val(-1);
+            $("#" + valueTarget).addClass("super-disabled");
+
+            $(this).addClass("triggered");
+            $(this).html(' <i class="fa-solid fa-infinity"></i> Ready');
+            if (displayPlaceId != undefined) $("#" + displayPlaceId).html(' <i class="fa-solid fa-infinity"></i> ');
+        }
+        else {
+            let minValue = parseFloat($("#" + valueTarget).attr("min"));
+            minValue = minValue == undefined ? 0 : minValue;
+            $("#" + valueTarget).val(minValue);
+            $("#" + valueTarget).removeClass("super-disabled");
+
+            $(this).removeClass("triggered");
+            $(this).html(' <i class="fa-solid fa-infinity"></i> Unlimited');
+            if (displayPlaceId != undefined) $("#" + displayPlaceId).html(minValue);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-range-slider-val-round", function () {
+    let valueTarget_Id = $(this).attr("data-value");
+    if (valueTarget_Id != undefined) {
+        let value = parseFloat($("#" + valueTarget_Id).val());
+        let maxValue = parseFloat($("#" + valueTarget_Id).attr("max"));
+        let zerosQty = maxValue / 10;
+
+        if (value >= zerosQty) {
+            value = Math.round(value / zerosQty);
+            $("#" + valueTarget_Id).val(value * zerosQty);
+            $("#" + valueTarget_Id).change();
+        }
+        else $("#" + valueTarget_Id).val(zerosQty);
+        $("#" + valueTarget_Id).change();
+    }
+});
+
 $(document).on("mousedown", ".btn-select-primary", function () {
     let trueId = getTrueId($(this).attr("id"), false);
     if (trueId != undefined) {
@@ -5140,7 +6786,7 @@ $(document).on("mousedown", ".btn-add-element", function () {
 $(document).on("mousedown", ".btn-remove-element", function () {
     let trueId = getTrueId($(this).attr("id"), true);
     if (trueId != undefined) {
-        createInsideLgCard()
+        //createInsideLgCard()
         $("#" + trueId).remove();
         $(".btn-close-vertical-switcher").mousedown();
     }
@@ -5900,33 +7546,44 @@ function calendarUIUpdate(calendarDaysArr = [], calendarWeeksArr = [], mainDispl
     }
 }
 
-function slideElements(byClassName = false, closingElement_Id, openingElement_Id) {
+function slideElements(byClassName = false, closingElement_Id, openingElement_Id, type = 0) {
+    let activeClass = "active";
+    let pendingClass = "pending";
+    if (type == 0) {
+        activeClass = "active";
+        pendingClass = "pending";
+    }
+    else {
+        activeClass = "type1-active";
+        pendingClass = "type1-pending";
+    }
+
     if (byClassName) {
-        $("." + closingElement_Id).removeClass("active");
-        $("." + closingElement_Id).addClass("pending");
+        $("." + closingElement_Id).removeClass(activeClass);
+        $("." + closingElement_Id).addClass(pendingClass);
         setTimeout(function () {
             $("." + openingElement_Id).fadeIn(0);
-            $("." + closingElement_Id).removeClass("pending");
-            $("." + openingElement_Id).addClass("pending");
+            $("." + closingElement_Id).removeClass(pendingClass);
+            $("." + openingElement_Id).addClass(pendingClass);
             $("." + closingElement_Id).fadeOut(0);
         }, 250);
         setTimeout(function () {
-            $("." + openingElement_Id).removeClass("pending");
-            $("." + openingElement_Id).addClass("active");
+            $("." + openingElement_Id).removeClass(pendingClass);
+            $("." + openingElement_Id).addClass(activeClass);
         }, 500);
     }
     else {
-        $("#" + closingElement_Id).removeClass("active");
-        $("#" + closingElement_Id).addClass("pending");
+        $("#" + closingElement_Id).removeClass(activeClass);
+        $("#" + closingElement_Id).addClass(pendingClass);
         setTimeout(function () {
             $("#" + openingElement_Id).fadeIn(0);
-            $("#" + closingElement_Id).removeClass("pending");
-            $("#" + openingElement_Id).addClass("pending");
+            $("#" + closingElement_Id).removeClass(pendingClass);
+            $("#" + openingElement_Id).addClass(pendingClass);
             $("#" + closingElement_Id).fadeOut(0);
         }, 250);
         setTimeout(function () {
-            $("#" + openingElement_Id).removeClass("pending");
-            $("#" + openingElement_Id).addClass("active");
+            $("#" + openingElement_Id).removeClass(pendingClass);
+            $("#" + openingElement_Id).addClass(activeClass);
         }, 500);
     }
 }
@@ -5937,7 +7594,6 @@ $(document).on("change keyup", ".form-control-distance", function () {
         let thisValue = $(this).val();
         let baseValue = $("#" + thisId + "-Base_Val").val();
         baseValue = baseValue == undefined ? "" : baseValue;
-
         if (baseValue != thisValue) {
             $("#" + thisId + "-DistantSbmt_Btn").addClass("active");
             $("#" + thisId + "-DistantSbmt_Btn").html(' <i class="fa-solid fa-circle-exclamation"></i> Save');
@@ -5953,8 +7609,10 @@ $(document).on("mousedown", ".btn-change-elements", function () {
     let closingElement = $(this).attr("data-close");
     let openingElement = $(this).attr("data-open");
     if (openingElement != undefined && closingElement != undefined) {
+        let type = $(this).attr("data-anima-type");
         if ($("#" + openingElement).hasClass("slide-element") && $("#" + closingElement).hasClass("slide-element")) {
-            slideElements(false, closingElement, openingElement);
+            slideElements(false, closingElement, openingElement, type == undefined ? 0 : type);
+            if ($(this).hasClass('hide-text-bar')) swapToRegularNavbar();
         }
     }
 });
@@ -5963,7 +7621,7 @@ $(document).on("mousedown", ".btn-solo-input", function () {
     let thisId = $(this).attr("id");
     let input = $(this).attr("data-input");
     if (input != undefined && thisId != undefined) {
-        slideElements(false, thisId, input);
+        slideElements(false, thisId, input, 0);
         if ($(this).hasClass("call-text-editor")) {
             const textBoxId = $(this).attr("data-text-box");
             if (textBoxId != undefined) callTextCustomizationBar(textBoxId);
@@ -6625,32 +8283,52 @@ $(document).on("mousedown", ".btn-input-file-emptier", function () {
     }
 });
 
-$(document).on("mousedown", ".btn-trigger", function () {
-    let triggerElement = $(this).attr("data-trigger");
-    if (triggerElement != undefined) {
-        $("#" + triggerElement).mousedown();
+$(document).on("mousedown", ".btn-switcher", function () {
+    let switchValue = $(this).attr("data-value");
+    if (switchValue != undefined) {
+        let trueText = $(this).attr("data-tt");
+        let falseText = $(this).attr("data-ft");
+        let currentValue = $("#" + switchValue).val();
+
+        currentValue = currentValue == "false" ? false : true;
+        currentValue = !currentValue;
+        //btn-call-select
+        trueText = trueText == undefined ? ' <i class="fa-regular fa-circle-check"></i> ' : trueText;
+        falseText = falseText == undefined ? ' <i class="fa-regular fa-circle-xmark"></i> ' : falseText;
+
+        $("#" + switchValue).val(currentValue);
+        if (currentValue) $("#" + switchValue + "_Span").html(trueText);
+        else $("#" + switchValue + "_Span").html(falseText);
     }
 });
 
-$(document).on("change", ".form-control-trigger", function () {
-    let triggeringElement = $(this).attr("data-trigger");
-    if (triggeringElement != undefined) {
-        let triggerActivationInterval = $(this).attr("data-trigger-interval");
-        let idleLabel = $(this).attr("data-idle-label");
-        if (idleLabel != undefined) {
-            let idleText = $(this).attr("data-idle-text");
-            if (idleText != undefined) $("#" + idleLabel).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> ' + idleText);
-            else $("#" + idleLabel).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Pending...');
-        }
+//Potential delete
+//$(document).on("mousedown", ".btn-trigger", function () {
+//    let triggerElement = $(this).attr("data-trigger");
+//    if (triggerElement != undefined) {
+//        $("#" + triggerElement).mousedown();
+//    }
+//});
 
-        clearTimeout(timeoutValue);
-        triggerActivationInterval = triggerActivationInterval != undefined ? parseFloat(triggerActivationInterval) : 1.75;
-        $("#" + triggeringElement).val($(this).val());
-        timeoutValue = setTimeout(function () {
-            $("#" + triggeringElement).change();
-        }, triggerActivationInterval * 1000);
-    }
-});
+//$(document).on("change", ".form-control-trigger", function () {
+//    let triggeringElement = $(this).attr("data-trigger");
+//    if (triggeringElement != undefined) {
+//        let triggerActivationInterval = $(this).attr("data-trigger-interval");
+//        let idleLabel = $(this).attr("data-idle-label");
+//        if (idleLabel != undefined) {
+//            let idleText = $(this).attr("data-idle-text");
+//            if (idleText != undefined) $("#" + idleLabel).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> ' + idleText);
+//            else $("#" + idleLabel).html(' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Pending...');
+//        }
+
+//        clearTimeout(timeoutValue);
+//        triggerActivationInterval = triggerActivationInterval != undefined ? parseFloat(triggerActivationInterval) : 1.75;
+//        $("#" + triggeringElement).val($(this).val());
+//        timeoutValue = setTimeout(function () {
+//            $("#" + triggeringElement).change();
+//        }, triggerActivationInterval * 1000);
+//    }
+//});
 
 $(document).on("mousedown", ".btn-open-container", function () {
     let trueId = getTrueId($(this).attr("id"), false);
@@ -6674,9 +8352,16 @@ $(document).on("mousedown", ".btn-open-sm-container", function () {
 });
 
 $(document).on("mousedown", ".btn-close-sm-container", function () {
-    let trueId = getTrueId($(this).attr("id"));
+    let trueId = getTrueId($(this).attr("id"), false);
     if (trueId != undefined) {
         uncallASmContainer(false, trueId);
+    }
+});
+
+$(document).on("mousedown", ".btn-close-inside-lg-card", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        uncallLgInsideContainer(false, trueId);
     }
 });
 
@@ -7077,60 +8762,6 @@ $(document).on("keydown", ".form-control-restricted", function (event) {
     else return false;
 });
 
-$(document).on("mousedown", ".btn-text-format-script", function () {
-    let target = $("#TextFormat_Target_Val").val();
-    let type = $(this).attr("data-type");
-    if (target != undefined && type != undefined) {
-        let selectionStart = $("#UMI_Description_Val").prop("selectionStart");
-        let selectionEnd = $("#UMI_Description_Val").prop("selectionEnd");
-        let result = textFormatting("UMI_Description_Val", type, selectionStart, selectionEnd);
-        if (result != null) $("#" + target).val(result);
-    }
-});
-
-$(document).on("mousedown", ".btn-text-deformatting", function () {
-    let trueId = getTrueId($(this).attr("id"));
-    if (trueId != null) {
-        let value = $("#" + trueId).val();
-        value = textDeformatting(value);
-        if (value != null) {
-            $("#" + trueId).fadeOut(300);
-            $("#" + trueId + "-PreviewText_Lbl").html(value);
-            $(this).addClass("btn-text-deformatting-off");
-            $(this).removeClass("btn-text-deformatting");
-            $(this).html(' <i class="fa-solid fa-circle-stop"></i> Stop Previewing');
-            setTimeout(function () {
-                $("#" + trueId + "-Preview_Box").fadeIn(300);
-            }, 300);
-            uncallAContainer(false, "TextFormatting_Container");
-        }
-    }
-});
-
-$(document).on("mousedown", ".btn-text-deformatting-off", function () {
-    let trueId = getTrueId($(this).attr("id"));
-    if (trueId != null) {
-        $("#" + trueId + '-Preview_Box').fadeOut(300);
-        $(this).html(' <i class="fa-solid fa-spell-check"></i> Preview');
-        $(this).addClass("btn-text-deformatting");
-        $(this).removeClass("btn-text-deformatting-off");
-        setTimeout(function () {
-            $("#" + trueId).fadeIn(300);
-        }, 300);
-    }
-});
-
-$(document).on("mousedown", ".btn-open-text-formatting", function () {
-    let trueId = getTrueId($(this).attr("id"), true);
-    if (trueId != undefined) {
-        $("#TextFormat_Target_Val").val(trueId);
-        createInsideLgCard("TextFormatting", "Text Format", '<div class="hstack gap-2"> <div class="d-none"> <input type="hidden" id="TextFormat_Target_Val" value="UMI_Description_Val" /> </div> <div class="x-row-sliding-only-box"> <button type="button" class="btn btn-text-format btn-text-format-script fs-5 fw-500 me-1" data-type="0">Heading</button> <button type="button" class="btn btn-text-format btn-text-format-script fs-6 fw-500 me-1" data-type="1">Subheading</button> <button type="button" class="btn btn-text-format btn-text-format-script fw-500 me-1" data-type="2">Label</button> <button type="button" class="btn btn-text-format btn-text-format-script me-1" data-type="3">Text</button> <button type="button" class="btn btn-text-format btn-text-format-script code-similar-font me-1" data-type="4">Monospaced</button> </div> <div class="ms-auto"> </div> </div>');
-        setTimeout(function () {
-            callAContainer(false, "TextFormatting_Container");
-        }, 150);
-    }
-});
-
 $(document).on("mousedown", ".btn-add-as-artist", function () {
     let trueId = getTrueId($(this).attr("id"));
     if (trueId != undefined) {
@@ -7316,6 +8947,14 @@ $(document).on("change", ".form-range-slider", function () {
 
     if (currentValue != undefined && maxValue != undefined) {
         if (valueLabel != undefined) $("#" + valueLabel).html(currentValue);
+    }
+});
+
+$(document).on("change", ".form-range", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        let value = $(this).val();
+        $("#" + trueId + "_RangeValue_Span").html(parseFloat(value).toLocaleString());
     }
 });
 
@@ -7914,26 +9553,41 @@ function elementDesigner(elementTag, elementClass, elementHtml) {
 }
 
 function createInsideLgCard(id, title, body, headerBtn1 = null, headerBtn2 = null) {
-    let divExists = document.getElementById(id);
+    let divExists = document.getElementById(id + "_Container");
     if (divExists == null) {
-        $("body").append('<div class="box-lg-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-lg-inner-part-header p-2"> <div class="div-swiper mx-auto" id="' + id + '_Container-Swiper"></div> <div class="hstack gap-1" id="' + id + '-HeaderBtns_Box"> <button type="button" class="btn btn-standard btn-back btn-sm"> <i class="fa-solid fa-chevron-left"></i> Back</button> <div class="ms-2"> <span class="h5" id="' + id + '_Container-Header_Lbl"></span> </div> </div> </div> <div class="mt-1 p-1" id="' + id + '_Box"></div></div>');
+        let headerBox = elementDesigner("div", "box-lg-inner-part-header", null);
+        headerBox.attr("id", id + "-HeaderBtns_Box");
+
+        $("body").append('<div class="box-lg-part-inner shadow-sm" id="' + id + '_Container"> <div class="box-lg-inner-part-header" id="' + id + '-Header_Box"> <div class="div-swiper mx-auto" id="' + id + '_Container-Swiper"></div></div> <div class="mt-1 p-1" id="' + id + '_Box"></div></div>');
         $("#" + id + "_Container-Header_Lbl").html(title);
         $("#" + id + "_Box").append(body);
-        if (headerBtn1 != null) {
-            let headerStackRightPartBox = $("<div class='ms-auto'></div>");
-            headerStackRightPartBox.append(headerBtn1);
-            $("#" + id + "-HeaderBtns_Box").append(headerStackRightPartBox);
-            if (headerBtn2 != null) headerStackRightPartBox.append(headerBtn2);
-        }
 
-        if (currentWindowSize < 1024) {
-            $(".box-sm-part-inner").css("left", "0.75%");
-            $(".box-sm-part-inner").css("width", "98.25%");
+        if ((headerBtn1 != null || headerBtn1 != undefined) || (headerBtn2 != null || headerBtn2 != undefined)) {
+            let stackDiv = elementDesigner("div", "hstack gap-2", null);
+            if (headerBtn1 != null) stackDiv.append(headerBtn1);
+            if (headerBtn2 != null) {
+                $(headerBtn2).addClass("ms-auto");
+                stackDiv.append(headerBtn2);
+            }
+            $("#" + id + "-Header_Box").append(stackDiv);
+            $("#" + id + "-Header_Box").removeClass("border-0");
         }
-        else {
-            $(".box-lg-part-inner").css("left", "37.5%");
-            $(".box-lg-part-inner").css("width", "62%");
-        }
+        else $("#" + id + "-Header_Box").addClass("border-0");
+        //if (headerBtn1 != null) {
+        //    let headerStackRightPartBox = $("<div class='ms-auto'></div>");
+        //    headerStackRightPartBox.append(headerBtn1);
+        //    $("#" + id + "-HeaderBtns_Box").append(headerStackRightPartBox);
+        //    if (headerBtn2 != null) headerStackRightPartBox.append(headerBtn2);
+        //}
+        displayCorrector(currentWindowSize);
+        return true;
+    }
+    else {
+        displayCorrector(currentWindowSize);
+        setTimeout(function () {
+            callInsideLgContainer(false, id + "_Container");
+        }, 150);
+        return false;
     }
 }
 
@@ -8120,72 +9774,12 @@ function juxtaposedCharsUpdater(elementId, baseValue, updatingDisplayId) {
     else return null;
 }
 
-function textDeformatting(value) {
-    if (value != null) {
-        value = value.replaceAll("[[", "<span>");
-        value = value.replaceAll("[!", "<h5 class='h5'>");
-        value = value.replaceAll("[@", "<h6 class='h6'>");
-        value = value.replaceAll("[#", "<span class='card-text fw-500'>");
-        value = value.replaceAll("[$", "<span class='card-text code-similar-font'>");
-        value = value.replaceAll("@]", "</h6>");
-        value = value.replaceAll("!]", "</h5>");
-        value = value.replaceAll("]]", "</span>");
-
-        return value;
-    }
-    else return null;
-}
-
-function textFormatting(target, type, startIndex, endIndex) {
-    let text;
-    if (target != null && type != null) {
-        text = $("#" + target).val();
-        let textBefore;
-        let textAfter;
-        if (startIndex != endIndex && startIndex > 0) {
-            textBefore = text.substring(0, startIndex);
-            textAfter = text.substring(endIndex, text.length);
-            text = text.substring(startIndex, endIndex);
-        }
-        else {
-            textBefore = text.substring(0, startIndex);
-            textAfter = text.substring(endIndex, text.length);
-            text = "";
-        }
-
-        switch (parseInt(type)) {
-            case 0:
-                text = "[!" + text + "!]";
-                break;
-            case 1:
-                text = "[@" + text + "@]";
-                break;
-            case 2:
-                text = "[#" + text + "]]";
-                break;
-            case 3:
-                text = "[[" + text + "]]";
-                break;
-            case 4:
-                text = "[$" + text + "]]";
-                break;
-            default:
-                text = "[!" + text + "]]";
-                break;
-        }
-        if (startIndex != endIndex && startIndex > 0) text = textBefore + text + textAfter;
-        else text = textBefore + textAfter + text;
-        return text;
-    }
-    else return null;
-}
-
 function getElementLength(id, indicatorId, isText = false) {
     if (id != null) {
         let maxLength = 0;
         let currentLength = 0;
         if (!isText) {
-            currentLength = $("#" + id).val().length;
+            currentLength = $("#" + id).attr("contenteditable") ? $("#" + id + "_Val").val().length : $("#" + id).val().length;
             maxLength = parseInt($("#" + id).attr("maxlength"));
         }
         else currentLength = $("#" + id).text().length;
@@ -9045,6 +10639,87 @@ async function callAContainer(callByClassname, id, doNotList) {
     setTimeout(function () {
         lgPartContainerCorrector(playerPosition);
     }, 300);
+}
+
+async function callInsideLgContainer(callByClassname = false, elementId = null, doNotList = false) {
+    if (elementId != null || elementId != undefined) {
+        let alertBottom = alertBottomValue;
+        if (callByClassname) {
+            alertBottom += 60;
+            $("." + elementId).fadeIn(0);
+            $(".box-lg-part-inner").addClass("passive");
+            $("." + elementId).removeClass("passive");
+            $("." + elementId).css("bottom", alertBottom + "px");
+            setTimeout(function () {
+                alertBottom -= 75;
+                $("." + elementId).css("bottom", alertBottom + "px");
+            }, 350);
+            setTimeout(function () {
+                alertBottom += 15;
+                $("." + elementId).css("bottom", alertBottom + "px");
+            }, 700);
+        }
+        else {
+            alertBottom += 55;
+            $("#" + elementId).fadeIn(0);
+            $(".box-lg-part-inner").addClass("passive");
+            $("#" + elementId).removeClass("passive");
+            $("#" + elementId).css("bottom", alertBottom + "px");
+            setTimeout(function () {
+                alertBottom -= 65;
+                $("#" + elementId).css("bottom", alertBottom + "px");
+            }, 350);
+            setTimeout(function () {
+                alertBottom += 10;
+                if (!doNotList) openInsideLgCardsArr.push(elementId);
+                $("#" + elementId).css("bottom", alertBottom + "px");
+            }, 700);
+        }
+    }
+}
+
+function uncallLgInsideContainer(callByClassname = false, elementId = null) {
+    if (elementId != null || elementId != undefined) {
+        let lastCardId = undefined;
+        let alertBottom = alertBottomValue;
+        if (callByClassname) {
+            alertBottom += 60;
+            $("." + elementId).css("bottom", alertBottom);
+            setTimeout(function () {
+                $("." + elementId).css("bottom", "-1200px");
+            }, 350);
+            setTimeout(function () {
+                $("." + elementId).fadeOut(0);
+                $("." + elementId).addClass("hidden");
+            }, 600);
+
+            let thisCardIndex = openInsideLgCardsArr.length - 1;
+            if (thisCardIndex != -1) {
+                openInsideLgCardsArr.splice(thisCardIndex, 1);
+                lastCardId = openInsideLgCardsArr.length > 0 ? openInsideLgCardsArr[openInsideLgCardsArr.length - 1] : undefined;
+            }
+            if (lastCardId != undefined) callInsideLgContainer(false, lastCardId);
+        }
+        else {
+            alertBottom += 45;
+
+            $("#" + elementId).css("bottom", alertBottom);
+            setTimeout(function () {
+                $("#" + elementId).css("bottom", "-1200px");
+            }, 350);
+            setTimeout(function () {
+                $("#" + elementId).fadeOut(0);
+                $("#" + elementId).addClass("hidden");
+
+                let thisCardIndex = openInsideLgCardsArr.lastIndexOf(elementId);
+                if (thisCardIndex != -1) {
+                    openInsideLgCardsArr.splice(thisCardIndex, 1);
+                    lastCardId = openInsideLgCardsArr.length > 0 ? openInsideLgCardsArr[openInsideLgCardsArr.length - 1] : undefined;
+                }
+                if (lastCardId != undefined) callInsideLgContainer(false, lastCardId, true);
+            }, 600);
+        }
+    }
 }
 
 function callKawaiiAlert(purpose = 0, bodyHtml = null, additionalIcon = null, additionalValue = 0, additionalBtnAction = null, duration = 3, isDestructable = true) {
@@ -11358,11 +13033,12 @@ function callAProposal(icon, header, description, positiveButtonHtml, positiveBu
             }
         }
         $("#ProposalSubmit_Btn").fadeIn(0);
+        $("#ProposalForForms_Box").fadeIn(0);
     }
     else {
         if (positiveButtonFormHtml != null && positiveButtonFormHtml.includes("<form")) {
             $("#ProposalSubmit_Btn").fadeOut(0);
-            $("#ProposalForForms_Box").fadeOut(0);
+            $("#ProposalForForms_Box").fadeIn(0);
             $("#ProposalForForms_Box").append(positiveButtonFormHtml);
         }
     }

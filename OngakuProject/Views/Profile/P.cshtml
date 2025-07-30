@@ -114,11 +114,21 @@
         <div>
             <form method="get" asp-controller="Profile" asp-action="GetPrivacySettings" id="GetPrivacySettings_Form">
                 <input type="hidden" name="Id" value="@UserInfo.Id" />
-                <button type="submit" class="btn box-btn-group-member box-btn-group-bot-member hstack gap-1" id="GetPrivacySettings_SbmtBtn">
+                <button type="submit" class="btn box-btn-group-member box-btn-group-mid-member hstack gap-1" id="GetPrivacySettings_SbmtBtn">
                     <div class="box-btn-group-member-icon"> <i class="fa-solid fa-shield-halved"></i> </div>
                     <span class="card-text ms-1">Privacy Settings</span>
                     <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
                 </button>
+            </form>
+        </div>
+        <div>
+            <form method="get" action="/Poll/GetByUser" id="GetUserPolls_Form">
+                <input type="hidden" name="Type" id="GetUserPolls_Type_Val" value="0" />
+                <button type="submit" class="btn box-btn-group-member box-btn-group-bot-member hstack gap-1" id="GetUserPolls_SbmtBtn">
+                    <div class="box-btn-group-member-icon"> <i class="fa-solid fa-square-poll-vertical"></i> </div>
+                    <span class="card-text ms-1">Your Polls</span>
+                    <small class="card-text text-muted ms-auto"> <i class="fa-solid fa-angle-right"></i> </small>
+                </button> 
             </form>
         </div>
 @*         <button type="button" class="btn box-btn-group-member box-btn-group-mid-member btn-open-container text-start" id="ProfileSecurity_Container-Open"> <i class="fa-solid fa-fingerprint"></i> Security Settings <small class="card-text text-muted float-end"> <i class="fa-solid fa-angle-right"></i> </small></button> *@
@@ -186,11 +196,11 @@
                         <div class="w-100">
                             <div class="form-textarea form-control-undetermined form-control-select-like form-control-guard" contenteditable="true" maxlegth="1500" data-min-length="1" placeholder="Your bio (max 1500 chars)" id="EditUser_Bio"></div>
                             <form method="post" action="/Profile/EditBio" id="EditUserBio_Form">
-                                <textarea class="d-none" id="EditUser_Bio_Val" name="Description" placeholder="Your bio (max 1500 chars)" maxlength="1500"></textarea>
+                                <input type="hidden" class="form-control-distance" id="EditUser_Bio_Val" name="Description" placeholder="Your bio (max 1500 chars)" maxlength="1500" />
                             </form>
                             <input type="hidden" id="EditUser_Bio_Val-Base_Val" />
                         </div>
-                        <button type="button" class="btn btn-standard-rounded btn-change-elements ms-auto" id="UserWebsiteLink_Uncall_Btn" data-close="BioEdit_Box" data-open="EditUserDescription_Call_Btn"> <i class="fa-solid fa-xmark"></i> </button>
+                        <button type="button" class="btn btn-standard-rounded btn-change-elements hide-text-bar ms-auto" id="UserWebsiteLink_Uncall_Btn" data-close="BioEdit_Box" data-open="EditUserDescription_Call_Btn"> <i class="fa-solid fa-xmark"></i> </button>
                     </div>
                 </div>
                 <div class="mt-1 ms-1">

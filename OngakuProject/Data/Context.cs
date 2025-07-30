@@ -34,5 +34,13 @@ namespace OngakuProject.Data
         public DbSet<UserPlaylist> UserPlaylists { get; set; }
         public DbSet<UserListener> UserListeners { get; set; }
         public DbSet<UserSubscribtion> UserSubscribtions { get; set; }
+
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<RePost> Reposts { get; set; }
+        public DbSet<Poll> Polls { get; set; }
+        public DbSet<PollOption> PollOptions { get; set; }
+        public DbSet<PollOptionVote> PollOptionVotes { get; set; }
+        public DbSet<PollComment> PollComments { get; set; }
+        public DbSet<PollRecomment> PollRecomments { get; set; }
     }
 }

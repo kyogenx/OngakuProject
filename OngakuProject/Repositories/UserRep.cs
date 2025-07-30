@@ -29,5 +29,11 @@ namespace OngakuProject.Repositories
         {
             return _context.Users.Where(u => u.IsVisible && (Keyword != null && ((u.Nickname != null && u.Nickname!.ToLower().Contains(Keyword.ToLower())) || (u.Searchname != null && u.Searchname!.ToLower().Contains(Keyword.ToLower())) || (u.RealName != null && u.RealName.ToLower().Contains(Keyword.ToLower())) || (u.Webpage != null && u.Webpage.ToLower().Contains(Keyword.ToLower()))))).Select(u => new User { Id = u.Id, Nickname = u.Nickname, ImgUrl = u.ImgUrl }).Take(24);
         }
+
+        public IQueryable<User?>? MentionSearch(string? Searchname)
+        {
+            if (!String.IsNullOrWhiteSpace(Searchname)) return _context.Users.Where(u => (u.Searchname != null && u.Searchname.ToLower().Contains(Searchname.ToLower())) || (u.Nickname != null && u.Nickname.ToLower().Contains(Searchname.ToLower()))).Select(u => new User { Id = u.Id, ImgUrl = u.UserImages != null ? u.UserImages.Select(i => i.ImgUrl).FirstOrDefault() : null, Nickname = u.Nickname, Searchname = u.Searchname });
+            else return null;
+        }
     }
 }

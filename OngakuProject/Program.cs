@@ -40,6 +40,9 @@ builder.Services.AddTransient<IPlaylist, PlaylistRep>();
 builder.Services.AddTransient<ISubscribtion, SubscribtionRep>();
 builder.Services.AddScoped<ITrackAnalytic, TrackAnalyticRep>();
 builder.Services.AddTransient<ITrackComment, TrackCommentRep>();
+builder.Services.AddTransient<IPost, PostRep>();
+builder.Services.AddTransient<IPoll, PollRep>();
+builder.Services.AddTransient<IPollComment, PollCommentRep>();
 
 builder.Services.AddTransient<ISearch, SearchRep>();
 builder.Services.AddTransient<ICountry, CountryRep>();

@@ -1383,9 +1383,69 @@
     </div>
 </div> *@
 
+@* <div class="box-select shadow-sm" id="PollDuration_Select_Box" style="display: block; bottom: 200px;">
+    <div class="box-select-header hstack gap-2"> 
+        <button type="button" class="btn btn-standard-rounded btn-submit-range-slider" data-value-place="PollDuration_Val" data-display-place="PollDuration_Span" data-parse-type="0" id="PollDuration-Done_Btn">Done</button>
+        <button type="button" class="btn btn-standard-rounded btn-close-select ms-auto" id="PollDuration-Close_Btn" data-caller-btn="PollDuration-Select_Btn"> <i class="fa-solid fa-xmark"></i> </button>
+    </div>
+    <div class="box-select-body mt-3">
+        <div class="box-standard liquid-glass p-2">
+            <label class="form-label"><span class="fw-500" id="PollDuration_RangeHeader_Lbl">Max Voices</span> ∙ <span class="card-text" id="PollDuration_RangeValue_Span">1</span></label>
+            <input type="range" class="form-range" id="PollDuration-Range_Val" min="0" max="100" step="1" value="1" />
+        </div>
+        <div class="box-standard row mt-2">
+            <div class="col">
+                <button type="button" class="btn btn-standard-rounded btn-range-slider-set-unlim text-center w-100"> <i class="fa-solid fa-infinity"></i> Unlimited</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-standard-rounded btn-range-slider-val-round text-center w-100"> <i class="fa-solid fa-arrow-down-9-1"></i> Round</button>
+            </div>
+        </div>
+    </div>
+</div> *@
+
 <div class="box-lg-part shadow-sm" id="Primary_Container">
     <div class="box-lg-part-header p-2">
-        <div class="hstack gap-1">
+        <div class="slide-element active" id="PrimaryHeader_Main_Box">
+            <div class="hstack gap-2">
+                <div class="d-inline-block">
+                    <form method="get" asp-controller="Playlists" asp-action="GetFavorites" id="GetFavorites_Form">
+                        <button type="submit" class="btn btn-standard" id="GetFavorites_SbmtBtn"> <i class="fa-solid fa-star"></i>  Favorites</button>
+                    </form>
+                </div>
+                <div class="ms-auto">
+                    @if (UserInfo is not null)
+                    {
+                        <button type="button" class="btn btn-standard-rounded btn-change-elements me-3" data-close="PrimaryHeader_Main_Box" data-open="PrimaryHeader_Aux_Box" data-anima-type="1"> <i class="fa-solid fa-plus"></i> </button>
+                        @if (UserInfo.ImgUrl != null)
+                        {
+                            <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" id="CurrentUserProfile_Img" onmousedown="document.location.href='/Profile/P';" />
+                        }
+                        else
+                        {
+                            <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto" id="CurrentUserProfile_Img">@UserInfo.Nickname![0]</a>
+                        }
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-standard-rounded"> <i class="fa-solid fa-right-to-bracket"></i> </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="x-row-sliding-only-box slide-element w-100" id="PrimaryHeader_Aux_Box" style="display: none;">
+            <button type="button" class="btn btn-standard-rounded btn-change-elements me-3" data-close="PrimaryHeader_Aux_Box" data-open="PrimaryHeader_Main_Box" data-anima-type="1"> <i class="fa-solid fa-chevron-left"></i> </button>
+            <button type="button" class="btn btn-standard me-1"> <i class="fa-solid fa-feather"></i> New Post</button>
+            <button type="button" class="btn btn-standard btn-create-new-poll" id="CreateNewPoll_Btn"> <i class="fa-solid fa-square-poll-vertical"></i> New Poll</button>
+            <div class="d-inline-block">
+                <form method="get" asp-controller="Track" asp-action="GetStudioItems" id="GetStudioItems_Form">
+                    <button type="submit" class="btn btn-standard"> <i class="fa-solid fa-music"></i> Open Studio</button>
+                </form>
+            </div>
+@*             <button type="button" class="dropdown-item btn-open-container btn-sm" id="AddMusic_Container-Open">Add Music <span class="card-text float-end"> <i class="fa-solid fa-microphone-lines"></i> </span></button> *@
+        </div>
+        @* <div class="hstack gap-1">
             <div class="dropdown">
                 <button class="btn btn-standard me-1" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
                 <ul class="dropdown-menu shadow-sm p-1">
@@ -1408,27 +1468,188 @@
                     <button type="submit" class="btn btn-standard" id="GetFavorites_SbmtBtn"> <i class="fa-solid fa-star"></i>  Favorites</button>
                 </form>
             </div>
-            @if (UserInfo is not null)
-            {
-                @if (UserInfo.ImgUrl != null)
-                {
-                    <img class="btn-standard-profile text-center ms-auto" src="/ProfileImages/@UserInfo.ImgUrl" id="CurrentUserProfile_Img" onmousedown="document.location.href='/Profile/P';" />
-                }
-                else
-                {
-                    <a asp-controller="Profile" asp-action="P" class="btn-standard-profile text-center ms-auto" id="CurrentUserProfile_Img">@UserInfo.Nickname![0]</a>
-                }
-            }
-            else
-            {
-
-            }
-        </div>
+        </div> *@
     </div>
+
+    @* <div class="box-lg-part-inner" id="PollsInformation_Container" style="display: block; bottom: 150px;">
+        <div class="div-swiper mx-auto mt-1"></div>
+        <div class="box-lg-inner-part-header" id="PollsInformation_Header_Box">
+            <div class="d-none">
+                <form method="get" action="/Poll/GetLiveDatas" id="GetPollLiveDatas_Form">
+                    <input type="hidden" name="Id" id="GetPollLiveDatas_Id_Val" value="0" />
+                </form>
+            </div>
+        </div>
+        <div class="box-lg-inner-part-box" id="PollsInformation_Box">
+
+            <div class="box-post-or-poll">
+                <div class="hstack gap-1">
+                    <div>
+                        <span class="card-text white-space-on">What is the most polluting material on Earth?</span>
+                        <div>
+                            <small class="card-text text-muted"> <i class="fa-solid fa-square-poll-vertical"></i> </small>
+                            <small class="card-text text-muted">created 26/07/2025</small>
+                            <small class="card-text text-muted">∙ expires in 22h</small>
+                        </div>
+                    </div>                  
+
+                    <div class="dropdown ms-auto">
+                        <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
+                        <ul class="dropdown-menu shadow-sm">
+                            <li><button type="button" class="dropdown-item btn-load-poll-datas"> <i class="fa-solid fa-bars-progress"></i> Show Datas</button></li>
+                            <li><button type="button" class="dropdown-item btn-finish-poll"> <i class="fa-solid fa-flag-checkered"></i> Finish Poll</button></li>
+                            <li><button type="button" class="dropdown-item text-danger btn-delete-poll"> <i class="fa-regular fa-trash-can"></i> Delete Poll</button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="box-bordered mt-1 p-1">
+                    <div class="box-poll-in-post-option">
+                        <small class="card-text">Option 1</small>
+                    </div>
+                    <div class="box-poll-in-post-option">
+                        <small class="card-text">Option 2</small>
+                    </div>
+                    <div class="box-poll-in-post-option">
+                        <small class="card-text">Option 3</small>
+                    </div>
+                    <div class="box-poll-in-post-option">
+                        <small class="card-text">Option 4</small>
+                    </div>
+                    <div class="box-poll-in-post-option">
+                        <small class="card-text">Option 5</small>
+                    </div>
+                </div>
+
+                <div class="box-standard row mt-1">
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-solid fa-list-ul"></i> Options: 4</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-solid fa-masks-theater"></i> Anonym</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-solid fa-angles-right"></i> Skippable</button>
+                    </div>
+                </div>
+            </div>
+
+                <div class="box-standard row mt-2">
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-regular fa-heart"></i> </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-regular fa-message"></i> </button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-solid fa-square-poll-vertical"></i> 163,545</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-poll-or-post-settings btn-sm"> <i class="fa-solid fa-ellipsis"></i> </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
     <div class="box-lg-part-body mt-5" id="Primary_Box">
-        <div class="mt-2">        
-            <textarea class="d-none" id="Input_Val_Val">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea>
-            <div class="form-control form-control-undetermined" contenteditable="true" id="Input_Val">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+        <div class="mt-2">
+
+            @* <div class="box-lg-part-inner" id="PollComments_Container" style="display:  block; bottom: 125px;">
+                <div class="div-swiper mx-auto mt-1"></div>
+                <div class="box-lg-inner-part-header" id="CreatePost_Header_Box">
+                    <div class="hstack gap-2">
+                        <button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id=""><i class="fa-solid fa-angle-left"></i> Back</button>
+                    </div>
+                </div>
+                <div class="box-lg-inner-part-box">
+                    <div class="box-bordered p-2">
+                        <h5 class="h5"><i class="fa-solid fa-square-poll-vertical"></i> Poll Comments</h5>
+                        <span class="card-text">Poll Question (Shortened)</span>
+                        <br/>
+                        <small class="card-text text-muted">expires in 6h ∙ 153k votes</small>
+                        <div class="d-none">
+                            <form method="post" action="/PollComments/Send" id="SendPollComments_Form">
+                                <input type="hidden" name="SendPollComments_PollId_Val" value="0" />
+                            </form>
+                        </div>
+                    </div>
+                                    <div class="box-standard mt-3" id="AvailablePollComments_Box">
+                </div>
+                </div>
+            </div> *@
+
+@*        Posts *@
+            @* <div class="box-lg-part-inner overflow-y-hidden" id="CreatePost_Container" style="display: block; bottom: 125px;">
+                <div class="div-swiper mx-auto mt-1"></div>
+                <div class="box-lg-inner-part-header" id="CreatePost_Header_Box">
+                    <div class="hstack gap-2">
+                        <button type="button" class="btn btn-standard btn-sm"> <i class="fa-solid fa-xmark"></i> Cancel</button>
+                        <div class="dropdown ms-auto">
+                            <button type="button" class="btn btn-standard btn-sm" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-check"></i> Post</button>
+                            <ul class="dropdown-menu shadow-sm">
+                                <li><button type="button" class="dropdown-item btn-distance-submitter super-disabled" data-form="CreatePost_Form" id="CreatePost_Form-DistantSbmt_Btn"> <i class="fa-solid fa-check-double"></i> Post Now</button></li>
+                                <li><button type="button" class="dropdown-item btn-distance-submitter super-disabled"> <i class="fa-solid fa-clock"></i> Delayed Post</button></li>
+                            </ul>
+                        </div>
+                        <div class="d-none">
+                            <form method="get" action="/Search/MentionSearch" id="MentionSearch_Form">
+                                <input type="hidden" id="MentionSearch_MentionBoxId_Val" value="CreatePost_Text" />
+                                <input type="hidden" name="Searchname" id="MentionSearch_Searchname_Val" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box-lg-inner-part-box">
+                    <div class="box-border-bottom mb-1 p-1">
+                        <div class="box-standard" id="PostMentionsMain_Box">
+                            <span class="h6"> <i class="fa-solid fa-at"></i> Mentions <span id="MentionedUsersQty_Separator" style="display: none;">∙</span> <span id="MentionedUsersQty_Span"></span></span>
+                            <div class="x-row-sliding-only-box mt-1" id="PostMentions_Box">
+                                <small class="card-text text-muted">You haven't mentioned anyone in your post yet</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <form method="post" action="/Post/Create" id="CreatePost_Form">
+                            <div class="d-none">
+                                <input type="hidden" name="PollId" id="CreatePost_PollId_Val" value="0" />
+                                <input type="hidden" name="TrackId" id="CreatePost_TrackId_Val" value="0" />
+                                <input type="hidden" class="form-control-distance" name="Text" id="CreatePost_Text_Val" />
+                            </div>
+                            <div class="form-textarea form-control-undetermined min-height-150" contenteditable="true" placeholder="What is going on?" data-min-length="1" maxlength="2000" id="CreatePost_Text"></div>
+                        </form>
+                    </div>
+
+                    <div class="box-border-bottom box-border-top mt-1 mb-1 p-1">
+                        <span class="h6"> <i class="fa-solid fa-link"></i> Links</span>
+                        <div class="box-standard mt-1" id="PostLinks_Box">
+                            <small class="card-text text-muted">You haven't included any links in your post yet</small>
+                        </div>
+                    </div>
+
+                    <div class="box-forced-bottom mt-2 mb-1 p-1">
+                        <div class="x-row-sliding-only-box w-100">
+                            <button type="button" class="btn btn-standard-rounded btn-sm me-1"> <i class="fa-solid fa-font"></i> Text Editor</button>
+                            <button type="button" class="btn btn-standard-rounded btn-sm me-1"> <i class="fa-solid fa-music"></i> Attach Track</button>
+                            <button type="button" class="btn btn-standard-rounded btn-sm me-1"> <i class="fa-solid fa-square-poll-vertical"></i> Attach Poll</button>
+                            <button type="button" class="btn btn-standard-rounded btn-sm me-1"> <i class="fa-solid fa-paperclip"></i> Attach File</button>
+                            <button type="button" class="btn btn-standard-rounded btn-sm"> <i class="fa-solid fa-quote-left"></i> <span id="CreatePost_Text-Indicator_Span">0/2000</span></button>
+                        </div>
+                    </div>
+
+                    <div class="box-bot-hidden shadow-sm" id="FoundMentionsMain_Box" style="display: none;">
+                        <div class="hstack gap-2">
+                            <h6 class="h6"> <i class="fa-solid fa-magnifying-glass"></i> Found Users</h6>
+                            <button type="button" class="btn btn-standard-rounded btn-close-bot-hidden-box btn-sm ms-auto" id="FoundMentionsMain_Box-Close_Btn"> <i class="fa-solid fa-xmark"></i> </button>
+                        </div>
+                        <div class="x-row-sliding-only-box mt-1" id="FoundMentions_Box">
+                            <small class="card-text text-muted">No matchings by entered username/searchname</small>
+                        </div>
+                    </div>
+                </div>
+            </div> *@
+        </div>
 
             @* <div class="artist-page-avatar-box" id="ArtistAvatar_Box">           
                 <div class="artist-page-avatar-content">

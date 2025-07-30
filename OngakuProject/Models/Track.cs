@@ -19,7 +19,7 @@ namespace OngakuProject.Models
         public int Tempo { get; set; } //BPM
         public bool Mode { get; set; } //0 - minor; 1 - major
         public int Key { get; set; } //Stats for recommendations
-        public byte Status { get; set; }
+        public byte Status { get; set; } //0 - inactive; 1 - pending for submission; 2 - muted; 3 - active ([0-2] - inactive)
         public bool AreCommsOpen { get; set; } = true;
         public DateTime? AddedAt { get; set; }
         public DateTime? ReleasedAt { get; set; }

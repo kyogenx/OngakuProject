@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250727205814_28072025")]
+    partial class _28072025
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -611,42 +614,6 @@ namespace OngakuProject.Migrations
                     b.ToTable("Polls");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.PollComment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEdited")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("PollId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Text")
-                        .HasMaxLength(750)
-                        .HasColumnType("nvarchar(750)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PollId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PollComments");
-                });
-
             modelBuilder.Entity("OngakuProject.Models.PollOption", b =>
                 {
                     b.Property<int>("Id")
@@ -704,42 +671,6 @@ namespace OngakuProject.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PollOptionVotes");
-                });
-
-            modelBuilder.Entity("OngakuProject.Models.PollRecomment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEdited")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("PollCommentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Text")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PollCommentId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PollRecomments");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Post", b =>
@@ -1709,23 +1640,6 @@ namespace OngakuProject.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.PollComment", b =>
-                {
-                    b.HasOne("OngakuProject.Models.Poll", "Poll")
-                        .WithMany("PollComments")
-                        .HasForeignKey("PollId");
-
-                    b.HasOne("OngakuProject.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Poll");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OngakuProject.Models.PollOption", b =>
                 {
                     b.HasOne("OngakuProject.Models.Poll", "Poll")
@@ -1756,23 +1670,6 @@ namespace OngakuProject.Migrations
                     b.Navigation("Poll");
 
                     b.Navigation("PollOption");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OngakuProject.Models.PollRecomment", b =>
-                {
-                    b.HasOne("OngakuProject.Models.PollComment", "PollComment")
-                        .WithMany("PollRecomments")
-                        .HasForeignKey("PollCommentId");
-
-                    b.HasOne("OngakuProject.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PollComment");
 
                     b.Navigation("User");
                 });
@@ -2136,16 +2033,9 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.Poll", b =>
                 {
-                    b.Navigation("PollComments");
-
                     b.Navigation("PollOptionVotes");
 
                     b.Navigation("PollOptions");
-                });
-
-            modelBuilder.Entity("OngakuProject.Models.PollComment", b =>
-                {
-                    b.Navigation("PollRecomments");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.PollOption", b =>

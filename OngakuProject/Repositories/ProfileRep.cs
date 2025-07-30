@@ -46,6 +46,12 @@ namespace OngakuProject.Repositories
             else return null;
         }
 
+        public async Task<string?> GetUserProfileImgAsync(int Id)
+        {
+            if (Id > 0) return await _context.UserImages.AsNoTracking().Where(u => u.UserId == Id && !u.IsDeleted).Select(u => u.ImgUrl).FirstOrDefaultAsync();
+            else return null;
+        }
+
         public async Task<User?> GetUserPrivacySettingsAsync(int Id)
         {
             if (Id > 0) return await _context.Users.AsNoTracking().Where(u => u.Id == Id).Select(u => new User { WhoCanChat = u.WhoCanChat, WhoCanDownload = u.WhoCanDownload, WhoCanSeeLastSeenInfo = u.WhoCanSeeLastSeenInfo, IsVisible = u.IsVisible, Id = Id }).FirstOrDefaultAsync();

@@ -10,10 +10,12 @@ namespace OngakuProject.Controllers
     {
         private readonly Context _context;
         private readonly ISearch _search;
-        public SearchController(Context context, ISearch search)
+        private readonly IUser _user;
+        public SearchController(Context context, ISearch search, IUser user)
         {
             _context = context;
             _search = search;
+            _user = user;
         }
 
 
@@ -25,6 +27,18 @@ namespace OngakuProject.Controllers
             {
                 List<Playlist>? Playlists = await PlaylistsPreview.ToListAsync();
                 if (Playlists != null) return Json(new { success = true, result = Playlists });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MentionSearch(string? Searchname)
+        {
+            IQueryable<User?>? ResultPreview = _user.MentionSearch(Searchname);
+            if (ResultPreview != null)
+            {
+                List<User?>? Result = await ResultPreview.ToListAsync();
+                if (Result is not null) return Json(new { success = true, result = Result });
             }
             return Json(new { success = false });
         }
