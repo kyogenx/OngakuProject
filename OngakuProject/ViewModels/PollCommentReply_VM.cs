@@ -14,7 +14,6 @@ namespace OngakuProject.ViewModels
         public DateTime SentAt { get; set; }
         [Required(ErrorMessage = "User info is required")]
         public int UserId { get; set; }
-        [Required(ErrorMessage = "Main comment is required")]
         public int? PollCommentId { get; set; }
     }
 }

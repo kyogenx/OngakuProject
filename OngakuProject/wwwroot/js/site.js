@@ -4083,7 +4083,7 @@ $(document).on("submit", "#GetPollComments_Form", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
-            let isReady = createInsideLgCard("PollComments", "Poll Comments", '<div class="box-bordered p-2"> <div class="d-none"><form method="get" action="/PollComment/GetReplies" id="GetPollCommentReplies_Form"><input type="hidden" name="Id" id="GetPollCommentReplies_Id_Val" value="0" /> </form> <form method="post" action="/PollComment/Delete" id="DeletePollComment_Form"><input type="hidden" name="Id" id="DeletePollComment_Id_Val" value="0" /></form> <input type="hidden" id="PollComments_CommsQty_Val" value="0" /> </div> <h5 class="h5"><i class="fa-solid fa-square-poll-vertical"></i> Poll Comments</h5> <span class="card-text" id="PollSample_Question_Lbl">Poll Question (Shortened)</span> <br/> <small class="card-text text-muted"><span class="card-text" id="PollSample_ExpirationDate_Span">expires in 6h</span> ∙ <span class="card-text" id="PollSample_VotesQty_Span">153k votes</span></small> <div class="d-none"> <form method="post" action="/PollComments/Send" id="SendPollComments_Form"> <input type="hidden" name="SendPollComments_PollId_Val" value="0" /> </form> </div> </div> <div class="box-standard mt-3" id="AvailablePollComments_Box"> </div>', '<button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id="PollComments_Container-Close_Btn"><i class="fa-solid fa-angle-left"></i> Back</button>', null);
+            let isReady = createInsideLgCard("PollComments", "Poll Comments", '<div class="box-bordered p-2"> <div class="d-none"><input type="hidden" id="PollCommentReplies_Qty_Val" value="0" /> <form method="get" action="/PollComment/GetReplies" id="GetPollCommentReplies_Form"><input type="hidden" name="Id" id="GetPollCommentReplies_Id_Val" value="0" /> </form> <form method="post" action="/PollComment/DeleteReply" id="DeletePollCommentReply_Form"><input type="hidden" name="Id" id="DeletePollCommentReply_Id_Val" value="0" /></form> <form method="post" action="/PollComment/Delete" id="DeletePollComment_Form"><input type="hidden" name="Id" id="DeletePollComment_Id_Val" value="0" /></form> <input type="hidden" id="PollComments_CommsQty_Val" value="0" /> </div> <h5 class="h5"><i class="fa-solid fa-square-poll-vertical"></i> Poll Comments</h5> <span class="card-text" id="PollSample_Question_Lbl">Poll Question (Shortened)</span> <br/> <small class="card-text text-muted"><span class="card-text" id="PollSample_ExpirationDate_Span">expires in 6h</span> ∙ <span class="card-text" id="PollSample_VotesQty_Span">153k votes</span></small> <div class="d-none"> <form method="post" action="/PollComments/Send" id="SendPollComments_Form"> <input type="hidden" name="SendPollComments_PollId_Val" value="0" /> </form> </div> </div> <div class="box-standard mt-3" id="AvailablePollComments_Box"> </div> <div class="box-standard slide-box" id="PollCommentReplies_Box" style="display: none;"></div>', '<button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id="PollComments_Container-Close_Btn"><i class="fa-solid fa-angle-left"></i> Back</button>', null);
 
             const pollQuestion = $("#" + response.pollId + "-Question_Lbl").html();
             const pollVotesQty = $("#" + response.pollId + "-TotalVotesQty_Span").html();
@@ -4095,6 +4095,7 @@ $(document).on("submit", "#GetPollComments_Form", function (event) {
 
             $("#AvailablePollComments_Box").empty();
             $("#PollComments_CommsQty_Val").val(response.result.length);
+            slideBoxes(false, "PollCommentReplies_Box", "AvailablePollComments_Box");
             if (response.result.length > 0) {
                 $.each(response.result, function (index) {
                     createCommentBox("AvailablePollComments_Box", "Poll", "poll", response.result[index].id, response.userId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false);
@@ -4138,7 +4139,7 @@ $(document).on("submit", "#SendPollComment_Form", function (event) {
 
             createCommentBox("AvailablePollComments_Box", "Poll", response.result, response.model.userId, response.userImg, response.model.userId, "You", response.model.text, new Date(), 0, false, false, false);
             $("#PollComments_CommsQty_Val").val(commsQty);
-
+            slideBoxes(false, "PollCommentReplies_Box", "AvailablePollComments_Box");
             setTimeout(function () {
                 buttonUndisabler(false, "SendPollComment_SbmtBtn", buttonHtml);
             }, 750);
@@ -4224,25 +4225,18 @@ $(document).on("submit", "#GetPollCommentReplies_Form", function (event) {
 
     $.get(url, data, function (response) {
         if (response.success) {
-            let isReady = createInsideLgCard("PollCommentReplies", "Poll Comment Replies", '<div class="d-none"> <input type="hidden" id="PollCommentReplies_Qty_Val" value="0" /></div> <div class="box-standard mt-1" id="AvailablePollCommentReplies_Box"> </div>', '<button type="button" class="btn btn-standard btn-close-inside-lg-card btn-sm" id="PollCommentReplies_Container-Close_Btn"><i class="fa-solid fa-angle-left"></i> Back</button>', null);
-
-            $("#AvailablePollCommentReplies_Box").empty();
+            $("#PollCommentReplies_Box").empty();
             $("#PollCommentReplies_Qty_Val").val(response.result.length);
             if (response.result.length > 0) {
                 $.each(response.result, function (index) {
-                    createCommentBox("AvailablePollCommentReplies_Box", "Poll", "poll", response.result[index].id, response.userId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false, false);
+                    createCommentBox("PollCommentReplies_Box", "Poll", "poll", response.result[index].id, response.userId, response.result[index].user.imgUrl, response.result[index].userId, response.result[index].user.nickname, response.result[index].text, response.result[index].sentAt, 0, response.result[index].isEdited, false, false, false, false);
                 });
             }
-            else $("#AvailablePollCommentReplies_Box").append('<div class="box-standard text-center mt-1 p-2"> <h2 class="h2"> <i class="fa-solid fa-reply"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">This poll comment has no replies yet</small> </div>');
+            else $("#PollCommentReplies_Box").append('<div class="box-standard text-center mt-1 p-2"> <h2 class="h2"> <i class="fa-solid fa-reply"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">This poll comment has no replies yet</small> </div>');
 
             swapToTextBoxNavbar();
             bottomNavbarTextFormCustomization("/PollComment/Reply", "ReplyToPollComment_Form", "ReplyToPollComment_Text_Val", "Text", "ReplyToPollComment_SbmtBtn", ["PollCommentId"], [response.id], ["ReplyToPollComment_PollCommentId_Val"], ["form-control-guard"], ["data-min-length", "maxlength"], [1, 500], "Reply text...", ' <i class="fa-solid fa-arrow-up"></i> ', ["btn-standard-rounded"]);
-
-            if (isReady) {
-                setTimeout(function () {
-                    callInsideLgContainer(false, "PollCommentReplies_Container", true);
-                }, 150);
-            }
+            slideBoxes(false, "AvailablePollComments_Box", "PollCommentReplies_Box");
         }
         else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Failed to get this comment replies. Please try again later", 3.5, "Close", -1, null);
 
@@ -4262,17 +4256,78 @@ $(document).on("submit", "#ReplyToPollComment_Form", function (event) {
     $.post(url, data, function (response) {
         if (response.success) {
             let repliesQty = parseInt($("#PollCommentReplies_Qty_Val").val());
-            if (repliesQty <= 0) $("#AvailablePollCommentReplies_Box").empty();
+            if (repliesQty <= 0) $("#PollCommentReplies_Box").empty();
 
             $("#PollCommentReplies_Qty_Val").val(++repliesQty);
             $("#ReplyToPollComment_Text_Val").val(null);
-            createCommentBox("AvailablePollCommentReplies_Box", "Poll", "poll", response.result, response.model.userId, response.userImg, response.model.userId, "You", response.model.text, response.model.sentAt, 0, false, false, false, true, false);
+            createCommentBox("PollCommentReplies_Box", "Poll", "poll", response.result, response.model.userId, response.userImg, response.model.userId, "You", response.model.text, response.model.sentAt, 0, false, false, false, true, false);
         }
         else callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Couldn’t post your reply. Please try again later", 3.5, "Got It", -1, null);
 
         setTimeout(function () {
             buttonUndisabler(false, "ReplyToPollComment_SbmtBtn", baseHtml);
         }, 750);
+    });
+});
+
+$(document).on("submit", "#EditPollReply_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    const baseHtml = $("#EditPollReply_SbmtBtn").html();
+    buttonDisabler(false, "EditPollReply_SbmtBtn", null);
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            $("#" + response.result + "-PollRecommentEdited_Span").fadeIn(300);
+            $("#" + response.result + "-PollRecommentContent_Span").html(response.text);
+
+            swapToDefaultMode();
+            bottomNavbarTextFormCustomization("/PollComment/Reply", "ReplyToPollComment_Form", "ReplyToPollComment_Text_Val", "Text", "ReplyToPollComment_SbmtBtn", ["PollCommentId"], [response.id], ["ReplyToPollComment_PollCommentId_Val"], ["form-control-guard"], ["data-min-length", "maxlength"], [1, 500], "Reply text...", ' <i class="fa-solid fa-arrow-up"></i> ', ["btn-standard-rounded"]);
+            callKawaiiAlert(0, "Comment reply edited", '<i class="fa-solid fa-pencil"></i>', null, null, 2, false);
+        }
+        else {
+            if (response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Failed to edit your reply. Please try again later", 3.5, "Close", -1, null);
+            else callAlert('<i class="fa-solid fa-arrow-up anime-rewind-shift"></i>', null, null, "Sign in to edit your comments and replies", 3.5, "Got It", -1, null);
+        }
+
+        $("#EditPollReply_Text_Val").val(null);
+        setTimeout(function () {
+            buttonUndisabler(false, "EditPollReply_SbmtBtn", baseHtml);
+        }, 1000);
+    });
+});
+
+$(document).on("submit", "#DeletePollCommentReply_Form", function (event) {
+    event.preventDefault();
+    const url = $(this).attr("action");
+    const data = $(this).serialize();
+    buttonDisabler(false, "DeletePollCommentReply_SbmtBtn", ' <i class="fa-solid fa-spinner fa-spin-pulse"></i> Deleting...');
+
+    $.post(url, data, function (response) {
+        if (response.success) {
+            let repliesQty = parseInt($("#PollCommentReplies_Qty_Val").val()) - 1;
+
+            hideBySlidingToLeft(false, null, response.result + "-PollRecomment_Box");
+            if (repliesQty > 0) {
+                setTimeout(function () {
+                    $("#" + response.result + "-PollRecomment_Box").remove();
+                }, 750);
+            }
+            else {
+                setTimeout(function () {
+                    $("#PollCommentReplies_Box").empty();
+                    $("#PollCommentReplies_Box").append('<div class="box-standard text-center mt-1 p-2"> <h2 class="h2"> <i class="fa-solid fa-reply"></i> </h2> <h4 class="h4">No Replies</h4> <small class="card-text text-muted">This poll comment has no replies yet</small> </div>');
+                }, 750);
+            } 
+            $("#PollCommentReplies_Qty_Val").val(repliesQty);
+            callKawaiiAlert(0, "Comment reply deleted", '<i class="fa-regular fa-trash-can"></i>', null, null, 2.25, false);
+        }
+        else {
+            if (response.error == 0) callAlert('<i class="fa-regular fa-circle-xmark fa-shake" style="--fa-animation-duration: 0.5s; --fa-animation-iteration-count: 2; --fa-animation-delay: 0.35s;"></i>', null, null, "Failed to delete your reply. Please try again later", 3.25, "Hide", -1, null);
+            else callAlert('<i class="fa-solid fa-arrow-up anime-rewind-shift"></i>', null, null, "Sign in to edit or delete your comment replies", 3.5, "Got It", -1, null);
+        }
+        uncallAProposal();
     });
 });
 
@@ -4383,7 +4438,7 @@ $(document).on("mousedown", ".btn-edit-poll-comment", function () {
         const currentText = $("#" + trueId + "-PollCommentContent_Span").html();
         if (currentText != undefined) {
             swapToTextBoxNavbar();
-            swapToEditMode(0, currentText);
+            swapToEditMode(-1, currentText);
             bottomNavbarTextFormCustomization("/PollComment/Edit", "EditPollComment_Form", "EditPollComment_Text_Val", "Text", "EditPollComment_SbmtBtn", ["Id"], [trueId], ["EditPollComment_Id_Val"], ["form-control-guard"], ["maxlength", "data-min-length"], [500, 1], "Edit your comment...", ' <i class="fa-solid fa-check"></i> ', "btn-standard-rounded");
             $("#EditPollComment_Text_Val").val(currentText);
         }
@@ -4413,6 +4468,34 @@ $(document).on("mousedown", ".btn-reply-to-poll-comment", function () {
     }
 });
 
+$(document).on("mousedown", ".btn-edit-poll-recomment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        const currentText = $("#" + trueId + "-PollRecommentContent_Span").html();
+        if (currentText != undefined) {
+            swapToTextBoxNavbar();
+            swapToEditMode(0, currentText);
+            bottomNavbarTextFormCustomization("/PollComment/EditReply", "EditPollReply_Form", "EditPollReply_Text_Val", "Text", "EditPollReply_SbmtBtn", ["Id"], [trueId], ["EditPollReply_Id_Val"], ["form-control-guard"], ["maxlength", "data-min-length"], [500, 1], "Edit your reply...", ' <i class="fa-solid fa-check"></i> ', "btn-standard-rounded");
+            $("#EditPollReply_Text_Val").val(currentText);
+        }
+    }
+});
+
+$(document).on("mousedown", ".btn-pre-delete-poll-recomment", function () {
+    let trueId = getTrueId($(this).attr("id"), false);
+    if (trueId != undefined) {
+        callAProposal('<i class="fa-regular fa-trash-can text-danger"></i>', "Delete Comment Reply", "Are you sure you want to delete this reply?", "Yes, Delete", ["btn-delete-poll-recomment"], ["data-reply-id"], [trueId], false, null, 25);
+    }
+});
+
+$(document).on("mousedown", ".btn-delete-poll-recomment", function () {
+    let id = $(this).attr("data-reply-id");
+    if (id != undefined) {
+        $("#DeletePollCommentReply_Id_Val").val(id);
+        $("#DeletePollCommentReply_Form").submit();
+    }
+});
+  
 function setPollResults(poll_Id, currentUser_VoteOption_Id, totalVoicesQty = 0, resultsArr = []) {
     if ((poll_Id != undefined && poll_Id != null) && (resultsArr.length > 0) && (parseInt(totalVoicesQty) > 0)) {
         for (let i = 0; i < resultsArr.length; i++) {

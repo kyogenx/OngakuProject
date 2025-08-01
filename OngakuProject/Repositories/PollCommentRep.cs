@@ -62,7 +62,7 @@ namespace OngakuProject.Repositories
 
         public async Task<int> ReplyAsync(PollCommentReply_VM Model)
         {
-            if(!String.IsNullOrWhiteSpace(Model.Text))
+            if(!String.IsNullOrWhiteSpace(Model.Text) && Model.PollCommentId > 0)
             {
                 PollRecomment pollRecommentSample = new PollRecomment()
                 {
@@ -81,9 +81,9 @@ namespace OngakuProject.Repositories
 
         public async Task<int> EditReplyAsync(PollCommentReply_VM Model)
         {
-            if(!String.IsNullOrWhiteSpace(Model.Text) && Model.Id > 0 && Model.PollCommentId > 0)
+            if(!String.IsNullOrWhiteSpace(Model.Text) && Model.Id > 0)
             {
-                int Result = await _context.PollRecomments.AsNoTracking().Where(r => !r.IsDeleted && r.Id == Model.Id && r.UserId == Model.UserId && DateTime.Now.Subtract(Model.SentAt).TotalDays <= 3).ExecuteUpdateAsync(r => r.SetProperty(r => r.Text, Model.Text).SetProperty(r => r.IsEdited, true));
+                int Result = await _context.PollRecomments.AsNoTracking().Where(r => !r.IsDeleted && r.Id == Model.Id && r.UserId == Model.UserId && Model.SentAt.Date.AddDays(3) <= DateTime.Now).ExecuteUpdateAsync(r => r.SetProperty(r => r.Text, Model.Text).SetProperty(r => r.IsEdited, true));
                 if (Result > 0) return Result;
             }
             return 0;

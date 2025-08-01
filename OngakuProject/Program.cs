@@ -78,6 +78,7 @@ app.MapStaticAssets();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
+    //pattern: "{controller=Account}/{action=Initiate}/{id?}")
     .WithStaticAssets();
 
 RecurringJob.AddOrUpdate<TrackAnalyticRep>("track-history-update-job",

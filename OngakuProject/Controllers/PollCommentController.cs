@@ -140,5 +140,38 @@ namespace OngakuProject.Controllers
             }
             else return Json(new { success = false, error = -1 });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EditReply(PollCommentReply_VM Model)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                Model.UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                if (ModelState.IsValid)
+                {
+                    int Result = await _pollComment.EditReplyAsync(Model);
+                    if (Result > 0) return Json(new { success = true, result = Result, text = Model.Text });
+                }
+                return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteReply(int Id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                int Result = await _pollComment.DeleteReplyAsync(Id, UserId);
+                if (Result > 0) return Json(new { success = true, result = Result });
+                else return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
+        }
     }
 }
