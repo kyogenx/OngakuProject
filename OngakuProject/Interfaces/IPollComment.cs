@@ -14,5 +14,6 @@ namespace OngakuProject.Interfaces
         public Task<int> EditReplyAsync(PollCommentReply_VM Model);
         public Task<int> DeleteReplyAsync(int Id, int UserId);
         public IQueryable<PollRecomment_DTO>? GetReplies(int Id, int SkipQty, int TakeQty = 20);
+        public Task<int> GetCommsQtyAsync(int Id);
     }
 }

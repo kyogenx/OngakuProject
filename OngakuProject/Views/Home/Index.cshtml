@@ -4,535 +4,6 @@
     User? UserInfo = ViewBag.UserInfo;
 }
 
-@* <form method="post" action="/Comment/Pin" id="PinComment_Form">
-    <input type="hidden" name="Id" id="PinComment_Id_Val" value="0" />
-    <input type="hidden" name="TrackId" id="PinComment_TrackId_Val" value="0" />
-</form>
-<form method="post" action="/Comment/Unpin" id="UnpinComment_Form">
-    <input type="hidden" name="Id" id="UnpinComment_Id_Val" value="0" />
-    <input type="hidden" name="TrackId" id="UnpinComment_TrackId_Val" value="0" />
-</form> *@
-
-@* <div class="ongaku-player-box shadow-sm" id="OngakuPlayer_Container">
-    <div class="ongaku-player-bg-box" id="OngakuPlayerBackground_Box">
-        <div class="box-hidden-on-left" id="OngakuPlayerNotMainPart_Box">
-            <div class="hstack gap-1">
-                <div class="text-truncate">
-                    <span class="ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Lbl">Track Name</span>
-                    <div>
-                        <small class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistsDublicate_Span">Artists</small>
-                    </div>
-                </div>
-                <div class="d-none">
-                    <form method="get" action="/Track/Load" id="LoadTheTrack_Form">
-                        <input type="hidden" name="Id" id="OngakuPlayer_TrackId_Val" value="0" />
-                        <input type="hidden" name="PlaylistId" id="OngakuPlayer_PlaylistId_Val" value="0" />
-                        <input type="hidden" name="Type" id="OngakuPlayer_Type_Val" value="0" />
-                    </form>
-                    <form method="get" action="/Track/StreamAudio" id="StreamTheTrack_Form">
-                        <input type="hidden" name="Id" id="StreamTheTrack_Id_Val" />
-                        <input type="hidden" name="Url" id="StreamTheTrack_Url_Val" />
-                    </form>
-                    <form method="post" action="/Playlists/Unfavor" id="RemoveFromFavorites_Form">
-                        <input type="hidden" name="Id" id="UnfavorThePlaylist_Id_Val" />
-                    </form>
-                    <audio src="#" class="d-none" id="OngakuPlayer_Audio" preload="metadata"></audio>
-                </div>
-                <div class="box-standard text-center ms-auto">
-                    <div>
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend me-1"> <i class="fa-solid fa-outdent"></i> </button>
-                        <button type="button" class="btn btn-badged btn-playback-rate me-1" data-speed="1" data-target="OngakuPlayer_Audio">1.0x</button>
-                        <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen me-1" data-status="0"> <i class="fa-solid fa-repeat"></i> </button>
-                        <button type="button" class="btn btn-ongaku-player btn-audio-shuffle text-unchosen"> <i class="fa-solid fa-shuffle"></i> </button>
-                    </div>
-                    <div class="hstack gap-1 mt-1 ps-1 pe-1">
-                        <button type="button" class="btn btn-ongaku-player btn-volume-mute btn-sm me-1" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-off"></i> </button>
-                        <input type="range" class="form-range-slider volume-range-slider" id="OngakuPlayer_Volume_Val" max="100" value="100" step="1" data-target="OngakuPlayer_Audio" />
-                        <button type="button" class="btn btn-ongaku-player btn-volume-max btn-sm ms-1" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-high"></i> </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="hstack gap-1" id="OngakuPlayerMainPart_Box">
-            <div class="box-standard" id="ImgPart_Box">
-                <div class="ongaku-player-album-box mx-auto" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div>
-                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" />
-            </div>
-            <div class="box-standard text-truncate ms-1" id="TrackDetailsPart_Box">
-                <span class="h6 ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Track Name</span>
-                <div>
-                    <small class="ongaku-artist-name-lbl text-muted" id="OngakuPlayer_Artists_Span">Artists</small>
-                </div>
-            </div>
-            <div class="box-standard ms-auto" id="TrackButtons_Box">
-                <div class="box-audio-player-buttons" id="OngakuPlayer_Audio_StandardTrackButtons_Box">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-extend btn-sm d-touch-none me-1"> <i class="fa-solid fa-indent"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-track-favor-unfavor btn-sm me-1"> <i class="fa-solid fa-star"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward btn-sm me-1"> <i class="fa-solid fa-backward"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward btn-sm"> <i class="fa-solid fa-forward"></i> </button>
-                </div>
-                <div class="box-audio-player-buttons" id="OngakuPlayer_Audio_PreviewAndAdButtons_Box" style="display: none;">
-                    <button type="button" class="btn btn-ongaku-player btn-stop-lyric-sync-preview btn-stop-lyric-sync-preview-sm btn-tooltip btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Stop lyric-sync previewing"> <i class="fa-solid fa-stop"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-track-backward-for btn-tooltip btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Rewind 15s" data-rewind-for="15"> <i class="fa-solid fa-arrow-rotate-left"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_PreviewAndAdPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-track-forward-for btn-tooltip btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Jump ahead 15s" data-rewind-for="15"> <i class="fa-solid fa-arrow-rotate-right"></i> </button>
-                </div>
-                <div class="box-audio-player-buttons" id="OngakuPlayer_Audio_LyricSyncButtons_Box" style="display: none;">
-                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-sync-instrumental-break btn-sm me-1" id="OngakuPlayer_SyncInstrumentalBreak_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Add instrumental break"> <i class="fa-solid fa-guitar"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-undo-last-sync btn-sm super-disabled me-1" id="OngakuPlayer_LyricSyncUndo_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Undo latest sync"><i class="fa-solid fa-arrow-rotate-left"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-sync-lyrics btn-sm me-1" id="OngakuPlayer_LyricSyncAccept_Btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Accept current row with this timing"> <i class="fa-solid fa-arrows-rotate"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-tooltip btn-undo-total-prepare btn-sm super-disabled me-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Clear all saved timestamps and start from the beginning"> <i class="fa-solid fa-arrow-rotate-right"></i> </button>
-                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-player-play-pause-track btn-sm me-1" id="OngakuPlayer_LyricSyncPlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
-                </div>
-                <div class="hstack gap-1 mt-1">
-                    <small class="card-text text-muted ongaku-track-duration-current">0:00</small>
-                    <div class="ongaku-track-duration-line" id="OngakuPlayer_TrackDuration_Box">
-                        <div class="ongaku-track-current-duration-line"></div>
-                    </div>
-                    <small class="card-text text-muted ongaku-track-duration-left">0:00</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="ongaku-player-bg-box-enlarged" id="OngakuPlayerBackground_Enlarged_Box">
-        <div class="ongaku-div-swiper mx-auto"></div>
-        <div class="hstack gap-1 mt-2 d-none d-md-flex">
-            <div class="box-standard ongaku-img-box" id="ImgPart_Enlarged_Box">
-                <div class="ongaku-player-album-box-enlarged" id="OngakuPlayer_NoImg_Enlarged_Box"> <i class="fa-solid fa-music"></i> </div>
-                <img class="ongaku-player-album-img-enlarged" src="#" id="OngakuPlayer_Enlarged_Img" style="display: none;" />
-            </div>
-            <div class="box-standard w-100 ms-2">
-                <div>
-                    <span class="h2 ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Enlarged_Lbl">Track Name</span>
-                    <div>
-                        <span class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistNameDublicate_Enlarged_Lbl">Artist Name</span>
-                        <br />
-                        <span class="ongaku-album-name-lbl text-muted text-truncate" id="OngakuPlayer_AlbumName_Enlarged_Lbl">Album Name</span>
-                    </div>
-                </div>
-                <div class="hstack gap-1 mt-3 w-100">
-                    <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
-                    <div class="ongaku-track-duration-line-enlarged" id="OngakuPlayer_TrackDurationEnlarged_Box">
-                        <div class="ongaku-track-current-duration-line-enlarged"></div>
-                    </div>
-                    <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
-                </div>
-                <div class="row box-standard text-center mt-3" id="TrackButtons_Enlarged_Box">
-                    <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged btn-track-favor-unfavor"> <i class="fa-solid fa-star"></i> </button>
-                    </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward"> <i class="fa-solid fa-backward"></i> </button>
-                    </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-ongaku-player-enlarged" id="OngakuPlayer_PlayPause_BtnFirstEnlarged"> <i class="fa-solid fa-play"></i> </button>
-                    </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i> </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="mt-2 d-block d-sm-none">
-            <div class="box-standard ongaku-img-box" id="ImgPart_EnlargedX_Box">
-                <div class="ongaku-player-album-box-enlarged" id="OngakuPlayer_NoImg_EnlargedX_Box"> <i class="fa-solid fa-music"></i> </div>
-                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_EnlargedX_Img" style="display: none;" />
-            </div>
-            <div class="box-standard text-center mt-2">
-                <span class="h2 ongaku-track-name-lbl text-truncate" id="OngakuPlayer_TrackNameDublicate_Enlarged_Lbl">Track Name</span>
-                <div>
-                    <span class="ongaku-artist-name-lbl text-muted text-truncate" id="OngakuPlayer_ArtistNameDublicate_Enlarged_Lbl">Artist Name</span>
-                    <br />
-                    <span class="ongaku-album-name-lbl text-muted text-truncate" id="OngakuPlayer_AlbumName_Enlarged_Lbl">Album Name</span>
-                </div>
-            </div>
-            <div class="hstack gap-1 text-center mt-3 w-100">
-                <span class="card-text text-muted ongaku-track-duration-current">0:00</span>
-                <div class="ongaku-track-duration-line-enlarged" id="OngakuPlayer_TrackDurationEnlarged_Dublicate_Box">
-                    <div class="ongaku-track-current-duration-line-enlarged"></div>
-                </div>
-                <span class="card-text text-muted ongaku-track-duration-left">0:00</span>
-            </div>
-            <div class="box-standard text-center row mt-3" id="TrackButtons_Enlarged_Box">
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-rounded btn-ongaku-player-enlarged btn-track-favor-unfavor"> <i class="fa-solid fa-star"></i> </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-backward"> <i class="fa-solid fa-backward"></i> </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track btn-ongaku-player-enlarged" id="OngakuPlayer_PlayPause_BtnSecondEnlarged"> <i class="fa-solid fa-play"></i> </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-enlarged btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i> </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="box-standard">
-            <div class="box-standard mt-3 mt-sm-2" id="OngakuPlayer_MainAddLayer_Box">
-                <span class="h5">Continue Playing</span>
-                <div>
-                    <small class="card-text text-muted">from <span id="OngakuPlayer_CurrentPlaylist_Span">undefined playlist</span></small>
-                </div>
-                <div class="ongaku-queue-box mt-3 mt-sm-2" id="OngakuPlayer_CurrentPlaylist_Box">
-                    <div class="text-center">
-                        <h3 class="h3"> <i class="fa-solid fa-list"></i> </h3>
-                        <h5 class="h5">Nothing to Play</h5>
-                        <small class="card-text text-muted">no songs is queue to play</small>
-                    </div>
-                </div>
-            </div>
-            <div class="box-standard" id="OngakuPlayer_NonMainAddLayer_Box" style="display: none;">
-            </div>
-
-            <div class="box-standard text-center mt-2">
-                <div class="hstack gap-1">
-                    <button type="button" class="btn btn-ongaku-player btn-volume-mute" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-off"></i> </button>
-                    <div class="w-100 ms-1 me-1">
-                        <input type="range" class="form-range-slider form-range-slider-xl volume-range-slider" min="0" max="100" value="100" data-target="OngakuPlayer_Audio" />
-                    </div>
-                    <button type="button" class="btn btn-ongaku-player btn-volume-max" data-target="OngakuPlayer_Audio"> <i class="fa-solid fa-volume-high"></i> </button>
-                    <div class="dropdown">
-                        <button class="btn btn-ongaku-player" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-                        <ul class="dropdown-menu shadow-sm p-1">
-                            <li><button type="button" class="dropdown-item">Add to a Playlist <span class="float-end ms-1"> <i class="fa-solid fa-folder-plus"></i> </span></button></li>
-                            <li><button type="button" class="dropdown-item">Go to Album <span class="float-end ms-1"> <i class="fa-solid fa-record-vinyl"></i> </span></button></li>
-                            <li><button type="button" class="dropdown-item">Add to Queue <span class="float-end ms-1"> <i class="fa-solid fa-headphones"></i> </span></button></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="box-standard row mt-2">
-                <div class="d-none">
-                    <form method="post" action="/Subscribtion/Subscribe" id="SubscribeForArtist_Form">
-                        <input type="hidden" id="SubscribeForArtist_Id_Val" name="Id" value="0" />
-                    </form>
-                    <form method="post" action="/Subscribtion/Unsubscribe" id="UnsubscribeForArtist_Form">
-                        <input type="hidden" id="UnsubscribeForArtist_Id_Val" name="Id" value="0" />
-                    </form>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-badged btn-playback-rate w-100" data-target="OngakuPlayer_Audio" data-speed="1">1.0x</button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-audio-loop text-unchosen w-100" data-status="0"> <i class="fa-solid fa-repeat"></i> </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-additional btn-audio-shuffle text-unchosen w-100" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button>
-                </div>
-                <div class="col">
-                    <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form">
-                        <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" />
-                        <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" />
-                        <button type="submit" class="btn btn-ongaku-player btn-ongaku-player-additional super-disabled w-100" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button>
-                    </form>
-                </div>
-                <div class="col">
-                    <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form">
-                        <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" />
-                        <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" />
-                        <button type="submit" class="btn btn-ongaku-player btn-ongaku-player-additional super-disabled w-100" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> *@
-
-@* <div class="ongaku-player-box enlarged liquid-glass" id="EnlargedOngakuPlayer_Container">
-    <div>
-        <img src="#" class="ongaku-player-album-img enlarged mx-auto" id="EnlargedOngakuPlayer_Img" />
-        <div class="ongaku-player-album-box enlarged mx-auto" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div>
-    </div>
-    <div class="box-standard mt-3">
-        <div class="hstack gap-2">
-            <div>
-                <span class="ongaku-track-name-lbl enlarged">Track Title</span>
-                <br />
-                <span class="ongaku-artist-name-lbl enlarged">Artist Names</span>
-            </div>
-            <button type="button" class="btn btn-ongaku-player enlarged btn-track-favor-unfavor ms-auto"> <i class="fa-regular fa-star"></i> </button>
-        </div>
-    </div>
-    <div class="box-standard mt-3">
-        <div class="hstack gap-1">
-            <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span>
-            <div class="ongaku-track-duration-line enlarged">
-                <div class="ongaku-track-current-duration-line"></div>
-            </div>
-            <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span>
-        </div>
-    </div>
-    <div class="box-standard mt-2">
-        <div class="hstack gap-1">
-            <div class="row w-100">
-                <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button>
-                </div>
-                <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box">
-                    <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned"> <i class="fa-solid fa-play"></i> </i> </button>
-                </div>
-                <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box">
-                    <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button>
-                </div>
-                <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box" style="display: none;">
-
-                </div>
-            </div>
-            <button type="button" class="btn btn-ongaku-player btn-audio-loop text-unchosen enlarged"> <i class="fa-solid fa-repeat"></i> </button>
-        </div>
-    </div>
-    <div class="ongaku-player-additionals-box mt-3">
-        <div class="slide-box" id="TrackQueue_Box">
-            <div class="text-center">
-                <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2>
-                <h4 class="h4">Queue is Empty</h4>
-                <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small>
-            </div>
-        </div>
-        <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;">
-            <div class="text-center">
-                <h2 class="h2"> <i class="fa-solid fa-quote-right"></i> </h2>
-                <h4 class="h4">No Lyrics</h4>
-                <small class="card-text text-muted">This track has no lyrics... yet...</small>
-            </div>
-        </div>
-    </div>
-    <div class="ongaku-player-additional-buttons-box mt-2">
-        <div class="hstack gap-1">
-            <div>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-                    <ul class="dropdown-menu shadow-sm">
-                        <li>
-                            <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form">
-                                <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" />
-                                <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" />
-                                <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button>
-                            </form>
-                        </li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist's Page</button></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row w-100 ms-1">
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button>
-                </div>
-                <div class="col">
-                    <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form">
-                        <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" />
-                        <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" />
-                        <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button>
-                    </form>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-glass columned btn-audio-shuffle"> <i class="fa-solid fa-shuffle"></i> </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>  *@
- @* <div class="ongaku-player-box enlarged liquid-glass" id="EnlargedOngakuPlayer_Container">
-    <div class="hstack gap-2">
-        <div>
-            <img src="#" class="ongaku-player-album-img enlarged" id="EnlargedOngakuPlayer_Img" />
-            <div class="ongaku-player-album-box enlarged" id="EnlargedOngakuPlayer_No_Img"> <i class="fa-solid fa-music"></i> </div>
-        </div>
-        <div class="ms-2 w-100">
-            <div>
-                <button type="button" class="btn btn-ongaku-player btn-track-favor-unfavor enlarged float-end ms-1"> <i class="fa-regular fa-star"></i> </button>
-                <span class="ongaku-track-name-lbl enlarged" id="OngakuPlayer_TrackName_Lbl">Like That</span>
-                <br />
-                <span class="ongaku-artist-name-lbl enlarged" id="OngakuPlayer_Artists_Span">Future</span>
-            </div>
-            <div class="hstack gap-1 mt-2">
-                <span class="ongaku-track-duration-lbl ongaku-track-duration-current me-1">00:00</span>
-                <div class="ongaku-track-duration-line enlarged" data-audio-player="OngakuPlayer_Audio" id="EnlargedOngakuPlayer_TrackDuration_Box">
-                    <div class="ongaku-track-current-duration-line"></div>
-                </div>
-                <span class="ongaku-track-duration-lbl ongaku-track-duration-left ms-1">00:00</span>
-            </div>
-            <div class="box-standard mt-2">
-                <div class="row">
-                    <div class="col" id="Enlarged_OngakuAudio_Player_Btn1Col_Box">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward enlarged columned"> <i class="fa-solid fa-backward"></i> </button>
-                    </div>
-                    <div class="col" id="Enlarged_OngakuAudio_Player_Btn2Col_Box">
-                        <button type="button" class="btn btn-ongaku-player btn-play-pause-track enlarged columned"> <i class="fa-solid fa-play"></i> </button>
-                    </div>
-                    <div class="col" id="Enlarged_OngakuAudio_Player_Btn3Col_Box">
-                        <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward enlarged columned"> <i class="fa-solid fa-forward"></i> </button>
-                    </div>
-                    <div class="col" id="Enlarged_OngakuAudio_Player_Btn4Col_Box">
-                        <button type="button" class="btn btn-ongaku-player btn-audio-loop enlarged text-unchosen columned"> <i class="fa-solid fa-repeat"></i> </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="ongaku-player-additionals-box mt-3">
-        <div class="slide-box" id="TrackQueue_Box">
-            <div class="text-center">
-                <h2 class="h2"> <i class="fa-solid fa-list-ol"></i> </h2>
-                <h4 class="h4">Queue is Empty</h4>
-                <small class="card-text text-muted">No tracks in queue. Add them manually or start a playlist to show the queue</small>
-            </div>
-        </div>
-        <div class="slide-box" id="LyricsKaraoke_Box" style="display: none;">
-            <div class="text-center">
-                <h2 class="h2"> <i class="fa-solid fa-quote-right"></i> </h2>
-                <h4 class="h4">No Lyrics</h4>
-                <small class="card-text text-muted">This track has no lyrics... yet...</small>
-            </div>
-        </div>
-    </div>
-    <div class="ongaku-player-additional-buttons-box mt-2">
-        <div class="hstack gap-1">
-            <div>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-glass" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-                    <ul class="dropdown-menu shadow-sm">
-                        <li>
-                            <form method="get" action="/Track/GetTrackCredits" id="GetTrackCredits_Form">
-                                <input type="hidden" name="Id" id="GetTrackCredits_Id_Val" value="0" />
-                                <input type="hidden" name="Type" id="GetTrackCredits_Type_Val" value="0" />
-                                <button type="submit" class="dropdown-item super-disabled" id="GetTrackCredits_SbmtBtn"> <i class="fa-solid fa-circle-info"></i> View Credits</button>
-                            </form>
-                        </li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-plus"></i> Add to Playlist</button></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-compact-disc"></i> Go to Album</button></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-circle-user"></i> Go to Artist's Page</button></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-arrow-up-from-bracket"></i> Share</button></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row w-100 ms-1">
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-slide-boxes bg-chosen-bright columned" data-box="TrackQueue_Box" id="TrackQueueBox_Btn"> <i class="fa-solid fa-list-ol"></i> </button>
-                </div>
-                <div class="col">
-                    <div class="col">
-                        <form method="get" action="/Track/GetLyrics" id="GetTrackLyrics_Form">
-                            <input type="hidden" name="Id" id="GetTrackLyrics_Id_Val" value="0" />
-                            <input type="hidden" name="Type" id="GetTrackLyrics_Type_Val" value="0" />
-                            <button type="submit" class="btn btn-glass columned super-disabled" id="GetTrackLyrics_SbmtBtn"> <i class="fa-solid fa-quote-right"></i> </button>
-                        </form>
-                    </div>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-glass btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button>
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-glass columned"> <i class="fa-solid fa-magnifying-glass"></i> </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> *@
-
-@* <div class="ongaku-player-box liquid-glass">
-    <div class="ongaku-player-main-info-box hstack gap-1">
-        <div>
-            <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" />
-            <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div>
-        </div>
-        <div class="ongaku-player-info-box">
-            <span class="ongaku-track-name-lbl">Track Title</span>
-            <br />
-            <small class="ongaku-artist-name-lbl">Artist Names</small>
-        </div>
-        <div class="ms-auto">
-            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-backward me-1"> <i class="fa-solid fa-backward"></i> </button>
-            <button type="button" class="btn btn-ongaku-player btn-play-pause-track me-1"> <i class="fa-solid fa-play"></i> </button>
-            <button type="button" class="btn btn-ongaku-player btn-ongaku-player-forward"> <i class="fa-solid fa-forward"></i></button>
-        </div>
-    </div>
-</div> *@
-
-@*     <div class="ongaku-player-box liquid-glass">
-        <div class="ongaku-player-main-info-box hstack gap-1">
-            <div>
-                <img class="ongaku-player-album-img" src="#" id="OngakuPlayer_Img" style="display: none;" />
-                <div class="ongaku-player-album-box" id="OngakuPlayer_NoImg_Box"> <i class="fa-solid fa-music"></i> </div>
-            </div>
-            <div class="ongaku-player-info-box">
-                <span class="ongaku-track-name-lbl" id="OngakuPlayer_TrackName_Lbl">Like That</span>
-                <br/>
-                <span class="ongaku-artist-name-lbl" id="OngakuPlayer_Artists_Span">Future</span>
-            </div>
-            <div class="ms-auto">
-                <button type="button" class="btn btn-test-ongaku-player btn-track-favor-unfavor rounded"> <i class="fa-regular fa-star"></i> </button>
-            </div>
-        </div>
-        <div class="ongaku-track-duration-line" data-audio-player="OngakuPlayer_Audio" id="OngakuPlayer_TrackDuration_Box">
-            <div class="ongaku-track-current-duration-line"></div>
-        </div>
-        <div class="ongaku-player-main-info-box">
-            <div class="row">
-                <div class="col" id="OngakuAudio_Player_Btn1Col_Box">
-                    <button type="button" class="btn btn-test-ongaku-player btn-ongaku-player-backward columned" id="OngakuPlayer_Backward_Btn"> <i class="fa-solid fa-backward"></i> </button>
-                </div>
-                <div class="col" id="OngakuAudio_Player_Btn2Col_Box">
-                    <button type="button" class="btn btn-test-ongaku-player btn-play-pause-track columned" id="OngakuPlayer_PlayPause_Btn"> <i class="fa-solid fa-play"></i> </button>
-                </div>
-                <div class="col" id="OngakuAudio_Player_Btn3Col_Box">
-                    <button type="button" class="btn btn-test-ongaku-player btn-ongaku-player-forward columned" id="OngakuPlayer_Forward_Btn"> <i class="fa-solid fa-forward"></i> </button>
-                </div>
-                <div class="col" id="OngakuAudio_Player_Btn4Col_Box" style="display: none;">
-                    <button type="button" class="btn btn-test-ongaku-player columned passive"> <i class="fa-solid fa-sliders"></i> </button>
-                </div>
-                <div class="col" id="OngakuAudio_Player_Btn5Col_Box">
-                    <button type="button" class="btn btn-test-ongaku-player btn-audio-loop text-unchosen columned" data-status="0"> <i class="fa-solid fa-repeat"></i> </button>
-                </div>
-                <div class="col" id="OngakuAudio_Player_Btn6Col_Box">
-                    <button type="button" class="btn btn-test-ongaku-player btn-audio-shuffle columned" data-status="0"> <i class="fa-solid fa-shuffle"></i> </button>
-                </div>
-            </div>
-        </div>
-    </div> *@
-
-
-@* <div class="box-comment" id="CommentBox-1">
-    <div class="box-comment-header hstack gap-2">
-        <div class="profile-avatar-sm me-1">?</div>
-        <div class="box-standard">
-            <span class="h6">Username</span>
-        </div>
-        <div class="dropdown ms-auto">
-            <button class="btn btn-standard btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fa-solid fa-ellipsis"></i> </button>
-            <ul class="dropdown-menu dropdown-menu-sm-end shadow-sm">
-                <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-pencil"></i> Edit</button></li>
-                <li><button type="button" class="dropdown-item"> <i class="fa-solid fa-reply"></i> Reply</button></li>
-                <li><button type="button" class="dropdown-item"> <i class="fa-regular fa-circle-user"></i> Go to sender's Page</button></li>
-                <li><button type="button" class="dropdown-item"> <i class="fa-regular fa-flag"></i> Report</button></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><button type="button" class="dropdown-item text-danger"> <i class="fa-regular fa-trash-can"></i> Delete</button></li>
-            </ul>
-        </div>
-    </div>
-    <div class="box-comment-body">
-        <small class="card-text white-space-on">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</small>
-    </div>
-    <div class="box-comment-footer hstack gap-2">
-        <button type="button" class="btn btn-standard-bolded btn-sm"> <i class="fa-solid fa-reply"></i> Reply</button>
-        <div class="ms-auto">
-            <small class="card-text text-muted me-1">today, at 16:48</small>
-            <small class="badge-sm"> <i class="fa-solid fa-pencil"></i> Edited</small>
-        </div>
-    </div>
-</div> *@
-
 <div class="box-sm-part">
     @* <div class="box-sm-part-inner shadow-sm active" id="Comments_Container">
         <div class="div-swiper div-swiper-sm mx-auto"></div>
@@ -603,16 +74,26 @@
         <form method="get" asp-controller="Miscellaneous" asp-action="GetLanguages" id="GetLanguages_Form">
             <input type="hidden" name="Keyword" id="GetLanguages_Keyword_Val" />
             <input type="hidden" name="Type" id="GetLanguages_Type_Val" value="0" />
-        </form>
+        </form>GetStudioItems_Form
         <input type="hidden" id="CurrentUserInfo_Id_Val" value="@UserInfo.Id" />
         <form method="get" asp-controller="Track" asp-action="GetSingleInfo" id="GetSingleInfo_Form">
             <input type="hidden" name="Id" id="GSI_Id_Val" value="0" />
             <input type="hidden" name="IsForAuthor" id="GSI_IsForAuthor_Val" value="false" />
         </form>
+
+        <form method="get" asp-controller="Track" asp-action="GetTracks" id="GetTracksInfo_Form">
+            <input type="hidden" name="Id" id="GTI_Id_Val" value="0" />
+            <input type="hidden" name="Type" id="GTI_Type_Val" value="0" />
+        </form>
+        <form method="get" asp-controller="Album" asp-action="GetInfo" id="GetAlbumInfo_Form">
+            <input type="hidden" name="Id" id="GAI_Id_Val" value="0" />
+            <input type="hidden" name="Type" id="GAI_Type_Val" value="0" />
+        </form>
         <form method="get" asp-controller="Playlists" asp-action="GetInfo" id="GetPlaylistInfo_Form">
             <input type="hidden" name="Id" id="GPI_Id_Val" value="0" />
-            <input type="hidden" name="UserId" value="@UserInfo.Id" />
+            <input type="hidden" name="Type" id="GPI_Type_Val" value="0" />
         </form>
+
         <form method="get" asp-controller="Playlists" asp-action="CheckShortnameAvailability" id="CheckShortnameAvailability_Form">
             <input type="hidden" name="Id" id="CSA_Id_Val" value="0" />
             <input type="hidden" name="Shortname" id="CSA_Shortname_Val" />
@@ -1434,14 +915,18 @@
             </div>
         </div>
 
-        <div class="x-row-sliding-only-box slide-element w-100" id="PrimaryHeader_Aux_Box" style="display: none;">
-            <button type="button" class="btn btn-standard-rounded btn-change-elements me-3" data-close="PrimaryHeader_Aux_Box" data-open="PrimaryHeader_Main_Box" data-anima-type="1"> <i class="fa-solid fa-chevron-left"></i> </button>
-            <button type="button" class="btn btn-standard me-1"> <i class="fa-solid fa-feather"></i> New Post</button>
-            <button type="button" class="btn btn-standard btn-create-new-poll" id="CreateNewPoll_Btn"> <i class="fa-solid fa-square-poll-vertical"></i> New Poll</button>
-            <div class="d-inline-block">
-                <form method="get" asp-controller="Track" asp-action="GetStudioItems" id="GetStudioItems_Form">
-                    <button type="submit" class="btn btn-standard"> <i class="fa-solid fa-music"></i> Open Studio</button>
-                </form>
+        <div class="box-standard slide-element" id="PrimaryHeader_Aux_Box" style="display: none;">
+            <div class="x-row-sliding-only-box">
+                <button type="button" class="btn btn-standard-rounded btn-change-elements me-3" data-close="PrimaryHeader_Aux_Box" data-open="PrimaryHeader_Main_Box" data-anima-type="1"> <i class="fa-solid fa-chevron-left"></i> </button>
+                <button type="button" class="btn btn-standard btn-create-new-album me-1" id="CreateNewAlbum_Btn"> <i class="fa-solid fa-compact-disc"></i> New Album</button>
+                <button type="button" class="btn btn-standard me-1"> <i class="fa-solid fa-feather"></i> New Post</button>
+                <button type="button" class="btn btn-standard btn-create-new-poll" id="CreateNewPoll_Btn"> <i class="fa-solid fa-square-poll-vertical"></i> New Poll</button>
+                <div class="d-inline-block">
+                    <form method="get" asp-controller="Studio" asp-action="GetAlbums" id="GetStudioAlbums_Form"></form>
+                    <form method="get" asp-controller="Studio" asp-action="GetSingles" id="GetStudioSingles_Form">
+                        <button type="submit" class="btn btn-standard"> <i class="fa-solid fa-music"></i> Open Studio</button>
+                    </form>
+                </div>
             </div>
 @*             <button type="button" class="dropdown-item btn-open-container btn-sm" id="AddMusic_Container-Open">Add Music <span class="card-text float-end"> <i class="fa-solid fa-microphone-lines"></i> </span></button> *@
         </div>
@@ -1469,6 +954,324 @@
                 </form>
             </div>
         </div> *@
+    </div>
+    <div class="mt-3">
+        @*                     <div class="track-table-box">
+                        <div class="hstack gap-1">
+                            <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div>
+                            <div class="ms-1">
+                                <span class="h6">Track Title</span>
+                                <br />
+                                <small class="card-text text-muted">Artist Name feat. Second Artist</small>
+                            </div>
+                            <div class="ms-auto">
+                                <button type="button" class="btn btn-standard-rounded btn-unpus-from-album btn-sm"> <i class="fa-solid fa-minus"></i> </button>
+                            </div>
+                        </div>
+                    </div> *@
+
+@*         <div class="track-table-box">
+            <div class="hstack gap-1">
+                <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div>
+                <div class="ms-1">
+                    <span class="h6">Track Title</span>
+                    <br />
+                    <small class="card-text text-muted">Artist Name feat. Second Artist</small>
+                </div>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-standard-rounded btn-push-to-album btn-sm"> <i class="fa-solid fa-plus"></i> </button>
+                </div>
+            </div>
+        </div> *@
+
+        <div class="mt-5 p-2 pt-3">
+@*             <div class="box-standard">
+                <span class="h4">Choose Tracks</span>
+                <br/>
+                <small class="card-text text-muted">Select the tracks you’d like to include in your album</small>
+            </div>
+            <div class="box-bordered mt-3 p-2" id="ChosenTracks_Box">
+                <h6 class="h5" id="AddTracksToAlbum_IncludedTracks_Lbl">Included Tracks</h6>
+                <div class="box-standard mt-3" id="ChosenTracks_Collection_Box" style="display: none;">
+
+                </div>
+                <div class="box-standard mt-3" id="ChosenTracks_EmptyCollection_Box">
+                    <h5 class="h6">No Included Tracks</h5>
+                    <small class="card-text text-muted">Select the tracks you want from <span class="fw-500">Available Tracks</span>, then tap <i class="fa-solid fa-plus"></i> to add them to this album</small>
+                </div>
+            </div>
+            <div class="box-bordered mt-2 p-2" id="TracksList_Box">
+                <h6 class="h6" id="AddTracksToAlbum_AvailableTracks_Lbl">Available Tracks</h6>
+                <div class="box-standard" id="TracksList_Collection_Box" style="display: none;">
+                </div>
+
+                <div class="box-standard mt-3" id="TracksList_EmptyCollection_Box">
+                    <h5 class="h6">No Available Tracks</h5>
+                    <small class="card-text text-muted">You do not have any tracks yet. Add some to include them in your albums</small>
+                </div>
+            </div>
+
+            <div class="box-standard liquid-glass sticky-bottom text-center mt-2 mb-2 p-1">
+                <input type="hidden" id="PushAlbumTracks_TracksQty_Val" value="0" />
+                <small class="card-text text-muted" id="PushAlbumTracks_TracksQty_Span">No Included Tracks</small>
+                <form method="post" action="/Album/PushTracks" id="PushAlbumTracks_Form">
+                    <div class="d-none" id="PushAlbumTracks_Tracks_Box"></div>
+                </form>
+                <button type="submit" class="btn btn-standard-rounded btn-classic-styled text-center super-disabled w-100 mt-1" id="PushAlbumTracks_SbmtBtn">Save Tracks</button>
+            </div>
+            <button type="button" class="btn btn-standard-rounded btn-tooltip" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-placement="bottom" data-bs-html="true" data-bs-title="<span class='fw-500'>Albums must contain tracks.</span><br/>An album needs at least 2 tracks (otherwise, it will be treated as an EP).<br/>If your album is set as a <span class='fw-500'>Premiere</span>, but has no tracks added by the premiere date, it won’t be released until tracks are included."> <i class="fa-regular fa-circle-question"></i> </button> *@
+
+@*             <div class="box-standard" id="AddNewTracksListed_Box">
+                <div class="track-table-box">
+                    <div class="hstack gap-1">
+                        <div class="release-img-box-sm"> <i class="fa-solid fa-music"></i> </div>
+                        <div class="ms-1">
+                            <span class="h6">Track Title</span>
+                            <br />
+                            <small class="card-text text-muted">Artist Name feat. Second Artist</small>
+                        </div>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-standard-rounded btn-push-to-album btn-sm"> <i class="fa-solid fa-plus"></i> </button>
+                        </div>
+                    </div>
+                </div>
+            </div> *@
+
+            @* <div class="release-box-lg">
+                <div class="hstack gap-2">
+                    <div class="release-img-box-lg" id="AlbumInfo_Img_Box"> <i class="fa-solid fa-compact-disc"></i> </div>
+                    <img src="#" class="release-img-lg" id="AlbumInfo_Img" style="display: none;" />
+
+                    <div class="ms-1">
+                        <div class="box-playlist-header-content">
+                            <small class="card-text text-muted" id="AlbumInfo_Type_Span">Album</small>
+                            <small class="card-text text-muted" id="AlbumInfo_VersionSeparator_Span"> ∙ </small>
+                            <small class="card-text text-muted btn-album-editing-tool btn-select-primary btn-tooltip" id="AlbumInfo_Version_Val-BtnEdit" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Tap to edit album version" data-val="0" data-class="album-version-edit" data-unique-id="AlbumVersionEdit" data-texts="Regular,Remastered,Deluxe,Extended,Anniversary,Live,Instrumental,Re-release,Explicit,Clean,Special Edition">Remastered</small>
+                            <small class="card-text text-muted" id="AlbumInfo_StatusSeparator_Span"> ∙ </small>
+                            <small class="card-text text-muted" id="AlbumInfo_Status_Span">Pending</small>
+                            <br />
+                            <span class="h1" id="AlbumInfo_Title_Lbl">Album Title</span>
+                            <br />
+                            <small class="card-text text-muted" id="AlbumInfo_Genre_Span">J-Pop</small>
+                            <small class="card-text text-muted"> ∙ </small>
+                            <small class="card-text btn-album-editing-tool btn-select-date text-muted" data-display="AlbumInfo_PremiereDate_Val_Span" data-result="AlbumInfo_PremiereDate_Val" id="AlbumInfo_PremiereDate_Val_Span">2025</small>
+                            <small class="card-text text-muted"> ∙ </small>
+                            <small class="card-text text-muted" id="AlbumInfo_SongsQty_Span">12</small> <small class="card-text text-muted" id="AlbumInfo_SongsQtyText_Span">songs</small>
+                            <div id="PremieredBadge_Box" style="display: none;">
+                                <small class="card-text text-muted"> ∙ </small>
+                                <small class="premiere-badge" id="AlbumInfo_PremiereBadge_Span">Premiere</small>
+                            </div>
+
+                            <div class="x-row-sliding-only-box mt-2" id="AlbumInfo_AuthorOptions_Box">
+                                <div class="d-none">
+                                    <div id="EditAlbumVersion_Box">
+                                        <form method="post" action="/Album/EditVersion" id="EditAlbumVersion_Form">
+                                            <input type="hidden" name="Id" id="EditAlbumVersion_Id_Val" value="0" />
+                                            <input type="hidden" class="form-control-distance" data-by-alert="true" data-form="EditAlbumVersion_Form" data-alert="Save changes to the album version?" name="Version" id="AlbumInfo_Version_Val" value="0" />
+                                        </form>
+                                        <input type="hidden" id="EditAlbumVersion_Version_Val-Base_Val" value="0" />
+                                    </div>
+                                    <div id="EditPremiereDate_Box">
+                                        <form method="post" action="/Album/EditPremiereDate" id="EditPremiereDate_Form">
+                                            <input type="hidden" name="Id" id="EditPremiereDate_Id_Val" value="0" />
+                                            <input type="hidden" class="form-control-distance" data-by-alert="true" data-form="EditPremiereDate_Form" data-alert="Save changes to the album release date?" id="AlbumInfo_PremiereDate_Val" value="0" />
+                                        </form>
+                                    </div>
+                                    <div id="ReorderAlbumTracks_Box">
+                                        <form method="post" action="/Album/LoadTracks" id="LoadAlbumTracks_Form">
+                                            <input type="hidden" id="LoadAlbumTracks_Id_Val" value="0" />
+                                            <input type="hidden" id="LoadAlbumTracks_Type_Val" value="0" />
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="hstack gap-1">
+                                    <div class="box-backgrounded rounded-af">
+                                        <button type="button" class="btn btn-standard-rounded btn-open-inside-lg-card btn-sm me-1" id="EditAlbumMetadata_Container-OpenBtn"> <i class="fa-solid fa-pencil"></i> Edit</button>
+                                        <button type="button" class="btn btn-standard-rounded btn-distance-submitter btn-sm me-1" data-form="LoadAlbumTracks_Form" id="LoadAlbumTracksToReorder_SbmtBtn"> <i class="fa-solid fa-bars"></i> Reorder</button>
+                                        <button type="button" class="btn btn-standard-rounded btn-distance-submitter btn-sm me-1" data-form="GetTracksInfo_Form" id="AddAlbumTracks_Btn" style="display: none;"> <i class="fa-solid fa-plus"></i> Add Track</button>
+                                    </div>
+                                    <div class="box-backgrounded rounded-af">
+                                        <button type="button" class="btn btn-standard-rounded btn-distance-submitter active btn-sm bubble-show hidden me-1" data-form="EditAlbumCoverImage_Form" id="EditAlbumCoverImage_File_Val-BtnSbmt" style="display: none;"> <i class="fa-regular fa-circle-check"></i> Save Image</button>
+                                        <button type="button" class="btn btn-standard-rounded btn-upload-image btn-sm me-1" id="EditAlbumCoverImage_File_Val-UploadBtn"> <i class="fa-solid fa-paperclip"></i> Upload Image</button>
+                                        <div class="d-none">
+                                            <form method="post" action="/Album/EditCoverImage" id="EditAlbumCoverImage_Form">
+                                                <input type="hidden" name="Id" id="EditAlbumCoverImage_Id_Val" value="0" />
+                                                <input type="file" class="d-none" name="CoverImage" id="EditAlbumCoverImage_File_Val" accept=".png, .jpg, .jpeg" data-update-btn="EditAlbumCoverImage_File_Val-BtnSbmt" data-preview="AlbumInfo_Img" />
+                                            </form>
+                                        </div>
+                                        <button type="button" class="btn btn-standard-rounded btn-delete-preview-image btn-input-file-emptier btn-sm text-danger super-disabled" id="AlbumInfo_Img-DeletePreviewImg_Btn" data-target="EditAlbumCoverImage_File_Val"> <i class="fa-solid fa-xmark"></i> </button>
+                                    </div>
+
+                                    <div class="box-backgrounded rounded-af d-flex">
+                                        <div class="box-standard me-1" id="SubmitTheAlbum_Box">
+                                            <form method="post" action="/Album/Submit" id="SubmitTheAlbum_Form">
+                                                <input type="hidden" name="Id" id="SubmitTheAlbum_Id_Val" value="0" />
+                                                <button type="submit" class="btn btn-standard-rounded btn-tooltip btn-sm" id="SubmitTheAlbum_SbmtBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Deploy album now (ignores premiere date)"> <i class="fa-solid fa-check-double"></i> Submit</button>
+                                            </form>
+                                        </div>
+                                        <div class="box-standard me-1" id="EnableTheAlbum_Box" style="display: none;">
+                                            <form method="post" action="/Album/Enable" id="EnableTheAlbum_Form">
+                                                <input type="hidden" name="Id" id="EnableTheAlbum_Id_Val" value="0" />
+                                                <button type="submit" class="btn btn-standard-rounded btn-sm" id="EnableTheAlbum_SbmtBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Enable album (editing will be disabled)"> <i class="fa-solid fa-toggle-on"></i> Enable</button>
+                                            </form>
+                                        </div>
+                                        <div class="box-standard me-1" id="DisableTheAlbum_Box" style="display: none;">
+                                            <form method="post" action="/Album/Disable" id="DisableTheAlbum_Form">
+                                                <input type="hidden" name="Id" id="DisableTheAlbum_Id_Val" value="0" />
+                                                <button type="submit" class="btn btn-standard-rounded btn-tooltip btn-sm" id="DisableTheAlbum_SbmtBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Disable album (listening off, editing enabled)"> <i class="fa-solid fa-toggle-off"></i> Disable</button>
+                                            </form>
+                                        </div>
+                                        <button type="button" class="btn btn-standard-rounded btn-open-inside-lg-card btn-sm" id="AlbumSecrets_Container-OpenBtn"> <i class="fa-regular fa-lightbulb"></i> </button>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>                
+            </div>             *@
+
+            @* <div class="release-box-lg">
+                <div class="mx-auto text-center">
+                    <input type="hidden" id="AlbumInfo_Identifier_Val" value="0" />
+                    <img src="#" class="release-img-lg mx-auto" id="AlbumInfo_Img" style="display: none;" />
+                    <div class="release-img-box-lg mx-auto" id="AlbumInfo_Img_Box"> <i class="fa-solid fa-compact-disc"></i> </div>
+                </div>
+                <div class="box-standard text-center mt-2">
+                    <small class="card-text text-muted btn-album-editing-tool btn-select-primary btn-tooltip" id="AlbumInfo_Version_Val-BtnEdit" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Tap to edit album version" data-val="0" data-class="album-version-edit" data-unique-id="AlbumVersionEdit" data-texts="Regular,Remastered,Deluxe,Extended,Anniversary,Live,Instrumental,Re-release,Explicit,Clean,Special Edition">Remastered</small>
+                    <small class="card-text text-muted" id="AlbumInfo_StatusSeparator_Span"> ∙ </small>
+                    <small class="card-text text-muted btn-album-editing-tool" id="AlbumInfo_Status_Span">Pending</small>
+                    <br/>
+                    <span class="h1" id="AlbumInfo_Title_Lbl">Album Title</span>
+                    <br/>
+                    <small class="card-text btn-album-editing-tool text-muted" id="AlbumInfo_Genre_Span">J-Pop</small>
+                    <small class="card-text text-muted"> ∙ </small>
+                    <small class="card-text btn-album-editing-tool btn-select-date text-muted" data-display="AlbumInfo_PremiereDate_Val_Span" data-result="AlbumInfo_PremiereDate_Val" id="AlbumInfo_PremiereDate_Val_Span">2025</small>
+                    <small class="card-text text-muted"> ∙ </small>
+                    <small class="card-text text-muted"><span class="card-text" id="AlbumInfo_SongsQty_Span">12</span> <span class="card-text" id="AlbumInfo_SongsQtyText_Span">songs</span></small>
+                    <div id="PremieredBadge_Box" style="display: none;">
+                        <small class="card-text text-muted"> ∙ </small>
+                        <small class="premiere-badge" id="AlbumInfo_PremiereBadge_Span">Premiere</small>
+                    </div>
+                </div>
+
+                <div class="box-standard mt-2" id="AlbumInfo_AuthorOptions_Box">           
+                    <div class="d-none">
+                        <div id="EditAlbumVersion_Box">
+                            <form method="post" action="/Album/EditVersion" id="EditAlbumVersion_Form">
+                                <input type="hidden" name="Id" id="EditAlbumVersion_Id_Val" value="0" />
+                                <input type="hidden" class="form-control-distance" data-by-alert="true" data-form="EditAlbumVersion_Form" data-alert="Save changes to the album version?" name="Version" id="AlbumInfo_Version_Val" value="0" />
+                            </form>
+                            <input type="hidden" id="EditAlbumVersion_Version_Val-Base_Val" value="0" />
+                        </div>
+                        <div id="EditPremiereDate_Box">
+                            <form method="post" action="/Album/EditPremiereDate" id="EditPremiereDate_Form">
+                                <input type="hidden" name="Id" id="EditPremiereDate_Id_Val" value="0" />
+                                <input type="hidden" class="form-control-distance" data-by-alert="true" data-form="EditPremiereDate_Form" data-alert="Save changes to the album release date?" id="AlbumInfo_PremiereDate_Val" value="0" />
+                            </form>
+                        </div>
+                        <div id="ReorderAlbumTracks_Box">
+                            <form method="post" action="/Album/LoadTracks" id="LoadAlbumTracks_Form">
+                                <input type="hidden" id="LoadAlbumTracks_Id_Val" value="0" />
+                                <input type="hidden" id="LoadAlbumTracks_Type_Val" value="0" />
+                            </form>
+                        </div>
+                    </div>
+                    <div class="hstack gap-1">
+                        <button type="button" class="btn btn-standard-rounded btn-open-inside-lg-card btn-sm text-center mx-auto me-1" id="EditAlbumMetadata_Container-OpenBtn"> <i class="fa-solid fa-pencil"></i> Edit</button>
+                        <div class="box-standard mx-auto">
+                            <input type="file" class="d-none" id="EditAlbumCoverImage_File_Val" accept=".png, .jpg, .jpeg" />
+                            <form method="post" action="/Album/EditCoverImage" id="EditAlbumCoverImage_Form">
+                                <input type="hidden" name="CoverImageUrl" id="EditCoverImageUrl_Val" />
+                                <button type="submit" class="btn btn-standard-rounded btn-sm text-center mx-auto" id="EditAlbumCoverImage_SbmtBtn"> <i class="fa-solid fa-paperclip"></i> Image</button>
+                            </form>
+                        </div>
+                        <div class="box-standard mx-auto">
+                            <button type="button" class="btn btn-standard-rounded btn-distance-submitter btn-sm text-center mx-auto me-1" data-form="LoadAlbumTracks_Form" id="LoadAlbumTracksToReorder_SbmtBtn"> <i class="fa-solid fa-bars"></i> Reorder</button>
+                            <button type="button" class="btn btn-standard-rounded btn-distance-submitter btn-sm text-center mx-auto me-1" data-form="GetTracksInfo_Form" id="AddAlbumTracks_Btn" style="display: none;"> <i class="fa-solid fa-plus"></i> Add Track</button>
+                        </div>
+                        <div class="box-standard mx-auto">
+                            <div class="box-standard" id="SubmitTheAlbum_Box">
+                                <form method="post" action="/Album/Submit" id="SubmitTheAlbum_Form">
+                                    <input type="hidden" name="Id" id="SubmitTheAlbum_Id_Val" value="0" />
+                                    <button type="submit" class="btn btn-standard-rounded btn-tooltip btn-sm text-center mx-auto" id="SubmitTheAlbum_SbmtBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Deploy album now (ignores premiere date)"> <i class="fa-solid fa-check-double"></i> Submit</button>
+                                </form>
+                            </div>
+                            <div class="box-standard" id="EnableTheAlbum_Box" style="display: none;">
+                                <form method="post" action="/Album/Enable" id="EnableTheAlbum_Form">
+                                    <input type="hidden" name="Id" id="EnableTheAlbum_Id_Val" value="0" />
+                                    <button type="submit" class="btn btn-standard-rounded btn-sm text-center mx-auto" id="EnableTheAlbum_SbmtBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Enable album (editing will be disabled)"> <i class="fa-solid fa-toggle-on"></i> Enable</button>
+                                </form>
+                            </div>
+                            <div class="box-standard" id="DisableTheAlbum_Box" style="display: none;">
+                                <form method="post" action="/Album/Disable" id="DisableTheAlbum_Form">
+                                    <input type="hidden" name="Id" id="DisableTheAlbum_Id_Val" value="0" />
+                                    <button type="submit" class="btn btn-standard-rounded btn-tooltip btn-sm text-center mx-auto" id="DisableTheAlbum_SbmtBtn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-standard shadow-sm" data-bs-title="Disable album (listening off, editing enabled)"> <i class="fa-solid fa-toggle-off"></i> Disable</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="box-standard mt-2" id="AlbumSongs_Box"></div> *@
+        </div>
+            
+@*         <div class="release-stack-box">
+            <div class="release-img-box">
+                <i class="fa-solid fa-music"></i>
+            </div>
+            <div class="box-standard text-truncate mt-1">
+                <span class="h6">Release Title</span>
+                <br />
+                <small class="card-text text-muted">Artist name feat. Second artist</small>
+            </div>
+        </div> *@
+
+
+@*         <div class="box-lg-part-inner">
+            <div class="div-swiper mx-auto mt-1"></div>
+
+            <div class="box-standard x-row-sliding-only-box mt-2 p-1">
+                <button type="button" class="btn btn-standard btn-standard-rounded btn-select-button-bar btn-track-boxes checked me-1" id="Singles_Box-Select_Btn" data-base-class="track-boxes">Singles ∙ <span class="card-text" id="Studio_SinglesQty_Span">0</span></button>
+                <button type="button" class="btn btn-standard btn-standard-rounded btn-select-button-bar btn-track-boxes me-1" id="Albums_Box-Select_Btn" data-base-class="track-boxes">Albums ∙ <span class="card-text" id="Studio_AlbumsQty_Span">0</span></button>
+                <button type="button" class="btn btn-standard btn-standard-rounded btn-select-button-bar btn-track-boxes super-disabled me-1" id="Playlists_Box-Select_Btn" data-base-class="track-boxes">Playlists ∙ <span class="card-text" id="Studio_PlaylistsQty_Span">0</span></button>
+            </div>
+            <div class="box-standard mt-1 p-1">
+                <form method="get" action="/Search/InStudio" id="SearchInsideOfStudio_Form">
+                    <div class="hstack gap-1">
+                        <input type="hidden" name="Type" id="SIOS_Type_Val" value="0" />
+                        <input type="text" class="form-control liquid-glass-search" placeholder="Search..." name="Keyword" id="SIOS_Search_Val" />
+                        <button type="submit" class="btn btn-standard rounded-af ms-auto" id="SearchInsideOfStudio_SbmtBtn"> <i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="box-standard track-boxes p-2 mt-1" id="Singles_Box">
+                <h4 class="h4">Singles</h4>
+                <div class="box-standard mt-2" id="SinglesCollection_Box">
+                    <div class="box-standard text-center">
+                        <h2 class="h2"> <i class="fa-solid fa-music"></i> </h2>
+                        <h4 class="h4">No Singles</h4>
+                        <small class="card-text text-muted">You have not uploaded any singles yet</small>
+                    </div>
+                </div>
+            </div>
+            <div class="box-standard track-boxes p-2" id="Albums_Box" style="display: none;">
+                <h4 class="h4">Albums</h4>
+                <div class="box-standard mt-2" id="AlbumsCollection_Box">
+                    <div class="box-standard text-center">
+                        <h2 class="h2"> <i class="fa-solid fa-compact-disc"></i> </h2>
+                        <h4 class="h4">No Albums</h4>
+                        <small class="card-text text-muted">You have not uploaded any albums yet</small>
+                    </div>
+                </div>
+            </div>          
+        </div> *@
+
     </div>
 
     @* <div class="box-lg-part-inner" id="PollsInformation_Container" style="display: block; bottom: 150px;">
@@ -1553,7 +1356,15 @@
     </div> *@
 
     <div class="box-lg-part-body mt-5" id="Primary_Box">
-        <div class="mt-2">
+        <div class="mt-2">          
+
+@*             <form method="post" action="/Poll/Like" id="LikeThePoll_Form">
+                <input type="hidden" name="Id" id="LikeThePoll_Id_Val" value="0" />
+            </form>
+            <form method="post" action="/Poll/RemoveLike" id="RemovePollLike_Form">
+                <input type="hidden" name="Id" id="RemovePollLike_Id_Val" />
+            </form> *@
+
             @* <div class="box-lg-part-inner" id="PollComments_Container" style="display:  block; bottom: 125px;">
                 <div class="div-swiper mx-auto mt-1"></div>
                 <div class="box-lg-inner-part-header" id="CreatePost_Header_Box">

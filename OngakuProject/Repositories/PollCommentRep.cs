@@ -104,5 +104,11 @@ namespace OngakuProject.Repositories
             if (Id > 0) return _context.PollRecomments.AsNoTracking().Where(r => r.PollCommentId == Id && !r.IsDeleted).Select(r => new PollRecomment_DTO { Id = r.Id, Text = r.Text, IsEdited = r.IsEdited, SentAt = r.SentAt, UserId = r.UserId, User = new User { Nickname = r.User.Nickname, ImgUrl = r.User.UserImages.Select(i => i.ImgUrl).FirstOrDefault() } }).OrderByDescending(r => r.SentAt).Skip(SkipQty).Take(TakeQty);
             else return null;
         }
+
+        public async Task<int> GetCommsQtyAsync(int Id)
+        {
+            if (Id > 0) return await _context.PollComments.AsNoTracking().CountAsync(c => c.PollId == Id && !c.IsDeleted);
+            else return 0;
+        }
     }
 }

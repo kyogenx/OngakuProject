@@ -23,27 +23,75 @@ namespace OngakuProject.Controllers
         public async Task<IActionResult> GetByUser(int Id, byte Type, int SkipQty = 0)
         {
             int UserId = 0;
-            IQueryable<Poll_DTO>? PollsPreview = null;
+            IQueryable<Poll_DTO>? PollsPreview = null;        
 
             if (User.Identity.IsAuthenticated)
             {
                 string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 UserId = _profile.ParseCurrentUserId(CurrentUserId);
             }
-
-            if (Id > 0) PollsPreview = _poll.GetPolls(Id, UserId, SkipQty);
-            else
-            {
-                PollsPreview = _poll.GetPolls(UserId, UserId, SkipQty);
-            }
+            Id = Id > 0 ? Id : UserId;
+            PollsPreview = _poll.GetPolls(Id, SkipQty);
 
             if(PollsPreview is not null)
             {
+                HashSet<PollLike_DTO>? Likes = null;
+                HashSet<PollVote_DTO>? Votes = null;
+                HashSet<PollLike_DTO>? LikesQty = null;
                 List<Poll_DTO>? Polls = await PollsPreview.ToListAsync();     
                 if(Polls is not null)
                 {
+                    LikesQty = await _poll.GetUserPollsLikesQty(Id);
+                    if (UserId > 0)
+                    {
+                        Votes = await _poll.GetUserVotesAsync(UserId);
+                        Likes = await _poll.GetUserLikedPollsAsync(UserId);
+                    }
+
+                    if(LikesQty is not null)
+                    {
+                        foreach(Poll_DTO Poll in Polls)
+                        {
+                            foreach (PollLike_DTO Like in LikesQty)
+                            {
+                                if (Poll.Id == Like.PollId) Poll.LikesQty = Like.LikesQty;
+                            }
+                        }
+                    }
+
+                    if(Likes is not null)
+                    {
+                        foreach (Poll_DTO Poll in Polls)
+                        {
+                            foreach (PollLike_DTO Like in Likes)
+                            {
+                                if (Poll.Id == Like.PollId)
+                                {
+                                    Poll.IsLiked = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if(Votes is not null)
+                    {
+                        foreach (Poll_DTO Poll in Polls)
+                        {
+                            foreach (PollVote_DTO Vote in Votes)
+                            {
+                                if (Poll.Id == Vote.PollId)
+                                {
+                                    Poll.VotedOptionId = Vote.OptionId;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     foreach(Poll_DTO Poll in Polls)
                     {
+                        Poll.TotalVotesQty += Poll.PollOptions.Sum(p => p.VotesQty);
                         if(Poll.VotedOptionId == null || Poll.VotedOptionId <= 0)
                         {
                             Poll.PollOptions.ForEach(o => o.VotesQty = 0);
@@ -138,6 +186,36 @@ namespace OngakuProject.Controllers
                     }
                     return Json(new { success = true, result = Id, pollId = PollId, id = Result, liveDatas = LiveDatas, totalVotesQty = LiveDatas != null ? LiveDatas.Sum(l => l.GroupVotesQty) : 0 });
                 }
+                else return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Like(int Id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                int Result = await _poll.LikeAsync(Id, UserId);
+                if (Result > 0) return Json(new { success = true, result = Result, id = Id });
+                else return Json(new { success = false, error = 0 });
+            }
+            else return Json(new { success = false, error = -1 });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveLike(int Id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                string? CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int UserId = _profile.ParseCurrentUserId(CurrentUserId);
+
+                int Result = await _poll.RemoveLikeAsync(Id, UserId);
+                if (Result > 0) return Json(new { success = true, result = Result, id = Id });
                 else return Json(new { success = false, error = 0 });
             }
             else return Json(new { success = false, error = -1 });

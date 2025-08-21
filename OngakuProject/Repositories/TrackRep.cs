@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OngakuProject.Data;
+using OngakuProject.DTO;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Tiff.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace OngakuProject.Repositories
@@ -341,6 +340,12 @@ namespace OngakuProject.Repositories
                 if(IsForAuthor) return _context.Tracks.AsNoTracking().Where(t => t.UserId == Id && !t.IsDeleted).Select(t => new Track { Id = t.Id, Status = t.Status, Title = t.Title, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Name = g.Name }).ToList() : null, ReleasedAt = t.ReleasedAt, CoverImageUrl = t.CoverImageUrl });
                 else return _context.Tracks.AsNoTracking().Where(t => t.UserId == Id && !t.IsDeleted && t.Status == 3).Select(t => new Track { Id = t.Id, Title = t.Title, Genres = t.Genres != null ? t.Genres.Select(g => new Genre { Name = g.Name }).ToList() : null, ReleasedAt = t.ReleasedAt, CoverImageUrl = t.CoverImageUrl });
             }
+            else return null;
+        }
+
+        public IQueryable<Track_DTO>? GetTracks(int Id, int Skip = 0, int TakeQty = 25)
+        {
+            if (Id > 0) return _context.Tracks.AsNoTracking().Where(t => t.UserId == Id && !t.IsDeleted).Skip(Skip).Take(TakeQty).Select(t => new Track_DTO { Id = t.Id, Title = t.Title, CoverImageUrl = t.CoverImageUrl, HasExplicit = t.HasExplicit, ArtistName = t.User.Nickname, AudioUrl = t.TrackFileUrl, FeaturingArtists = t.TrackArtists.Where(t => !t.IsDeleted).Select(t => new TrackArtist { ArtistId = t.ArtistId, ArtistName = t.User.Nickname }).ToList() });
             else return null;
         }
 

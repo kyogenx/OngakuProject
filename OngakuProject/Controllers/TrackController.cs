@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OngakuProject.Data;
+using OngakuProject.DTO;
 using OngakuProject.Interfaces;
 using OngakuProject.Models;
 using OngakuProject.ViewModels;
@@ -12,6 +13,7 @@ namespace OngakuProject.Controllers
     public class TrackController : Controller
     {
         private readonly Context _context;
+        private readonly IAlbum _album;
         private readonly ITrack _track;
         private readonly ILyric _lyric;
         private readonly IProfile _profile;
@@ -19,9 +21,10 @@ namespace OngakuProject.Controllers
         private readonly ITrackAnalytic _trackAnalytic;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public TrackController(Context context, ITrack track, ILyric lyric, IProfile profile, IGenre genre, ITrackAnalytic trackAnalytic, IWebHostEnvironment webHostEnvironment)
+        public TrackController(Context context, IAlbum album, ITrack track, ILyric lyric, IProfile profile, IGenre genre, ITrackAnalytic trackAnalytic, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _album = album;
             _track = track;
             _lyric = lyric;
             _profile = profile;
@@ -130,21 +133,25 @@ namespace OngakuProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetStudioItems()
+        public async Task<IActionResult> GetTracks(int Id, int Skip, byte Type)
         {
             if (User.Identity.IsAuthenticated)
             {
-                string? Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                int UserId = _profile.ParseCurrentUserId(Id);
-
-                IQueryable<Track>? TracksPreview = _track.GetStudioItems(UserId, true);
-                if(TracksPreview is not null)
+                if (Id == 0)
                 {
-                    List<Track>? Tracks = await TracksPreview.ToListAsync();
-                    if (Tracks is not null) return Json(new { success = true, result = Tracks, count = Tracks.Count });
+                    string? UserId_Str = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    Id = _profile.ParseCurrentUserId(UserId_Str);
                 }
+
+                IQueryable<Track_DTO>? TracksPreview = _track.GetTracks(Id, Skip);
+                if (TracksPreview is not null)
+                {
+                    List<Track_DTO>? Tracks = await TracksPreview.ToListAsync();
+                    if (Tracks.Count > 0) return Json(new { success = true, type = Type, result = Tracks });
+                }
+                return Json(new { success = false, error = 0 });
             }
-            return Json(new { success = false });
+            else return Json(new { success = false, error = -1 });
         }
 
         [HttpGet]

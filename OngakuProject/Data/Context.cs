@@ -13,6 +13,7 @@ namespace OngakuProject.Data
         public DbSet<Country> Countries { get; set; }
         public DbSet<Track> Tracks { get; set; }
         public DbSet<Album> Albums { get; set; }
+        public DbSet<AlbumTrack> AlbumTracks { get; set; }
         public DbSet<Disc> Discs { get; set; }
         public DbSet<TrackHistory> TrackHistories { get; set; }
         public DbSet<TrackComment> TrackComments { get; set; }
@@ -27,7 +28,6 @@ namespace OngakuProject.Data
         public DbSet<TrackArtist> TrackArtists { get; set; }
         public DbSet<MoodTag> MoodTags { get; set; }
         public DbSet<TrackCredit> TrackCredits { get; set; }
-        public DbSet<AlbumGenre> AlbumGenres { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<TrackPlaylist> TrackPlaylists { get; set; }
@@ -40,6 +40,7 @@ namespace OngakuProject.Data
         public DbSet<Poll> Polls { get; set; }
         public DbSet<PollOption> PollOptions { get; set; }
         public DbSet<PollOptionVote> PollOptionVotes { get; set; }
+        public DbSet<PollLike> PollLikes { get; set; }
         public DbSet<PollComment> PollComments { get; set; }
         public DbSet<PollRecomment> PollRecomments { get; set; }
     }

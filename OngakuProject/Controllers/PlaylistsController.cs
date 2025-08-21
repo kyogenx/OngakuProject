@@ -258,13 +258,19 @@ namespace OngakuProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetInfo(int Id, int UserId)
+        public async Task<IActionResult> GetInfo(int Id, byte Type)
         {
             Playlist? PlaylistInfo = await _playlist.GetInfoAsync(Id, false);
             if (PlaylistInfo is not null)
             {
+                int UserId = 0;
+                if(User.Identity.IsAuthenticated)
+                {
+                    string? UserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    UserId = _profile.ParseCurrentUserId(UserIdStr);
+                }
                 bool IsSaved = await _playlist.IsSavedAsync(Id, UserId);
-                return Json(new { success = true, userId = UserId, isSaved = IsSaved, result = PlaylistInfo });
+                return Json(new { success = true, userId = UserId, isSaved = IsSaved, result = PlaylistInfo, type = Type });
             }
             return Json(new { success = false });
         }

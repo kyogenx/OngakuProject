@@ -33,6 +33,7 @@ builder.Services.AddTransient<IProfile, ProfileRep>();
 builder.Services.AddTransient<IAccount, AccountRep>();
 builder.Services.AddTransient<IProfileEdit, ProfileEdit>();
 
+builder.Services.AddTransient<IAlbum, AlbumRep>();
 builder.Services.AddTransient<IGenre, GenreRep>();
 builder.Services.AddTransient<ILyric, LyricRep>();
 builder.Services.AddTransient<ITrack, TrackRep>();
@@ -83,5 +84,9 @@ app.MapControllerRoute(
 
 RecurringJob.AddOrUpdate<TrackAnalyticRep>("track-history-update-job",
     Job => Job.GetAndUpdateStreamingHistoryAsync(1), CronHelper.RunEvery_N_Minutes(15));
+RecurringJob.AddOrUpdate<PollRep>("poll-likes-qty-update-job",
+    Job => Job.UpdateLikesQtyAsync(), CronHelper.RunEvery_N_Minutes(1));
+RecurringJob.AddOrUpdate<PollRep>("poll-commd-qty-update-job",
+    Job => Job.UpdateCommsQtyAsync(), CronHelper.RunEvery_N_Minutes(1));
 
 app.Run();

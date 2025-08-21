@@ -9,6 +9,8 @@ namespace OngakuProject.Models
         public string? Question { get; set; }
         public byte MaxChoicesQty { get; set; } = 1; //Up to 6 (max options qty: 6);
         public int NecessaryVoicesQty { get; set; }
+        public int LikesQty { get; set; }
+        public int CommsQty { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ExpiresAt { get; set; }
         public DateTime? ForceFinishedAt { get; set; }
@@ -23,11 +25,10 @@ namespace OngakuProject.Models
         public User? User { get; set; }
         public List<PollOption>? PollOptions { get; set; }
         public List<PollOptionVote>? PollOptionVotes { get; set; }
+        public List<PollLike>? PollLikes { get; set; }
         public List<PollComment>? PollComments { get; set; }
 
         [NotMapped]
         public int TotalVotesQty { get; set; }
-        [NotMapped]
-        public bool HasVoted { get; set; }
     }
 }

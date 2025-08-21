@@ -26,8 +26,6 @@ namespace OngakuProject.Models
         public DateTime? LastUpdatedAt { get; set; }
         [ForeignKey("User")]
         public int? UserId { get; set; }
-        [ForeignKey("Album")]
-        public int? AlbumId { get; set; }
         [ForeignKey("Label")]
         public int? LabelId { get; set; }
         [ForeignKey("Lyrics")]
@@ -35,11 +33,11 @@ namespace OngakuProject.Models
         [ForeignKey("TrackCredit")]
         public int? CreditId { get; set; }
         public User? User { get; set; }
-        public Album? Album { get; set; }
         public TrackCredit? TrackCredit { get; set; }
         public Label? Label { get; set; }
         public Lyrics? Lyrics { get; set; }
         public List<Genre>? Genres { get; set; } = new List<Genre>();
+        public List<AlbumTrack>? AlbumTracks { get; set; } = new List<AlbumTrack>();
         public List<MoodTag>? MoodTags { get; set; } = new List<MoodTag>();
         public List<TrackPlaylist>? TrackPlaylists { get; set; } = new List<TrackPlaylist>();
         public List<TrackReaction>? TrackReactions { get; set; } = new List<TrackReaction>();

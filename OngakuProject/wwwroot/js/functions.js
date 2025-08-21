@@ -1,0 +1,1 @@
+﻿/*$("#OngakuAlert_Btn").attr("onmousedown", '$("#"' + buttonAction + ').submit();');*/

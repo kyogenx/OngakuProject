@@ -1,4 +1,5 @@
-﻿using OngakuProject.Models;
+﻿using OngakuProject.DTO;
+using OngakuProject.Models;
 using OngakuProject.ViewModels;
 using System.ComponentModel.DataAnnotations;
 
@@ -29,6 +30,7 @@ namespace OngakuProject.Interfaces
         public Task<Track?> LoadTheTrackAsync(int Id, int PlaylistId, int UserId = 0);
         public Task<Track?> GetTrackInfoAsync(int Id, int UserId = 0, bool IsForAuthor = false);
         public Task<TrackCredit?> GetCreditsAsync(int Id);
+        public IQueryable<Track_DTO>? GetTracks(int Id, int Skip = 0, int TakeQty = 25);
         public IQueryable<Track>? GetStudioItems(int Id, bool IsForAuthor = false);
         public ValidationResult? CreditValidation(string? Value, ValidationContext Context);
     }

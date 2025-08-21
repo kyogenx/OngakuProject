@@ -14,9 +14,12 @@ namespace OngakuProject.DTO
         public DateTime CreatedAt { get; set; }
         public DateTime ExpiresAt { get; set; }
         public DateTime? ForceFinishedAt { get; set; }
+        public bool IsLiked { get; set; }
         public bool IsCompleted { get; set; }
         public bool IsAnonymous { get; set; }
         public bool IsSkippable { get; set; }
+        public int LikesQty { get; set; }
+        public int CommsQty { get; set; }
         public int TotalVotesQty { get; set; }
         public int? VotedOptionId { get; set; }
         public int? PostId { get; set; }

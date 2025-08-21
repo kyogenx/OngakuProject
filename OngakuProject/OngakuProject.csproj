@@ -25,11 +25,13 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.5" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="RavenDB.Client" Version="7.0.2" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.37" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.8" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\AlbumCovers\" />
+    <Folder Include="wwwroot\AlbumCompressedCovers\" />
     <Folder Include="wwwroot\PlaylistCovers\" />
     <Folder Include="wwwroot\TrackCovers\" />
     <Folder Include="wwwroot\Tracks\" />

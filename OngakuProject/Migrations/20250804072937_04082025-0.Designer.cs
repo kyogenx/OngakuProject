@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OngakuProject.Data;
 
@@ -11,9 +12,11 @@ using OngakuProject.Data;
 namespace OngakuProject.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20250804072937_04082025-0")]
+    partial class _040820250
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -200,16 +203,13 @@ namespace OngakuProject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(1500)
-                        .HasColumnType("nvarchar(1500)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("GenreId")
+                    b.Property<int?>("GenreId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsExplicit")
                         .HasColumnType("bit");
 
                     b.Property<int?>("LabelId")
@@ -221,28 +221,18 @@ namespace OngakuProject.Migrations
                     b.Property<int>("Popularity")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("PremieredAt")
+                    b.Property<DateTime?>("ReleasedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
 
                     b.Property<string>("ThumbnailUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("UPC_Code")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
-
-                    b.Property<byte>("Version")
-                        .HasColumnType("tinyint");
 
                     b.HasKey("Id");
 
@@ -255,7 +245,7 @@ namespace OngakuProject.Migrations
                     b.ToTable("Albums");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.AlbumTrack", b =>
+            modelBuilder.Entity("OngakuProject.Models.AlbumGenre", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -266,22 +256,16 @@ namespace OngakuProject.Migrations
                     b.Property<int>("AlbumId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("TrackId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TrackOrderNumber")
+                    b.Property<int>("GenreId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AlbumId");
 
-                    b.HasIndex("TrackId");
+                    b.HasIndex("GenreId");
 
-                    b.ToTable("AlbumTracks");
+                    b.ToTable("AlbumGenres");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.Country", b =>
@@ -584,9 +568,6 @@ namespace OngakuProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CommsQty")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -607,9 +588,6 @@ namespace OngakuProject.Migrations
 
                     b.Property<bool>("IsSkippable")
                         .HasColumnType("bit");
-
-                    b.Property<int>("LikesQty")
-                        .HasColumnType("int");
 
                     b.Property<byte>("MaxChoicesQty")
                         .HasColumnType("tinyint");
@@ -1630,11 +1608,9 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.Album", b =>
                 {
-                    b.HasOne("OngakuProject.Models.Genre", "Genre")
+                    b.HasOne("OngakuProject.Models.Genre", null)
                         .WithMany("Albums")
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("GenreId");
 
                     b.HasOne("OngakuProject.Models.Label", null)
                         .WithMany("Albums")
@@ -1646,28 +1622,26 @@ namespace OngakuProject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Genre");
-
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OngakuProject.Models.AlbumTrack", b =>
+            modelBuilder.Entity("OngakuProject.Models.AlbumGenre", b =>
                 {
                     b.HasOne("OngakuProject.Models.Album", "Album")
-                        .WithMany("AlbumTracks")
+                        .WithMany("AlbumGenres")
                         .HasForeignKey("AlbumId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OngakuProject.Models.Track", "Track")
-                        .WithMany("AlbumTracks")
-                        .HasForeignKey("TrackId")
+                    b.HasOne("OngakuProject.Models.Genre", "Genre")
+                        .WithMany()
+                        .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Album");
 
-                    b.Navigation("Track");
+                    b.Navigation("Genre");
                 });
 
             modelBuilder.Entity("OngakuProject.Models.DailyStreamAggregation", b =>
@@ -1895,7 +1869,7 @@ namespace OngakuProject.Migrations
             modelBuilder.Entity("OngakuProject.Models.Track", b =>
                 {
                     b.HasOne("OngakuProject.Models.Album", "Album")
-                        .WithMany()
+                        .WithMany("Tracks")
                         .HasForeignKey("AlbumId");
 
                     b.HasOne("OngakuProject.Models.TrackCredit", "TrackCredit")
@@ -2165,11 +2139,13 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.Album", b =>
                 {
-                    b.Navigation("AlbumTracks");
+                    b.Navigation("AlbumGenres");
 
                     b.Navigation("Discs");
 
                     b.Navigation("MoodTags");
+
+                    b.Navigation("Tracks");
 
                     b.Navigation("UserPlaylists");
                 });
@@ -2235,8 +2211,6 @@ namespace OngakuProject.Migrations
 
             modelBuilder.Entity("OngakuProject.Models.Track", b =>
                 {
-                    b.Navigation("AlbumTracks");
-
                     b.Navigation("DailyStreamAggregations");
 
                     b.Navigation("Favorite");
